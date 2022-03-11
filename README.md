@@ -29,7 +29,18 @@ CASTOR ETC Python package.
 Make conda environment file.
 
 Please ensure you have the [CASTOR ETC Python
-package](https://github.com/CASTOR-telescope/ETC) installed.
+package](https://github.com/CASTOR-telescope/ETC) installed. Don't forget to remove
+default node version and to install the CASTOR ETC Python package.
+
+<!--
+After npm install, may need to use
+
+```bash
+npm install --save-dev react-split-pane --force
+```
+
+because of a dependency issue (<https://github.com/tomkp/react-split-pane/issues/713>).
+-->
 
 ---
 
