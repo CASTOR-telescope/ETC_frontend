@@ -1,11 +1,10 @@
+// https://www.typescriptlang.org/tsconfig
 {
   "compilerOptions": {
-    "target": "es5",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "rootDir": "./src",
+    "baseUrl": "./src",
+    "target": "es6", // for maximum compatibility
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -17,10 +16,20 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx"
+    "noEmit": true, // don't make JavaScript files
+    // "noEmit": false, // actually make JavaScript files
+    "jsx": "react-jsx",
+    // "outDir": "out", // put transpiled JavaScript files in ./out/ directory
+    // "sourceMap": true, // for debugging TypeScript code from its generated JavaScript
+    "plugins": [
+      {
+        "transform": "typescript-plugin-styled-components",
+        "type": "config",
+        "minify": true,
+        "ssr": true
+      }
+    ]
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"],
+  "exclude": ["node_modules", "build"]
 }
