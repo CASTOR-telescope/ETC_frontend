@@ -47,3 +47,7 @@ export const CustomPalette = (mode: PaletteMode) => ({
 export const DarkModeTheme = createTheme(CustomPalette("dark"));
 
 export const themeBackgroundColor = DarkModeTheme.palette.background.default;
+
+export const themeSecondaryLightColor = DarkModeTheme.palette.secondary.light;
+
+export const themeYellowColor = "#efd5a2";

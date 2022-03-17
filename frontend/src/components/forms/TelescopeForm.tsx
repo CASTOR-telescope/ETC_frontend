@@ -87,11 +87,15 @@ const telescopeValidationSchema = Yup.object({
   }),
 });
 
+type TelescopeFormProps = {
+  setIsSavedAndUnsubmitted: (value: boolean) => void;
+};
+
 /**
  * Tab for setting Telescope parameters
  *
  */
-function TelescopeForm() {
+const TelescopeForm: React.FC<TelescopeFormProps> = ({ setIsSavedAndUnsubmitted }) => {
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -120,42 +124,46 @@ function TelescopeForm() {
           readNoise: "2.0", // electron/s per pixel
           redleakThresholds: { uv: "3880", u: "4730", g: "5660" }, // angstrom
         }}
-        onSubmit={async (data, { setSubmitting }) => {
-          setSubmitting(true);
+        onSubmit={
+          async (data, { setSubmitting }) => {
+            setSubmitting(true);
 
-          // JUST LET PYTHON CONVERT TO FLOAT. TYPESCRIPT IS ANGRY
-          // for (let key in data) {
-          //   if (key !== "redleakThresholds") {
-          //     data[key] = parseFloat(data[key]);
-          //   } else {
-          //     for (let band in data["redleakThresholds"]) {
-          //       data["redleakThresholds"][band] = parseFloat(
-          //         data["redleakThresholds"][band]
-          //       );
-          //     }
-          //   }
-          // }
+            // JUST LET PYTHON CONVERT TO FLOAT. TYPESCRIPT IS ANGRY
+            // for (let key in data) {
+            //   if (key !== "redleakThresholds") {
+            //     data[key] = parseFloat(data[key]);
+            //   } else {
+            //     for (let band in data["redleakThresholds"]) {
+            //       data["redleakThresholds"][band] = parseFloat(
+            //         data["redleakThresholds"][band]
+            //       );
+            //     }
+            //   }
+            // }
 
-          // if (window.sessionStorage.getItem("telescopeParams")) {window.sessionStorage.removeItem("telescopeParams")} ? Not necessary...
+            // if (window.sessionStorage.getItem("telescopeParams")) {window.sessionStorage.removeItem("telescopeParams")} ? Not necessary...
 
-          // Make async call
-          const response = await axios
-            .put(API_URL + "telescope", data)
-            .then((response) => response.data)
-            .then((response) =>
-              sessionStorage.setItem("telescopeParams", JSON.stringify(response))
-            )
-            .then(() => {
-              console.log(window.sessionStorage.getItem("telescopeParams"));
-            })
-            .catch((error) => {
-              console.log(error);
-              setIsError(true);
-              console.log(JSON.stringify(error));
-              setErrorMessage(error.message);
-            })
-            .finally(() => setSubmitting(false));
-        }}
+            // Make async call
+            const response = await axios
+              .put(API_URL + "telescope", data)
+              .then((response) => response.data)
+              .then((response) =>
+                sessionStorage.setItem("telescopeParams", JSON.stringify(response))
+              )
+              .then(() => {
+                // TODO: remove console.log() when done testing
+                console.log(sessionStorage.getItem("telescopeParams"));
+                setIsSavedAndUnsubmitted(true);
+              })
+              .catch((error) => {
+                console.log(error);
+                setIsError(true);
+                // console.log(JSON.stringify(error));
+                setErrorMessage(error.message);
+              })
+              .finally(() => setSubmitting(false));
+          } // end async function
+        } // end onSubmit
         validateOnChange={true}
         validationSchema={telescopeValidationSchema}
       >
@@ -168,7 +176,6 @@ function TelescopeForm() {
           // handleSubmit,
           isSubmitting,
           isValid,
-          setStatus,
         }) => (
           <Form>
             <MyTextField
@@ -277,14 +284,8 @@ function TelescopeForm() {
           </Form>
         )}
       </Formik>
-      {/* {isError && (
-        <Alert severity="error">
-          <AlertTitle>Error</AlertTitle>
-          {error}
-        </Alert>
-      )} */}
     </div>
   );
-}
+};
 
 export default TelescopeForm;

@@ -10,6 +10,7 @@ import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 
 import TelescopeForm from "./forms/TelescopeForm";
+import PhotometryForm from "./forms/PhotometryForm";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -68,6 +69,9 @@ function a11yProps(index: number) {
 
 export default function TabForms() {
   const [value, setValue] = React.useState(0);
+  // For tracking successful form submission between components
+  // If any tab is saved but not submitted, an info message will appear on Photometry tab
+  const [isSavedAndUnsubmitted, setIsSavedAndUnsubmitted] = React.useState(false);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -115,7 +119,7 @@ export default function TabForms() {
         </Tabs>
       </Box>
       <TabPanel value={value} index={0}>
-        <TelescopeForm />
+        <TelescopeForm setIsSavedAndUnsubmitted={setIsSavedAndUnsubmitted} />
       </TabPanel>
       <TabPanel value={value} index={1}>
         Item Two
@@ -124,8 +128,13 @@ export default function TabForms() {
         Item Three
       </TabPanel>
       <TabPanel value={value} index={3}>
-        Item Four. Also include the parameters that were used to generate the results.
+        {/* Item Four. Also include the parameters that were used to generate the results. */}
+        <PhotometryForm
+          isSavedAndUnsubmitted={isSavedAndUnsubmitted}
+          setIsSavedAndUnsubmitted={setIsSavedAndUnsubmitted}
+        />
         {/* Show results just for debugging */}
+        {/* {if (isTelescopeParamsSaved) {<pre>{window.sessionStorage.getItem("telescopeParams")}</pre>}} */}
         {/* <pre>{window.sessionStorage.getItem("telescopeParams")}</pre> */}
         {/* {
         if (window.sessionStorage.getItem("telescopeParams"))
