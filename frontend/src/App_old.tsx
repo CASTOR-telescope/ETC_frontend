@@ -14,7 +14,7 @@ import ResponsivePlot from "./components/ResponsivePlot";
 import Photometry from "./service/Photometry";
 import { ThemeProvider, useTheme } from "@mui/material/styles";
 
-import { DarkModeTheme, CustomPalette } from "./components/DarkModeTheme";
+import { DarkModeTheme } from "./components/DarkModeTheme";
 import { Box, Container, CssBaseline } from "@mui/material";
 import { ResizableBox } from "react-resizable";
 import "./components/react-resizable.css";
@@ -26,12 +26,7 @@ import { Responsive, WidthProvider } from "react-grid-layout";
 import TabPlots from "./components/TabPlots";
 import TabForms from "./components/TabForms";
 // import ApiService from "./service/ApiService";
-
-import { Allotment } from "allotment";
-import "allotment/dist/style.css";
-// import "./components/allotment.css";
-
-import ResponseCurveSpectrumPlot from "./components/ResponseCurveSpectrumPlot";
+import Paper from "@mui/material/Paper";
 
 // const myLogo: string = process.env.PUBLIC_URL + "/logo423.webp";
 
@@ -292,97 +287,25 @@ function App() {
             height: "100%",
           }}
         >
-          <Allotment defaultSizes={[50, 50]} minSize={0}>
-            <div
-              style={{
-                // Allow the user to scroll overflowed content
-                width: "100%",
-                height: "100%",
-                overflow: "auto",
-              }}
-            >
-              <Allotment.Pane>
-                <TabForms />
-              </Allotment.Pane>
+          <SplitPane split="vertical" defaultSize="100%" primary="second">
+            <SplitPane.Pane initialSize="50%">
+              {/* <div id="myButtons">
+                <Photometry />
+                <br />
+                <Button>Normal</Button>
+                <br />
+                <Button isPrimary>Primary</Button>
+              </div> */}
+              <TabForms />
+            </SplitPane.Pane>
+
+            <div>
+              <SplitPane split="horizontal" defaultSize="50%" primary="first">
+                <TabPlots />
+                <TabPlots />
+              </SplitPane>
             </div>
-
-            <Allotment.Pane>
-              <Allotment vertical defaultSizes={[50, 50]} minSize={0}>
-                <Allotment.Pane>
-                  <Allotment defaultSizes={[50, 50]} minSize={0}>
-                    <ResponsivePlot
-                      divId="source-weights-plot"
-                      data={[
-                        {
-                          x: [1, 4, 9, 16, 25],
-                          y: [1, 2, 3, 4, 5],
-                          type: "scatter",
-                          mode: "lines+markers",
-                          marker: { color: "PaleGreen" },
-                        },
-                      ]}
-                      layout={{
-                        title: "Source Weights",
-                        font: { color: "white" },
-                        autosize: true,
-                        paper_bgcolor: "#282c34", // MUI background.default color
-                        plot_bgcolor: "#282c34", // MUI background.default color
-                        xaxis: {
-                          showgrid: true,
-                          gridcolor: "grey",
-                          title: "Integration Time (s)",
-                        },
-                        yaxis: {
-                          showgrid: true,
-                          gridcolor: "grey",
-                          title: "Signal-to-Noise Ratio",
-                        },
-                      }}
-                      useResizeHandler={true}
-                      // style={{ width: "100%", height: "100%" }}
-                      config={{ displaylogo: false }}
-                    />
-
-                    <ResponsivePlot
-                      divId="aper-weights-plot"
-                      data={[
-                        {
-                          x: [1, 4, 9, 16, 25],
-                          y: [1, 2, 3, 4, 5],
-                          type: "scatter",
-                          mode: "lines+markers",
-                          marker: { color: "PaleGreen" },
-                        },
-                      ]}
-                      layout={{
-                        title: "Aperture Weights",
-                        font: { color: "white" },
-                        autosize: true,
-                        paper_bgcolor: "#282c34", // MUI background.default color
-                        plot_bgcolor: "#282c34", // MUI background.default color
-                        xaxis: {
-                          showgrid: true,
-                          gridcolor: "grey",
-                          title: "Integration Time (s)",
-                        },
-                        yaxis: {
-                          showgrid: true,
-                          gridcolor: "grey",
-                          title: "Signal-to-Noise Ratio",
-                        },
-                      }}
-                      useResizeHandler={true}
-                      // style={{ width: "100%", height: "100%" }}
-                      config={{ displaylogo: false }}
-                    />
-                  </Allotment>
-                </Allotment.Pane>
-                <Allotment.Pane>
-                  <ResponseCurveSpectrumPlot />
-                </Allotment.Pane>
-              </Allotment>
-            </Allotment.Pane>
-          </Allotment>
+          </SplitPane>
         </div>
       </header>
     </div>
