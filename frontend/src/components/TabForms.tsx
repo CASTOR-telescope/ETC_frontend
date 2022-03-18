@@ -52,11 +52,17 @@ function a11yProps(index: number) {
 
 // ------------------------------------------------------------------------------------ //
 
-export default function TabForms() {
+type TabFormsProps = {
+  incrNumTelescopeSaved: () => void;
+};
+
+const TabForms: React.FC<TabFormsProps> = ({ incrNumTelescopeSaved }) => {
   const [value, setValue] = React.useState(0);
+
   // For tracking successful form submission between components
   // If any tab is saved but not submitted, an info message will appear on Photometry tab
   const [isSavedAndUnsubmitted, setIsSavedAndUnsubmitted] = React.useState(false);
+
   // For tracking changed & unsaved forms
   const [isChanged, setIsChanged] = React.useState(false);
   const [prevFormValues, setPrevFormValues] = React.useState({});
@@ -121,10 +127,10 @@ export default function TabForms() {
       <TabPanel value={value} index={0}>
         <TelescopeForm
           setIsSavedAndUnsubmitted={setIsSavedAndUnsubmitted}
-          isChanged={isChanged}
           setIsChanged={setIsChanged}
           prevFormValues={prevFormValues}
           setPrevFormValues={setPrevFormValues}
+          incrNumTelescopeSaved={incrNumTelescopeSaved}
         />
       </TabPanel>
       <TabPanel value={value} index={1}>
@@ -158,4 +164,6 @@ export default function TabForms() {
       </TabPanel> */}
     </Box>
   );
-}
+};
+
+export default TabForms;

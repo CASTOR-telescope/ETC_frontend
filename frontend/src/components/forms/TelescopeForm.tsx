@@ -8,7 +8,6 @@ import {
   FormikValues,
 } from "formik";
 import {
-  Button,
   FormControl,
   FormGroup,
   FormHelperText,
@@ -20,12 +19,12 @@ import {
   AlertTitle,
   Snackbar,
 } from "@mui/material";
+import LoadingButton from "@mui/lab/LoadingButton";
 import * as Yup from "yup";
 import axios from "axios";
 import { API_URL } from "../../service/env";
-import { useCallback, useEffect, useState } from "react";
-import usePrevious from "../usePrevious";
-import { initial, isEqual } from "lodash";
+import { useEffect, useState } from "react";
+import { isEqual } from "lodash";
 
 type MyTextFieldProps = {
   placeholder: string;
@@ -140,10 +139,10 @@ const telescopeValidationSchema = Yup.object({
 
 type TelescopeFormProps = {
   setIsSavedAndUnsubmitted: (value: boolean) => void;
-  isChanged: boolean;
   setIsChanged: (value: boolean) => void;
   prevFormValues: Object; // object
   setPrevFormValues: (value: Object) => void; // set object
+  incrNumTelescopeSaved: () => void;
 };
 
 /**
@@ -152,10 +151,10 @@ type TelescopeFormProps = {
  */
 const TelescopeForm: React.FC<TelescopeFormProps> = ({
   setIsSavedAndUnsubmitted,
-  isChanged,
   setIsChanged,
   prevFormValues,
   setPrevFormValues,
+  incrNumTelescopeSaved,
 }) => {
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -179,68 +178,6 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
     setIsChanged(false);
     setPrevFormValues(myInitialValues);
   }, []);
-
-  // /**
-  //  * Should be called within a <Form> </Form> component. Should also pass in:
-  //  *
-  //  * @param name
-  //  * @param value
-  //  *
-  //  * @returns <Field />
-  //  */
-  // const MyTextField: React.FC<MyTextFieldProps> = ({
-  //   placeholder,
-  //   label,
-  //   values,
-  //   ...props
-  // }) => {
-  //   const [field, meta] = useField<{}>(props);
-  //   const errorText = meta.error && meta.touched ? meta.error : "";
-
-  //   // const compareValues = useCallback(() => {
-  //   //   if (isEqual(values, prevFormValues)) {
-  //   //     setIsChanged(false);
-  //   //     console.log("unchanged values: ", values);
-  //   //     console.log("prevFormValues values: ", prevFormValues);
-  //   //   } else {
-  //   //     setIsChanged(true);
-  //   //     console.log("changed values: ", values);
-  //   //     console.log("prevFormValues values: ", prevFormValues);
-  //   //   }
-  //   // }, [values]);
-
-  //   useEffect(() => {
-  //     // compareValues();
-  //     if (isEqual(values, prevFormValues)) {
-  //       setIsChanged(false);
-  //       console.log("unchanged values: ", values);
-  //       console.log("prevFormValues values: ", prevFormValues);
-  //     } else {
-  //       setIsChanged(true);
-  //       console.log("changed values: ", values);
-  //       console.log("prevFormValues values: ", prevFormValues);
-  //     }
-  //     console.log(values);
-  //   }, [values]);
-
-  //   return (
-  //     <Field
-  //       key={props.name}
-  //       placeholder={placeholder}
-  //       label={label}
-  //       // Consistent props
-  //       as={TextField}
-  //       type="input"
-  //       fullWidth
-  //       required={true}
-  //       sx={{ marginTop: "auto", marginBottom: 2 }}
-  //       helperText={errorText}
-  //       error={!!errorText} // True if errorText is non-empty
-  //       {...field}
-  //       // handleChange={useCallback(() => {}, []);
-  //     />
-  //   );
-  // };
 
   return (
     <div>
@@ -293,6 +230,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                 setPrevFormValues(data);
                 setIsChanged(false);
                 sessionStorage.setItem("telescopeForm", JSON.stringify(data));
+                incrNumTelescopeSaved();
               })
               .catch((error) => {
                 console.log(error);
@@ -388,7 +326,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                   name="redleakThresholds.uv"
                   value={values.redleakThresholds.uv}
                   placeholder={"Default: 3880"}
-                  label="UV-band (angstrom)"
+                  label="UV-Band (angstrom)"
                   // values={values}
                   prevFormValues={prevFormValues}
                   setIsChanged={setIsChanged}
@@ -397,7 +335,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                   name="redleakThresholds.u"
                   value={values.redleakThresholds.u}
                   placeholder={"Default: 4730"}
-                  label="u-band (angstrom)"
+                  label="u-Band (angstrom)"
                   // values={values}
                   prevFormValues={prevFormValues}
                   setIsChanged={setIsChanged}
@@ -406,7 +344,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                   name="redleakThresholds.g"
                   value={values.redleakThresholds.g}
                   placeholder={"Default: 5660"}
-                  label="g-band (angstrom)"
+                  label="g-Band (angstrom)"
                   // values={values}
                   prevFormValues={prevFormValues}
                   setIsChanged={setIsChanged}
@@ -414,17 +352,18 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
               </FormGroup>
             </FormControl>
             <br />
-            <Button
+            <LoadingButton
               type="submit"
               disabled={isSubmitting || !isValid}
               color="secondary"
               size="large"
               variant="contained"
               style={{ width: "25%", fontSize: 24, margin: 16 }}
+              loading={isSubmitting}
+              loadingIndicator="Saving..."
             >
               Save
-            </Button>
-            <pre>{JSON.stringify(values, null, 2)}</pre>
+            </LoadingButton>
             <Snackbar
               open={isError}
               autoHideDuration={6000}
