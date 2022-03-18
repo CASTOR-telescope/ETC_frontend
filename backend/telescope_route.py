@@ -83,6 +83,14 @@ def put_telescope_json():
                 key: val.to(u.AA).value.tolist()
                 for key, val in TelescopeObj.passband_limits.items()
             },
+            # Full passband curves is around 123 kB (estimated using `sys.getsizeof()`)
+            fullPassbandCurves={
+                band: {
+                    "wavelength": curve["wavelength"].to(u.AA).value.tolist(),
+                    "response": curve["response"].tolist(),
+                }
+                for band, curve in TelescopeObj.full_passband_curves.items()
+            },
             mirrorDiameter=float(TelescopeObj.mirror_diameter.to(u.cm).value),
             photZpts={
                 # Convert numpy float to Python float
@@ -115,7 +123,7 @@ def put_telescope_json():
 #     #     import json
 #     #     import jsonpickle
 #     #     import sys
-#     mydict = get_telescope_dict(
+#     mydict = put_telescope_json(
 #         dark_current=1,
 #         fwhm=1 << u.arcsec,
 #         # px_scale=1,
@@ -124,17 +132,9 @@ def put_telescope_json():
 #         redleak_thresholds={"uv": 1 << u.AA, "u": 1 << u.AA, "g": 1 << u.AA},
 #     )
 #     # print(sys.getsizeof(mydict))
-#     print(jsonpickle.decode(mydict).redleak_thresholds)
+#     # print(jsonpickle.decode(mydict).redleak_thresholds)
 #     # print(blah)
 #     # myjson = json.dumps(mydict, cls=JsonCustomEncoder)
 #     # print(json.loads(myjson)["redleak_thresholds"]["uv"])
 #     # print(sys.getsizeof(myjson))
 #     # print(pickle.load(mydict.stream))
-
-# {
-#     "darkCurrent": 1,
-#     "fwhm": 2,
-#     "pxScale": 3,
-#     "readNoise": 4,
-#     "redleakThresholds": {"uv": 5, "u": 6, "g": 7}
-# }

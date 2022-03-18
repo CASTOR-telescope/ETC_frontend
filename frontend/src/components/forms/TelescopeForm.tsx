@@ -1,6 +1,13 @@
-import { Formik, Field, Form, useField, FieldAttributes, FormikValues } from "formik";
 import {
-  Button,
+  Formik,
+  Field,
+  Form,
+  useField,
+  FieldAttributes,
+  useFormikContext,
+  FormikValues,
+} from "formik";
+import {
   FormControl,
   FormGroup,
   FormHelperText,
@@ -12,14 +19,19 @@ import {
   AlertTitle,
   Snackbar,
 } from "@mui/material";
+import LoadingButton from "@mui/lab/LoadingButton";
 import * as Yup from "yup";
 import axios from "axios";
 import { API_URL } from "../../service/env";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { isEqual } from "lodash";
 
 type MyTextFieldProps = {
   placeholder: string;
   label: string;
+  // values: Object;
+  prevFormValues: Object;
+  setIsChanged: (value: boolean) => void;
 } & FieldAttributes<{}>;
 
 /**
@@ -30,11 +42,48 @@ type MyTextFieldProps = {
  *
  * @returns <Field />
  */
-const MyTextField: React.FC<MyTextFieldProps> = ({ placeholder, label, ...props }) => {
+const MyTextField: React.FC<MyTextFieldProps> = ({
+  placeholder,
+  label,
+  // values,
+  prevFormValues,
+  setIsChanged,
+  ...props
+}) => {
   const [field, meta] = useField<{}>(props);
   const errorText = meta.error && meta.touched ? meta.error : "";
+
+  const { values } = useFormikContext();
+
+  // const compareValues = useCallback(() => {
+  //   if (isEqual(values, prevFormValues)) {
+  //     setIsChanged(false);
+  //     console.log("unchanged values: ", values);
+  //     console.log("prevFormValues values: ", prevFormValues);
+  //   } else {
+  //     setIsChanged(true);
+  //     console.log("changed values: ", values);
+  //     console.log("prevFormValues values: ", prevFormValues);
+  //   }
+  // }, [values]);
+
+  useEffect(() => {
+    // compareValues();
+    if (isEqual(values, prevFormValues)) {
+      setIsChanged(false);
+      // console.log("unchanged values: ", values);
+      // console.log("prevFormValues values: ", prevFormValues);
+    } else {
+      setIsChanged(true);
+      // console.log("changed values: ", values);
+      // console.log("prevFormValues values: ", prevFormValues);
+    }
+    console.log(values);
+  }, [values]);
+
   return (
     <Field
+      // key={props.name}
       placeholder={placeholder}
       label={label}
       // Consistent props
@@ -46,6 +95,7 @@ const MyTextField: React.FC<MyTextFieldProps> = ({ placeholder, label, ...props 
       helperText={errorText}
       error={!!errorText} // True if errorText is non-empty
       {...field}
+      // handleChange={useCallback(() => {}, []);
     />
   );
 };
@@ -89,13 +139,23 @@ const telescopeValidationSchema = Yup.object({
 
 type TelescopeFormProps = {
   setIsSavedAndUnsubmitted: (value: boolean) => void;
+  setIsChanged: (value: boolean) => void;
+  prevFormValues: Object; // object
+  setPrevFormValues: (value: Object) => void; // set object
+  incrNumTelescopeSaved: () => void;
 };
 
 /**
  * Tab for setting Telescope parameters
  *
  */
-const TelescopeForm: React.FC<TelescopeFormProps> = ({ setIsSavedAndUnsubmitted }) => {
+const TelescopeForm: React.FC<TelescopeFormProps> = ({
+  setIsSavedAndUnsubmitted,
+  setIsChanged,
+  prevFormValues,
+  setPrevFormValues,
+  incrNumTelescopeSaved,
+}) => {
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -113,6 +173,11 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({ setIsSavedAndUnsubmitted 
   } else {
     myInitialValues = JSON.parse(`${sessionStorage.getItem("telescopeForm")}`);
   }
+  // Only run this on mount
+  useEffect(() => {
+    setIsChanged(false);
+    setPrevFormValues(myInitialValues);
+  }, []);
 
   return (
     <div>
@@ -147,7 +212,10 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({ setIsSavedAndUnsubmitted 
                 // TODO: remove console.log() when done testing
                 console.log(sessionStorage.getItem("telescopeParams"));
                 setIsSavedAndUnsubmitted(true);
+                setPrevFormValues(data);
+                setIsChanged(false);
                 sessionStorage.setItem("telescopeForm", JSON.stringify(data));
+                incrNumTelescopeSaved();
               })
               .catch((error) => {
                 console.log(error);
@@ -158,6 +226,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({ setIsSavedAndUnsubmitted 
               .finally(() => setSubmitting(false));
           } // end async function
         } // end onSubmit
+        // FIXME: should validate as typing without needing to press save first too...
         validateOnChange={true}
         validationSchema={telescopeValidationSchema}
         validateOnMount={true}
@@ -178,30 +247,45 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({ setIsSavedAndUnsubmitted 
               value={values.fwhm} // Allow both initial value + placeholder text
               placeholder={"Default: 0.15"}
               label="FWHM of PSF (arcsec)"
+              // values={values}
+              prevFormValues={prevFormValues}
+              setIsChanged={setIsChanged}
             />
             <MyTextField
               name="pxScale"
               value={values.pxScale}
               placeholder={"Default: 0.1"}
               label="Pixel Scale (arcsec per pixel)"
+              // values={values}
+              prevFormValues={prevFormValues}
+              setIsChanged={setIsChanged}
             />
             <MyTextField
               name="mirrorDiameter"
               value={values.mirrorDiameter}
               placeholder={"Default: 100"}
               label="Mirror Diameter (cm)"
+              // values={values}
+              prevFormValues={prevFormValues}
+              setIsChanged={setIsChanged}
             />
             <MyTextField
               name="darkCurrent"
               value={values.darkCurrent}
               placeholder={"Default: 0.01"}
               label="Dark Current (electron/s per pixel)"
+              // values={values}
+              prevFormValues={prevFormValues}
+              setIsChanged={setIsChanged}
             />
             <MyTextField
               name="readNoise"
               value={values.readNoise}
               placeholder={"Default: 2.0"}
               label="Read Noise (electron/s per pixel)"
+              // values={values}
+              prevFormValues={prevFormValues}
+              setIsChanged={setIsChanged}
             />
             <FormControl component="fieldset" variant="standard">
               <FormLabel
@@ -228,33 +312,44 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({ setIsSavedAndUnsubmitted 
                   name="redleakThresholds.uv"
                   value={values.redleakThresholds.uv}
                   placeholder={"Default: 3880"}
-                  label="UV-band (angstrom)"
+                  label="UV-Band (angstrom)"
+                  // values={values}
+                  prevFormValues={prevFormValues}
+                  setIsChanged={setIsChanged}
                 />
                 <MyTextField
                   name="redleakThresholds.u"
                   value={values.redleakThresholds.u}
                   placeholder={"Default: 4730"}
-                  label="u-band (angstrom)"
+                  label="u-Band (angstrom)"
+                  // values={values}
+                  prevFormValues={prevFormValues}
+                  setIsChanged={setIsChanged}
                 />
                 <MyTextField
                   name="redleakThresholds.g"
                   value={values.redleakThresholds.g}
                   placeholder={"Default: 5660"}
-                  label="g-band (angstrom)"
+                  label="g-Band (angstrom)"
+                  // values={values}
+                  prevFormValues={prevFormValues}
+                  setIsChanged={setIsChanged}
                 />
               </FormGroup>
             </FormControl>
             <br />
-            <Button
+            <LoadingButton
               type="submit"
               disabled={isSubmitting || !isValid}
               color="secondary"
               size="large"
               variant="contained"
               style={{ width: "25%", fontSize: 24, margin: 16 }}
+              loading={isSubmitting}
+              loadingIndicator="Saving..."
             >
               Save
-            </Button>
+            </LoadingButton>
             <Snackbar
               open={isError}
               autoHideDuration={6000}
