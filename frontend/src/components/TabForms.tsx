@@ -3,11 +3,12 @@
  *
  */
 
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import { Alert, AlertTitle, Snackbar } from "@mui/material";
 
 import TelescopeForm from "./forms/TelescopeForm";
 import PhotometryForm from "./forms/PhotometryForm";
@@ -52,12 +53,64 @@ function a11yProps(index: number) {
 
 // ------------------------------------------------------------------------------------ //
 
+export type CommonFormProps = {
+  setIsSavedAndUnsubmitted: (value: boolean) => void;
+  setIsChanged: (value: boolean) => void;
+  prevFormValues: Object;
+  setPrevFormValues: (value: Object) => void;
+  isError: boolean;
+  setIsError: (value: boolean) => void;
+  errorMessage: string;
+  setErrorMessage: (value: string) => void;
+};
+
+/**
+ * Show a toast message when the form has trouble saving/submitting (i.e., client/server
+ * error). This should be wrapped in a `<Form>` component from formik.
+ */
+export const AlertError: React.FC<{
+  isError: boolean;
+  setIsError: (value: boolean) => void;
+  errorMessage: string;
+  setErrorMessage: (value: string) => void;
+}> = ({ isError, setIsError, errorMessage, setErrorMessage }) => {
+  return (
+    <Snackbar
+      open={isError}
+      autoHideDuration={6000}
+      onClose={() => {
+        // Clear any previous errors
+        setIsError(false);
+        setErrorMessage("");
+      }}
+    >
+      <Alert
+        severity="error"
+        onClose={() => {
+          // Clear any previous errors
+          setIsError(false);
+          setErrorMessage("");
+        }}
+      >
+        <AlertTitle>Error</AlertTitle>
+        {errorMessage}
+      </Alert>
+    </Snackbar>
+  );
+};
+
+// ------------------------------------------------------------------------------------ //
+
 type TabFormsProps = {
   incrNumTelescopeSaved: () => void;
 };
 
 const TabForms: React.FC<TabFormsProps> = ({ incrNumTelescopeSaved }) => {
   const [value, setValue] = React.useState(0);
+
+  // For tracking errors on save/submit (i.e., network/request errors)
+  const [isError, setIsError] = React.useState(false);
+  const [errorMessage, setErrorMessage] = React.useState("");
 
   // For tracking successful form submission between components
   // If any tab is saved but not submitted, an info message will appear on Photometry tab
@@ -131,6 +184,10 @@ const TabForms: React.FC<TabFormsProps> = ({ incrNumTelescopeSaved }) => {
           prevFormValues={prevFormValues}
           setPrevFormValues={setPrevFormValues}
           incrNumTelescopeSaved={incrNumTelescopeSaved}
+          isError={isError}
+          setIsError={setIsError}
+          errorMessage={errorMessage}
+          setErrorMessage={setErrorMessage}
         />
       </TabPanel>
       <TabPanel value={value} index={1}>

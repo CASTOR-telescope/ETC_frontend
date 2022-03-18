@@ -15,9 +15,6 @@ import {
   Link,
   TextField,
   Typography,
-  Alert,
-  AlertTitle,
-  Snackbar,
 } from "@mui/material";
 import LoadingButton from "@mui/lab/LoadingButton";
 import * as Yup from "yup";
@@ -25,6 +22,8 @@ import axios from "axios";
 import { API_URL } from "../../service/env";
 import { useEffect, useState } from "react";
 import { isEqual } from "lodash";
+
+import { CommonFormProps, AlertError } from "../TabForms";
 
 type MyTextFieldProps = {
   placeholder: string;
@@ -137,13 +136,19 @@ const telescopeValidationSchema = Yup.object({
   }),
 });
 
-type TelescopeFormProps = {
-  setIsSavedAndUnsubmitted: (value: boolean) => void;
-  setIsChanged: (value: boolean) => void;
-  prevFormValues: Object; // object
-  setPrevFormValues: (value: Object) => void; // set object
-  incrNumTelescopeSaved: () => void;
-};
+// type TelescopeFormProps = {
+//   setIsSavedAndUnsubmitted: (value: boolean) => void;
+//   setIsChanged: (value: boolean) => void;
+//   prevFormValues: Object; // object
+//   setPrevFormValues: (value: Object) => void; // set object
+//   isError: boolean;
+//   setIsError: (value: boolean) => void;
+//   errorMessage: string;
+//   setErrorMessage: (value: string) => void;
+//   incrNumTelescopeSaved: () => void;
+// };
+
+type TelescopeFormProps = { incrNumTelescopeSaved: () => void } & CommonFormProps;
 
 /**
  * Tab for setting Telescope parameters
@@ -155,10 +160,11 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
   prevFormValues,
   setPrevFormValues,
   incrNumTelescopeSaved,
+  isError,
+  setIsError,
+  errorMessage,
+  setErrorMessage,
 }) => {
-  const [isError, setIsError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-
   // Save user form inputs between tab switches
   let myInitialValues: FormikValues;
   if (sessionStorage.getItem("telescopeForm") === null) {
@@ -350,7 +356,13 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
             >
               Save
             </LoadingButton>
-            <Snackbar
+            <AlertError
+              isError={isError}
+              setIsError={setIsError}
+              errorMessage={errorMessage}
+              setErrorMessage={setErrorMessage}
+            />
+            {/* <Snackbar
               open={isError}
               autoHideDuration={6000}
               onClose={() => {
@@ -370,7 +382,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                 <AlertTitle>Error</AlertTitle>
                 {errorMessage}
               </Alert>
-            </Snackbar>
+            </Snackbar> */}
           </Form>
         )}
       </Formik>
