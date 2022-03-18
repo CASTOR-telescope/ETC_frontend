@@ -1,4 +1,12 @@
-import { Formik, Field, Form, useField, FieldAttributes, useFormikContext } from "formik";
+import {
+  Formik,
+  Field,
+  Form,
+  useField,
+  FieldAttributes,
+  useFormikContext,
+  FormikValues,
+} from "formik";
 import {
   Button,
   FormControl,
@@ -48,30 +56,30 @@ const MyTextField: React.FC<MyTextFieldProps> = ({
 
   const { values } = useFormikContext();
 
-  const compareValues = useCallback(() => {
-    if (isEqual(values, prevFormValues)) {
-      setIsChanged(false);
-      console.log("unchanged values: ", values);
-      console.log("prevFormValues values: ", prevFormValues);
-    } else {
-      setIsChanged(true);
-      console.log("changed values: ", values);
-      console.log("prevFormValues values: ", prevFormValues);
-    }
-  }, [values]);
+  // const compareValues = useCallback(() => {
+  //   if (isEqual(values, prevFormValues)) {
+  //     setIsChanged(false);
+  //     console.log("unchanged values: ", values);
+  //     console.log("prevFormValues values: ", prevFormValues);
+  //   } else {
+  //     setIsChanged(true);
+  //     console.log("changed values: ", values);
+  //     console.log("prevFormValues values: ", prevFormValues);
+  //   }
+  // }, [values]);
 
   useEffect(() => {
-    compareValues();
-    // if (isEqual(values, prevFormValues)) {
-    //   setIsChanged(false);
-    //   console.log("unchanged values: ", values);
-    //   console.log("prevFormValues values: ", prevFormValues);
-    // } else {
-    //   setIsChanged(true);
-    //   console.log("changed values: ", values);
-    //   console.log("prevFormValues values: ", prevFormValues);
-    // }
-    // console.log(values);
+    // compareValues();
+    if (isEqual(values, prevFormValues)) {
+      setIsChanged(false);
+      // console.log("unchanged values: ", values);
+      // console.log("prevFormValues values: ", prevFormValues);
+    } else {
+      setIsChanged(true);
+      // console.log("changed values: ", values);
+      // console.log("prevFormValues values: ", prevFormValues);
+    }
+    console.log(values);
   }, [values]);
 
   return (
@@ -152,14 +160,20 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const myInitialValues = {
-    fwhm: "0.15", // arcsec
-    pxScale: "0.1", // arcsec per pixel
-    mirrorDiameter: "100", // cm
-    darkCurrent: "0.01", // electron/s per pixel
-    readNoise: "2.0", // electron/s per pixel
-    redleakThresholds: { uv: "3880", u: "4730", g: "5660" }, // angstrom
-  };
+  // Save user form inputs between tab switches
+  let myInitialValues: FormikValues;
+  if (sessionStorage.getItem("telescopeForm") === null) {
+    myInitialValues = {
+      fwhm: "0.15", // arcsec
+      pxScale: "0.1", // arcsec per pixel
+      mirrorDiameter: "100", // cm
+      darkCurrent: "0.01", // electron/s per pixel
+      readNoise: "2.0", // electron/s per pixel
+      redleakThresholds: { uv: "3880", u: "4730", g: "5660" }, // angstrom
+    };
+  } else {
+    myInitialValues = JSON.parse(`${sessionStorage.getItem("telescopeForm")}`);
+  }
   // Only run this on mount
   useEffect(() => {
     setIsChanged(false);
@@ -278,6 +292,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                 setIsSavedAndUnsubmitted(true);
                 setPrevFormValues(data);
                 setIsChanged(false);
+                sessionStorage.setItem("telescopeForm", JSON.stringify(data));
               })
               .catch((error) => {
                 console.log(error);
