@@ -3,7 +3,7 @@
  *
  */
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
@@ -52,29 +52,29 @@ function a11yProps(index: number) {
 
 // ------------------------------------------------------------------------------------ //
 
-// type TelescopeParamsProps = { isTeleParamsEntered: boolean };
-// function TelescopeParams({ isTelescopeParamsEntered }: TelescopeParamsProps) {
-//   if (isTelescopeParamsEntered) {
-//     return (
-//       <pre>
-//         {JSON.stringify(
-//           JSON.parse(window.sessionStorage.getItem("telescopeParams")),
-//           undefined,
-//           2
-//         )}
-//       </pre>
-//     );
-//   }
-// }
-
 export default function TabForms() {
   const [value, setValue] = React.useState(0);
   // For tracking successful form submission between components
   // If any tab is saved but not submitted, an info message will appear on Photometry tab
   const [isSavedAndUnsubmitted, setIsSavedAndUnsubmitted] = React.useState(false);
+  // For tracking changed & unsaved forms
+  const [isChanged, setIsChanged] = React.useState(false);
+  const [prevFormValues, setPrevFormValues] = React.useState({});
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
+    // if (newValue !== value && !isSavedAndUnsubmitted) {
+    if (newValue !== value && isChanged) {
+      const isLeaving = window.confirm(
+        "You have unsaved changes. Are you sure you want to change tabs?"
+      );
+      if (isLeaving) {
+        setValue(newValue);
+        setIsChanged(false);
+      }
+    } else {
+      setValue(newValue);
+      setIsChanged(false);
+    }
   };
 
   // const [isTelescopeParamsEntered, setIsTelescopeParamsEntered] = React.useState(false);
@@ -119,7 +119,13 @@ export default function TabForms() {
         </Tabs>
       </Box>
       <TabPanel value={value} index={0}>
-        <TelescopeForm setIsSavedAndUnsubmitted={setIsSavedAndUnsubmitted} />
+        <TelescopeForm
+          setIsSavedAndUnsubmitted={setIsSavedAndUnsubmitted}
+          isChanged={isChanged}
+          setIsChanged={setIsChanged}
+          prevFormValues={prevFormValues}
+          setPrevFormValues={setPrevFormValues}
+        />
       </TabPanel>
       <TabPanel value={value} index={1}>
         Item Two
