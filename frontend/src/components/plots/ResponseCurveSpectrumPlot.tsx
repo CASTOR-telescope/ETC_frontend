@@ -117,6 +117,7 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
   } else {
     // } else if (sessionStorage.getItem("telescopeParams") === null) {
     return (
+      // Maybe put CASTOR logo here!
       <div>Please save Telescope parameters first (I'll prettify this message later)</div>
     );
   }

@@ -8,7 +8,6 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-import { Alert, AlertTitle, Snackbar } from "@mui/material";
 
 import TelescopeForm from "./forms/TelescopeForm";
 import PhotometryForm from "./forms/PhotometryForm";
@@ -53,59 +52,12 @@ function a11yProps(index: number) {
 
 // ------------------------------------------------------------------------------------ //
 
-export type CommonFormProps = {
-  setIsSavedAndUnsubmitted: (value: boolean) => void;
-  setIsChanged: (value: boolean) => void;
-  prevFormValues: Object;
-  setPrevFormValues: (value: Object) => void;
-  isError: boolean;
-  setIsError: (value: boolean) => void;
-  errorMessage: string;
-  setErrorMessage: (value: string) => void;
-};
-
-/**
- * Show a toast message when the form has trouble saving/submitting (i.e., client/server
- * error). This should be wrapped in a `<Form>` component from formik.
- */
-export const AlertError: React.FC<{
-  isError: boolean;
-  setIsError: (value: boolean) => void;
-  errorMessage: string;
-  setErrorMessage: (value: string) => void;
-}> = ({ isError, setIsError, errorMessage, setErrorMessage }) => {
-  return (
-    <Snackbar
-      open={isError}
-      autoHideDuration={6000}
-      onClose={() => {
-        // Clear any previous errors
-        setIsError(false);
-        setErrorMessage("");
-      }}
-    >
-      <Alert
-        severity="error"
-        onClose={() => {
-          // Clear any previous errors
-          setIsError(false);
-          setErrorMessage("");
-        }}
-      >
-        <AlertTitle>Error</AlertTitle>
-        {errorMessage}
-      </Alert>
-    </Snackbar>
-  );
-};
-
-// ------------------------------------------------------------------------------------ //
-
 type TabFormsProps = {
   incrNumTelescopeSaved: () => void;
 };
 
 const TabForms: React.FC<TabFormsProps> = ({ incrNumTelescopeSaved }) => {
+  // For tracking tabs
   const [value, setValue] = React.useState(0);
 
   // For tracking errors on save/submit (i.e., network/request errors)
@@ -124,7 +76,8 @@ const TabForms: React.FC<TabFormsProps> = ({ incrNumTelescopeSaved }) => {
     // if (newValue !== value && !isSavedAndUnsubmitted) {
     if (newValue !== value && isChanged) {
       const isLeaving = window.confirm(
-        "You have unsaved changes. Are you sure you want to change tabs?"
+        "You have unsaved changes. Are you sure you want to change tabs? " +
+          "Your changes will be lost."
       );
       if (isLeaving) {
         setValue(newValue);
@@ -135,11 +88,6 @@ const TabForms: React.FC<TabFormsProps> = ({ incrNumTelescopeSaved }) => {
       setIsChanged(false);
     }
   };
-
-  // const [isTelescopeParamsEntered, setIsTelescopeParamsEntered] = React.useState(false);
-  // if (window.sessionStorage.getItem("telescopeParams")) {
-  //   setIsTelescopeParamsEntered(true);
-  // }
 
   return (
     <Box
@@ -197,24 +145,10 @@ const TabForms: React.FC<TabFormsProps> = ({ incrNumTelescopeSaved }) => {
         Item Three
       </TabPanel>
       <TabPanel value={value} index={3}>
-        {/* Item Four. Also include the parameters that were used to generate the results. */}
         <PhotometryForm
           isSavedAndUnsubmitted={isSavedAndUnsubmitted}
           setIsSavedAndUnsubmitted={setIsSavedAndUnsubmitted}
         />
-        {/* Show results just for debugging */}
-        {/* {if (isTelescopeParamsSaved) {<pre>{window.sessionStorage.getItem("telescopeParams")}</pre>}} */}
-        {/* <pre>{window.sessionStorage.getItem("telescopeParams")}</pre> */}
-        {/* {
-        if (window.sessionStorage.getItem("telescopeParams"))
-          <pre>
-            {JSON.stringify(
-              JSON.parse(window.sessionStorage.getItem("telescopeParams")),
-              undefined,
-              2
-            ).replace(/\\/g, "")}
-          </pre>
-        } */}
       </TabPanel>
       {/* <TabPanel value={value} index={4}>
         Spectroscopy capability is not implemented yet.

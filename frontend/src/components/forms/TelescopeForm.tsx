@@ -1,103 +1,24 @@
-import {
-  Formik,
-  Field,
-  Form,
-  useField,
-  FieldAttributes,
-  useFormikContext,
-  FormikValues,
-} from "formik";
+import { Formik, Form, FormikValues } from "formik";
 import {
   FormControl,
   FormGroup,
   FormHelperText,
   FormLabel,
   Link,
-  TextField,
   Typography,
 } from "@mui/material";
 import LoadingButton from "@mui/lab/LoadingButton";
 import * as Yup from "yup";
 import axios from "axios";
 import { API_URL } from "../../service/env";
-import { useEffect, useState } from "react";
-import { isEqual } from "lodash";
+import { useEffect } from "react";
 
-import { CommonFormProps, AlertError } from "../TabForms";
-
-type MyTextFieldProps = {
-  placeholder: string;
-  label: string;
-  // values: Object;
-  prevFormValues: Object;
-  setIsChanged: (value: boolean) => void;
-} & FieldAttributes<{}>;
-
-/**
- * Should be called within a <Form> </Form> component. Should also pass in:
- *
- * @param name
- * @param value
- *
- * @returns <Field />
- */
-const MyTextField: React.FC<MyTextFieldProps> = ({
-  placeholder,
-  label,
-  // values,
-  prevFormValues,
-  setIsChanged,
-  ...props
-}) => {
-  const [field, meta] = useField<{}>(props);
-  const errorText = meta.error && meta.touched ? meta.error : "";
-
-  const { values } = useFormikContext();
-
-  // const compareValues = useCallback(() => {
-  //   if (isEqual(values, prevFormValues)) {
-  //     setIsChanged(false);
-  //     console.log("unchanged values: ", values);
-  //     console.log("prevFormValues values: ", prevFormValues);
-  //   } else {
-  //     setIsChanged(true);
-  //     console.log("changed values: ", values);
-  //     console.log("prevFormValues values: ", prevFormValues);
-  //   }
-  // }, [values]);
-
-  useEffect(() => {
-    // compareValues();
-    if (isEqual(values, prevFormValues)) {
-      setIsChanged(false);
-      // console.log("unchanged values: ", values);
-      // console.log("prevFormValues values: ", prevFormValues);
-    } else {
-      setIsChanged(true);
-      // console.log("changed values: ", values);
-      // console.log("prevFormValues values: ", prevFormValues);
-    }
-    console.log(values);
-  }, [values]);
-
-  return (
-    <Field
-      // key={props.name}
-      placeholder={placeholder}
-      label={label}
-      // Consistent props
-      as={TextField}
-      type="input"
-      fullWidth
-      required={true}
-      sx={{ marginTop: "auto", marginBottom: 2 }}
-      helperText={errorText}
-      error={!!errorText} // True if errorText is non-empty
-      {...field}
-      // handleChange={useCallback(() => {}, []);
-    />
-  );
-};
+import {
+  CommonFormProps,
+  AlertError,
+  CommonTextField,
+  SaveButton,
+} from "../CommonFormElements";
 
 const telescopeValidationSchema = Yup.object({
   fwhm: Yup.number()
@@ -135,18 +56,6 @@ const telescopeValidationSchema = Yup.object({
       .positive("Redleak threshold must be a number > 0"),
   }),
 });
-
-// type TelescopeFormProps = {
-//   setIsSavedAndUnsubmitted: (value: boolean) => void;
-//   setIsChanged: (value: boolean) => void;
-//   prevFormValues: Object; // object
-//   setPrevFormValues: (value: Object) => void; // set object
-//   isError: boolean;
-//   setIsError: (value: boolean) => void;
-//   errorMessage: string;
-//   setErrorMessage: (value: string) => void;
-//   incrNumTelescopeSaved: () => void;
-// };
 
 type TelescopeFormProps = { incrNumTelescopeSaved: () => void } & CommonFormProps;
 
@@ -232,7 +141,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
               .finally(() => setSubmitting(false));
           } // end async function
         } // end onSubmit
-        // FIXME: should validate as typing without needing to press save first too...
+        // FIXME: should validate as typing without needing to press save first too...?
         validateOnChange={true}
         validationSchema={telescopeValidationSchema}
         validateOnMount={true}
@@ -248,7 +157,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
           isValid,
         }) => (
           <Form>
-            <MyTextField
+            <CommonTextField
               name="fwhm"
               value={values.fwhm} // Allow both initial value + placeholder text
               placeholder={"Default: 0.15"}
@@ -257,7 +166,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
               prevFormValues={prevFormValues}
               setIsChanged={setIsChanged}
             />
-            <MyTextField
+            <CommonTextField
               name="pxScale"
               value={values.pxScale}
               placeholder={"Default: 0.1"}
@@ -266,7 +175,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
               prevFormValues={prevFormValues}
               setIsChanged={setIsChanged}
             />
-            <MyTextField
+            <CommonTextField
               name="mirrorDiameter"
               value={values.mirrorDiameter}
               placeholder={"Default: 100"}
@@ -275,7 +184,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
               prevFormValues={prevFormValues}
               setIsChanged={setIsChanged}
             />
-            <MyTextField
+            <CommonTextField
               name="darkCurrent"
               value={values.darkCurrent}
               placeholder={"Default: 0.01"}
@@ -284,7 +193,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
               prevFormValues={prevFormValues}
               setIsChanged={setIsChanged}
             />
-            <MyTextField
+            <CommonTextField
               name="readNoise"
               value={values.readNoise}
               placeholder={"Default: 2.0"}
@@ -314,7 +223,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                 considered red leak in that passband.
               </FormHelperText>
               <FormGroup>
-                <MyTextField
+                <CommonTextField
                   name="redleakThresholds.uv"
                   value={values.redleakThresholds.uv}
                   placeholder={"Default: 3880"}
@@ -323,7 +232,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                   prevFormValues={prevFormValues}
                   setIsChanged={setIsChanged}
                 />
-                <MyTextField
+                <CommonTextField
                   name="redleakThresholds.u"
                   value={values.redleakThresholds.u}
                   placeholder={"Default: 4730"}
@@ -332,7 +241,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                   prevFormValues={prevFormValues}
                   setIsChanged={setIsChanged}
                 />
-                <MyTextField
+                <CommonTextField
                   name="redleakThresholds.g"
                   value={values.redleakThresholds.g}
                   placeholder={"Default: 5660"}
@@ -344,45 +253,13 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
               </FormGroup>
             </FormControl>
             <br />
-            <LoadingButton
-              type="submit"
-              disabled={isSubmitting || !isValid}
-              color="secondary"
-              size="large"
-              variant="contained"
-              style={{ width: "25%", fontSize: 24, margin: 16 }}
-              loading={isSubmitting}
-              loadingIndicator="Saving..."
-            >
-              Save
-            </LoadingButton>
+            <SaveButton isSubmitting={isSubmitting} isValid={isValid} />
             <AlertError
               isError={isError}
               setIsError={setIsError}
               errorMessage={errorMessage}
               setErrorMessage={setErrorMessage}
             />
-            {/* <Snackbar
-              open={isError}
-              autoHideDuration={6000}
-              onClose={() => {
-                // Clear any previous errors
-                setIsError(false);
-                setErrorMessage("");
-              }}
-            >
-              <Alert
-                severity="error"
-                onClose={() => {
-                  // Clear any previous errors
-                  setIsError(false);
-                  setErrorMessage("");
-                }}
-              >
-                <AlertTitle>Error</AlertTitle>
-                {errorMessage}
-              </Alert>
-            </Snackbar> */}
           </Form>
         )}
       </Formik>

@@ -55,6 +55,7 @@ const AlertIfSavedButNotSubmitted: React.FC<AlertIfSavedButNotSubmittedProps> = 
           display: "flex",
           justifyContent: "center",
           width: "100%",
+          marginBottom: 2,
         }}
       >
         <Alert severity="info" style={{ width: "50%" }}>
