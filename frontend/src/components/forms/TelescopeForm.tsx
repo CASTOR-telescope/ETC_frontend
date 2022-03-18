@@ -1,4 +1,4 @@
-import { Formik, Field, Form, useField, FieldAttributes } from "formik";
+import { Formik, Field, Form, useField, FieldAttributes, FormikValues } from "formik";
 import {
   Button,
   FormControl,
@@ -99,6 +99,21 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({ setIsSavedAndUnsubmitted 
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  // Save user form inputs between tab switches
+  let myInitialValues: FormikValues;
+  if (sessionStorage.getItem("telescopeForm") === null) {
+    myInitialValues = {
+      fwhm: "0.15", // arcsec
+      pxScale: "0.1", // arcsec per pixel
+      mirrorDiameter: "100", // cm
+      darkCurrent: "0.01", // electron/s per pixel
+      readNoise: "2.0", // electron/s per pixel
+      redleakThresholds: { uv: "3880", u: "4730", g: "5660" }, // angstrom
+    };
+  } else {
+    myInitialValues = JSON.parse(`${sessionStorage.getItem("telescopeForm")}`);
+  }
+
   return (
     <div>
       <Typography variant="h5">Input parameters for the telescope below.</Typography>
@@ -116,32 +131,10 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({ setIsSavedAndUnsubmitted 
         package instead.
       </Typography>
       <Formik
-        initialValues={{
-          fwhm: "0.15", // arcsec
-          pxScale: "0.1", // arcsec per pixel
-          mirrorDiameter: "100", // cm
-          darkCurrent: "0.01", // electron/s per pixel
-          readNoise: "2.0", // electron/s per pixel
-          redleakThresholds: { uv: "3880", u: "4730", g: "5660" }, // angstrom
-        }}
+        initialValues={myInitialValues}
         onSubmit={
           async (data, { setSubmitting }) => {
             setSubmitting(true);
-
-            // JUST LET PYTHON CONVERT TO FLOAT. TYPESCRIPT IS ANGRY
-            // for (let key in data) {
-            //   if (key !== "redleakThresholds") {
-            //     data[key] = parseFloat(data[key]);
-            //   } else {
-            //     for (let band in data["redleakThresholds"]) {
-            //       data["redleakThresholds"][band] = parseFloat(
-            //         data["redleakThresholds"][band]
-            //       );
-            //     }
-            //   }
-            // }
-
-            // if (window.sessionStorage.getItem("telescopeParams")) {window.sessionStorage.removeItem("telescopeParams")} ? Not necessary...
 
             // Make async call
             const response = await axios
@@ -154,6 +147,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({ setIsSavedAndUnsubmitted 
                 // TODO: remove console.log() when done testing
                 console.log(sessionStorage.getItem("telescopeParams"));
                 setIsSavedAndUnsubmitted(true);
+                sessionStorage.setItem("telescopeForm", JSON.stringify(data));
               })
               .catch((error) => {
                 console.log(error);
@@ -166,6 +160,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({ setIsSavedAndUnsubmitted 
         } // end onSubmit
         validateOnChange={true}
         validationSchema={telescopeValidationSchema}
+        validateOnMount={true}
       >
         {({
           values,
