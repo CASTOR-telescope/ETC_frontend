@@ -10,6 +10,7 @@ import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 
 import TelescopeForm from "./forms/TelescopeForm";
+import BackgroundForm from "./forms/BackgroundForm";
 import PhotometryForm from "./forms/PhotometryForm";
 
 interface TabPanelProps {
@@ -139,7 +140,16 @@ const TabForms: React.FC<TabFormsProps> = ({ incrNumTelescopeSaved }) => {
         />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        Item Two
+        <BackgroundForm
+          setIsSavedAndUnsubmitted={setIsSavedAndUnsubmitted}
+          setIsChanged={setIsChanged}
+          prevFormValues={prevFormValues}
+          setPrevFormValues={setPrevFormValues}
+          isError={isError}
+          setIsError={setIsError}
+          errorMessage={errorMessage}
+          setErrorMessage={setErrorMessage}
+        />
       </TabPanel>
       <TabPanel value={value} index={2}>
         Item Three
