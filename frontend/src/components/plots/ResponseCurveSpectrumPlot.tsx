@@ -84,7 +84,7 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
             title: "Passband Reponse",
           },
           yaxis2: {
-            title: "erg s⁻¹ cm⁻² Å⁻¹",
+            title: "Source Flux Density (erg s⁻¹ cm⁻² Å⁻¹)",
             overlaying: "y",
             side: "right",
           },
@@ -118,7 +118,96 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
     // } else if (sessionStorage.getItem("telescopeParams") === null) {
     return (
       // Maybe put CASTOR logo here!
-      <div>Please save Telescope parameters first (I'll prettify this message later)</div>
+      // <div>Please save Telescope parameters first (I'll prettify this message later)</div>
+      <ResponsivePlot
+        // React re-renders the plot when any state, prop, or parent component changes
+        divId={`passband-source-spectrum-plot-${numTelescopeSaved}`}
+        data={[
+          //   {
+          //     x: [1000, 2000, 3000, 4000, 5000, 6000],
+          //     y: [0, 0.2, 0.4, 0.6, 0.8, 1],
+          //     marker: { color: "transparent", size: 0 },
+          //     yaxis: "y",
+          //   },
+          //   {
+          //     x: [1000, 2000, 3000, 4000, 5000, 6000],
+          //     y: [0, 200, 400, 600, 800, 1000],
+          //     marker: { color: "red", size: 0 },
+          //     yaxis: "y2",
+          //   },
+          // ]}
+          {
+            x: [],
+            y: [],
+            marker: { color: "transparent", size: 0 },
+            yaxis: "y",
+          },
+          {
+            x: [],
+            y: [],
+            marker: { color: "transparent", size: 0 },
+            yaxis: "y2",
+          },
+        ]}
+        layout={{
+          // title: "Passband Response Curves & Source Spectrum",
+          font: { color: "white", size: 14 },
+          autosize: true,
+          paper_bgcolor: themeBackgroundColor,
+          plot_bgcolor: themeBackgroundColor,
+          xaxis: {
+            showgrid: true,
+            gridcolor: "grey",
+            title: "Wavelength (Å)",
+            range: [1000, 6000],
+            visible: true,
+          },
+          yaxis: {
+            showgrid: true,
+            gridcolor: "grey",
+            title: "Passband Reponse",
+            range: [0, 1],
+            visible: true,
+          },
+          yaxis2: {
+            title: "Source Flux Density (erg s⁻¹ cm⁻² Å⁻¹)",
+            showgrid: true,
+            gridcolor: "grey",
+            overlaying: "y",
+            side: "right",
+            range: [0, 1000],
+            visible: true,
+          },
+          margin: {
+            // l: 12,
+            // r: 12,
+            // b: 12,
+            t: 26,
+            // pad: 4,
+          },
+          showlegend: false,
+          annotations: [
+            {
+              text: "Please save Telescope or Source parameters first",
+              xref: "paper",
+              yref: "paper",
+              showarrow: false,
+              font: {
+                size: 28,
+              },
+            },
+          ],
+        }}
+        useResizeHandler={true}
+        // style={{ width: "100%", height: "100%" }}
+        config={{
+          displaylogo: false,
+          toImageButtonOptions: { filename: "response_and_spectrum" },
+          // Allow users to edit chart
+          showEditInChartStudio: true,
+          plotlyServerURL: "https://chart-studio.plotly.com",
+        }}
+      />
     );
   }
 };
