@@ -50,6 +50,39 @@ export const AlertError: React.FC<{
   );
 };
 
+export const useGetIfFormChanged = (
+  setIsChanged: (value: boolean) => void,
+  prevFormValues: Object
+) => {
+  const { values } = useFormikContext();
+
+  // const compareValues = useCallback(() => {
+  //   if (isEqual(values, prevFormValues)) {
+  //     setIsChanged(false);
+  //     console.log("unchanged values: ", values);
+  //     console.log("prevFormValues values: ", prevFormValues);
+  //   } else {
+  //     setIsChanged(true);
+  //     console.log("changed values: ", values);
+  //     console.log("prevFormValues values: ", prevFormValues);
+  //   }
+  // }, [values]);
+
+  useEffect(() => {
+    // compareValues();
+    if (isEqual(values, prevFormValues)) {
+      setIsChanged(false);
+      // console.log("unchanged values: ", values);
+      // console.log("prevFormValues values: ", prevFormValues);
+    } else {
+      setIsChanged(true);
+      // console.log("changed values: ", values);
+      // console.log("prevFormValues values: ", prevFormValues);
+    }
+    console.log("in useGetIfFormChanged", values);
+  }, [values]);
+};
+
 export type CommonTextFieldProps = {
   placeholder: string;
   label: string;
@@ -77,35 +110,37 @@ export const CommonTextField: React.FC<CommonTextFieldProps> = ({
   ...props
 }) => {
   const [field, meta] = useField<{}>(props);
-  const errorText = meta.error && meta.touched ? meta.error : "";
+  const errorText = meta.error || meta.touched ? meta.error : "";
 
-  const { values } = useFormikContext();
+  // const { values } = useFormikContext();
 
-  // const compareValues = useCallback(() => {
+  // // const compareValues = useCallback(() => {
+  // //   if (isEqual(values, prevFormValues)) {
+  // //     setIsChanged(false);
+  // //     console.log("unchanged values: ", values);
+  // //     console.log("prevFormValues values: ", prevFormValues);
+  // //   } else {
+  // //     setIsChanged(true);
+  // //     console.log("changed values: ", values);
+  // //     console.log("prevFormValues values: ", prevFormValues);
+  // //   }
+  // // }, [values]);
+
+  // useEffect(() => {
+  //   // compareValues();
   //   if (isEqual(values, prevFormValues)) {
   //     setIsChanged(false);
-  //     console.log("unchanged values: ", values);
-  //     console.log("prevFormValues values: ", prevFormValues);
+  //     // console.log("unchanged values: ", values);
+  //     // console.log("prevFormValues values: ", prevFormValues);
   //   } else {
   //     setIsChanged(true);
-  //     console.log("changed values: ", values);
-  //     console.log("prevFormValues values: ", prevFormValues);
+  //     // console.log("changed values: ", values);
+  //     // console.log("prevFormValues values: ", prevFormValues);
   //   }
+  //   console.log(values);
   // }, [values]);
 
-  useEffect(() => {
-    // compareValues();
-    if (isEqual(values, prevFormValues)) {
-      setIsChanged(false);
-      // console.log("unchanged values: ", values);
-      // console.log("prevFormValues values: ", prevFormValues);
-    } else {
-      setIsChanged(true);
-      // console.log("changed values: ", values);
-      // console.log("prevFormValues values: ", prevFormValues);
-    }
-    console.log(values);
-  }, [values]);
+  useGetIfFormChanged(setIsChanged, prevFormValues);
 
   return (
     <Field
