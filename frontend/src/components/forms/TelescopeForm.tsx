@@ -7,10 +7,8 @@ import {
   Link,
   Typography,
 } from "@mui/material";
-import LoadingButton from "@mui/lab/LoadingButton";
 import * as Yup from "yup";
 import axios from "axios";
-import { API_URL } from "../../service/env";
 import { useEffect } from "react";
 
 import {
@@ -19,6 +17,7 @@ import {
   CommonTextField,
   SaveButton,
 } from "../CommonFormElements";
+import { API_URL } from "../../service/env";
 
 const telescopeValidationSchema = Yup.object({
   fwhm: Yup.number()
@@ -75,8 +74,10 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
   setErrorMessage,
 }) => {
   // Save user form inputs between tab switches
+  const FORM_SESSION = "telescopeForm"; // key for sessionStorage (user inputs)
+  const FORM_PARAMS = "telescopeParams"; // key for sessionStorage (API results)
   let myInitialValues: FormikValues;
-  if (sessionStorage.getItem("telescopeForm") === null) {
+  if (sessionStorage.getItem(FORM_SESSION) === null) {
     myInitialValues = {
       fwhm: "0.15", // arcsec
       pxScale: "0.1", // arcsec per pixel
@@ -86,7 +87,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
       redleakThresholds: { uv: "3880", u: "4730", g: "5660" }, // angstrom
     };
   } else {
-    myInitialValues = JSON.parse(`${sessionStorage.getItem("telescopeForm")}`);
+    myInitialValues = JSON.parse(`${sessionStorage.getItem(FORM_SESSION)}`);
   }
   // Only run this on mount
   useEffect(() => {
@@ -121,15 +122,15 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
               .put(API_URL + "telescope", data)
               .then((response) => response.data)
               .then((response) =>
-                sessionStorage.setItem("telescopeParams", JSON.stringify(response))
+                sessionStorage.setItem(FORM_PARAMS, JSON.stringify(response))
               )
               .then(() => {
                 // TODO: remove console.log() when done testing
-                console.log(sessionStorage.getItem("telescopeParams"));
+                console.log(sessionStorage.getItem(FORM_PARAMS));
                 setIsSavedAndUnsubmitted(true);
                 setPrevFormValues(data);
                 setIsChanged(false);
-                sessionStorage.setItem("telescopeForm", JSON.stringify(data));
+                sessionStorage.setItem(FORM_SESSION, JSON.stringify(data));
                 incrNumTelescopeSaved();
               })
               .catch((error) => {
@@ -141,7 +142,6 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
               .finally(() => setSubmitting(false));
           } // end async function
         } // end onSubmit
-        // FIXME: should validate as typing without needing to press save first too...?
         validateOnChange={true}
         validationSchema={telescopeValidationSchema}
         validateOnMount={true}
