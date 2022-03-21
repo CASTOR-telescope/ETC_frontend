@@ -1,7 +1,7 @@
 import { PaletteMode } from "@mui/material";
 import { createTheme } from "@mui/material/styles";
 
-export const CustomPalette = (mode: PaletteMode) => ({
+const CustomPalette = (mode: PaletteMode) => ({
   palette: {
     mode,
     ...(mode === "light"
@@ -32,6 +32,12 @@ export const CustomPalette = (mode: PaletteMode) => ({
           },
           info: {
             main: "#81a1c1",
+          },
+          text: {
+            primary: "#ffffff",
+            secondary: "rgba(255,255,255, 0.85)",
+            disabled: "rgba(255,255,255,0.5)",
+            hint: "rgba(255,255,255, 0.5)",
           },
         }),
   },
