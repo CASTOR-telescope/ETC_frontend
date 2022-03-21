@@ -1,5 +1,5 @@
 import { API_URL } from "service/env";
-// import logo from "./logo423.webp";
+// import logo from "./logo-fullsize.png";
 import "./App.css";
 import "./components/react-tabs.css";
 import { ThemeProvider, useTheme } from "@mui/material/styles";
@@ -21,7 +21,7 @@ import ResponseCurveSpectrumPlot from "./components/plots/ResponseCurveSpectrumP
 import { useEffect, useState } from "react";
 // import PanePlots from "./components/PanePlots";
 
-// const myLogo: string = process.env.PUBLIC_URL + "/logo423.webp";
+// const myLogo: string = process.env.PUBLIC_URL + "/logo-fullsize.png";
 
 // FIXME: fix react-tabs sizing when .App height:100vh. Alternatively, fix .App min-height:100vh
 
