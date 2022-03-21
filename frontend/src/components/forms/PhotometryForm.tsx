@@ -28,6 +28,12 @@ import { API_URL } from "../../service/env";
 import { useState } from "react";
 import { themeYellowColor } from "../DarkModeTheme";
 
+import {
+  CommonFormProps,
+  // CommonTextFieldWithTracker,
+  // CommonTextField
+} from "../CommonFormElements";
+
 type AlertIfSavedButNotSubmittedProps = {
   isSavedAndUnsubmitted: boolean;
 };
@@ -146,14 +152,34 @@ const DisplayParams = () => {
 type PhotometryFormProps = {
   isSavedAndUnsubmitted: boolean;
   setIsSavedAndUnsubmitted: (value: boolean) => void;
-};
+  isBackgroundSyncTelescope: boolean;
+  isSourceSyncTelescope: boolean;
+} & CommonFormProps;
 
 const PhotometryForm: React.FC<PhotometryFormProps> = ({
   isSavedAndUnsubmitted,
   setIsSavedAndUnsubmitted,
+  isBackgroundSyncTelescope,
+  isSourceSyncTelescope,
 }) => {
   return (
     <div>
+      <Typography variant="h5">Make a photometry calculation below.</Typography>
+      <Typography variant="body1" style={{ marginBottom: 16 }}>
+        Note that we do <b>not</b> support local concurrent ETC GUI sessions. If you have
+        saved or submitted a request from another ETC instance,{" "}
+        <i>your photometry results will be incorrect </i>! (Some other limitations
+        here...) Please use the Python{" "}
+        <Link
+          href="https://github.com/CASTOR-telescope/ETC"
+          // Open link in new tab
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          <code>castor_etc</code>
+        </Link>{" "}
+        package instead.
+      </Typography>
       <Formik
         initialValues={
           {

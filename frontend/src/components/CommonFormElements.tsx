@@ -5,6 +5,7 @@ import { isEqual } from "lodash";
 import React, { useEffect } from "react";
 
 export type CommonFormProps = {
+  // isSavedAndUnsubmitted?: boolean;
   setIsSavedAndUnsubmitted: (value: boolean) => void;
   setIsChanged: (value: boolean) => void;
   prevFormValues: Object;
@@ -13,6 +14,12 @@ export type CommonFormProps = {
   setIsError: (value: boolean) => void;
   errorMessage: string;
   setErrorMessage: (value: string) => void;
+  // isTelescopeUpdated?: boolean;
+  // setIsTelescopeUpdated?: (value: boolean) => void;
+  // isBackgroundSyncTelescope?: boolean;
+  // setIsBackgroundSyncTelescope?: (value: boolean) => void;
+  // isSourceSyncTelescope?: boolean;
+  // setIsSourceSyncTelescope?: (value: boolean) => void;
 };
 
 /**
@@ -87,9 +94,6 @@ export type CommonTextFieldProps = {
   placeholder: string;
   label: string;
   required?: boolean;
-  // values: Object;
-  prevFormValues: Object;
-  setIsChanged: (value: boolean) => void;
 } & FieldAttributes<{}>;
 
 /**
@@ -101,6 +105,51 @@ export type CommonTextFieldProps = {
  * @returns <Field />
  */
 export const CommonTextField: React.FC<CommonTextFieldProps> = ({
+  placeholder,
+  label,
+  required = true,
+  ...props
+}) => {
+  const [field, meta] = useField<{}>(props);
+  const errorText = meta.error || meta.touched ? meta.error : "";
+
+  return (
+    <Field
+      // key={props.name}
+      placeholder={placeholder}
+      label={label}
+      // Consistent props
+      as={TextField}
+      type="input"
+      fullWidth
+      required={required}
+      sx={{ marginTop: "auto", marginBottom: 2 }}
+      helperText={errorText}
+      error={!!errorText} // True if errorText is non-empty
+      {...field}
+      // handleChange={useCallback(() => {}, []);
+    />
+  );
+};
+
+export type CommonTextFieldWithTrackerProps = {
+  placeholder: string;
+  label: string;
+  required?: boolean;
+  // values: Object;
+  prevFormValues: Object;
+  setIsChanged: (value: boolean) => void;
+} & FieldAttributes<{}>;
+
+/**
+ * CommonTextField but with a tracker for unsaved changes.
+ *
+ * @param name
+ * @param value
+ *
+ * @returns <Field />
+ */
+export const CommonTextFieldWithTracker: React.FC<CommonTextFieldWithTrackerProps> = ({
   placeholder,
   label,
   required = true,

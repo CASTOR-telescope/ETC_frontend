@@ -22,8 +22,9 @@ from flask import Flask, abort, jsonify, request, flash, url_for, session, send_
 from flask_restful import Resource
 from flask_cors import CORS
 
-from telescope_route import put_telescope_json
 from utils import app, api, cors, DataHolder, bad_request, bad_route
+from telescope_route import put_telescope_json
+from background_route import put_background_json
 
 # from utils import MyCustomJsonEncoder
 
@@ -76,6 +77,12 @@ def redirect(path):
             abort(405)
         return put_telescope_json()
 
+    if re.search(r"\bbackground\b", path) is not None:  # match whole word
+        print("Redirecting request to /background")
+        if request.method != "PUT":
+            abort(405)
+        return put_background_json()
+
     elif re.search(r"\bphotometry\b", path) is not None:  # match whole word
         print(request.method)
         if request.method != "GET" and request.method != "PUT":
@@ -123,7 +130,7 @@ def redirect(path):
     elif re.search(r"\bbar\b", path) is not None:
         # Do something
         print(DataHolder.TelescopeObj)
-        print(DataHolder.TelescopeObj.redleak_thresholds)
+        print(DataHolder.TelescopeObj.fwhm)
         return jsonify(message=f"In 2nd redirect(), path=/{path}")
     elif re.search(r"\bapi\b", path) is not None:
         return ApiDir().get()

@@ -23,8 +23,6 @@ import { useEffect, useState } from "react";
 
 // const myLogo: string = process.env.PUBLIC_URL + "/logo-fullsize.png";
 
-// FIXME: fix react-tabs sizing when .App height:100vh. Alternatively, fix .App min-height:100vh
-
 function App() {
   // Set Material UI theme
   useTheme();

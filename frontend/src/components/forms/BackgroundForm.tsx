@@ -9,7 +9,10 @@ import {
   FieldArray,
 } from "formik";
 import {
+  Alert,
+  AlertTitle,
   Autocomplete,
+  Box,
   Button,
   FormControl,
   FormControlLabel,
@@ -18,10 +21,8 @@ import {
   FormLabel,
   Grid,
   Link,
-  MenuItem,
   Radio,
   RadioGroup,
-  Select,
   TextField,
   Typography,
 } from "@mui/material";
@@ -85,8 +86,7 @@ const SkyBackgroundRadioGroup: React.FC<SkyBackgroundRadioGroupProps> = ({
   ...props // any object props
 }) => {
   const { setFieldValue } = useFormikContext();
-  const [field, meta] = useField<{}>(props);
-  const errorText = meta.error || meta.touched ? meta.error : "";
+  const [field] = useField<{}>(props);
 
   useGetIfFormChanged(setIsChanged, prevFormValues);
 
@@ -152,7 +152,7 @@ const SkyBackgroundRadioGroup: React.FC<SkyBackgroundRadioGroupProps> = ({
             <FormGroup>
               <Grid container spacing={2} columns={12}>
                 <Grid item xs={4}>
-                  <SkyBackgroundTextField
+                  <CommonTextField
                     name="customSkyBackground.uv"
                     // value={values.customSkyBackground.uv}
                     placeholder={"Example: 26.08"}
@@ -163,25 +163,21 @@ const SkyBackgroundRadioGroup: React.FC<SkyBackgroundRadioGroupProps> = ({
                   />
                 </Grid>
                 <Grid item xs={4}>
-                  <SkyBackgroundTextField
+                  <CommonTextField
                     name="customSkyBackground.u"
                     // value={values.customSkyBackground.u}
                     placeholder={"Example: 23.74"}
                     label="u-Band (AB mag per sq. arcsec)"
                     required={true}
-                    // prevFormValues={prevFormValues}
-                    // setIsChanged={setIsChanged}
                   />
                 </Grid>
                 <Grid item xs={4}>
-                  <SkyBackgroundTextField
+                  <CommonTextField
                     name="customSkyBackground.g"
                     // value={values.customSkyBackground.g}
                     placeholder={"Example: 22.60"}
                     label="g-Band (AB mag per sq. arcsec)"
                     required={true}
-                    // prevFormValues={prevFormValues}
-                    // setIsChanged={setIsChanged}
                   />
                 </Grid>
               </Grid>
@@ -191,6 +187,150 @@ const SkyBackgroundRadioGroup: React.FC<SkyBackgroundRadioGroupProps> = ({
       )}
     </React.Fragment>
   );
+};
+
+type GeocoronalEmissionGroupProps = {
+  values: { [value: string]: any }; // any object props
+  handleChange: (event: React.ChangeEvent<{}>) => void;
+} & FieldAttributes<{}>;
+
+const GeocoronalEmissionGroup: React.FC<GeocoronalEmissionGroupProps> = ({
+  values,
+  handleChange,
+  ...props // any object props
+}) => {
+  const { setFieldValue } = useFormikContext();
+  const [field, meta] = useField<{}>(props);
+  // TODO: figure out how to show error only that FieldArray TextField element...
+  // TODO: figure out why sometimes error does not show on TextField (e.g., "Averaged"). Still won't save but error will not show until Save button is pressed
+  const isError = meta.error ? true : false;
+  // const errorText = meta.error || meta.touched ? meta.error : "";
+
+  return (
+    // <FieldArray name="geocoronalEmission">
+    <FieldArray {...field}>
+      {(arrayHelpers) => (
+        <div>
+          <Button
+            size="large"
+            variant="contained"
+            onClick={() =>
+              arrayHelpers.push({
+                flux: "Average",
+                wavelength: "2471",
+                linewidth: "0.023",
+                id: "" + Math.random(),
+              })
+            }
+            sx={{ marginBottom: 1 }}
+          >
+            Add Geocoronal Emission Line
+          </Button>
+          {values.geocoronalEmission.map((geoLine: any, index: number) => {
+            return (
+              <div
+                key={geoLine.id}
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Grid container justifyContent="center" alignItems="top">
+                  <Autocomplete
+                    // https://stackoverflow.com/a/59217951
+                    freeSolo
+                    sx={{ marginTop: 2, marginBottom: 0, width: "35%" }}
+                    onChange={(event, value) =>
+                      setFieldValue(`geocoronalEmission.${index}.flux`, value)
+                    }
+                    options={["High", "Average", "Low"].map((flux: string) => flux)}
+                    value={values.geocoronalEmission[index].flux}
+                    renderInput={(params) => (
+                      <Box style={{ minHeight: "1.5rem" }}>
+                        <TextField
+                          {...params}
+                          name={`geocoronalEmission.${index}.flux`}
+                          placeholder="Example: 1.5e-15"
+                          label="Flux (erg/s/cm² per sq. arcsec)"
+                          onChange={handleChange}
+                          required={true}
+                          helperText={
+                            isError
+                              ? "Flux must be one of the predetermined values or a number > 0." // manually copy error message from Yup validation
+                              : ""
+                          }
+                          error={isError}
+                        />
+                      </Box>
+                    )}
+                  />
+                  <Grid item>
+                    <Button
+                      style={{
+                        marginTop: "1rem",
+                        marginBottom: 0,
+                        marginRight: 0,
+                        marginLeft: 0,
+                        padding: 0,
+                        fontSize: 30,
+                      }}
+                      variant="outlined"
+                      size="large"
+                      onClick={() => arrayHelpers.remove(index)}
+                    >
+                      ×
+                    </Button>
+                  </Grid>
+                </Grid>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </FieldArray>
+  );
+};
+
+type AlertIfTelescopeParamsChangedProps = {
+  isBackgroundSyncTelescope: boolean;
+};
+
+const AlertIfTelescopeParamsChanged: React.FC<AlertIfTelescopeParamsChangedProps> = ({
+  isBackgroundSyncTelescope,
+}) => {
+  if (sessionStorage.getItem("backgroundForm") !== null && !isBackgroundSyncTelescope) {
+    if (
+      JSON.parse(`${sessionStorage.getItem("backgroundForm")}`)[
+        "useDefaultSkyBackground"
+      ].toLowerCase() === "true"
+    ) {
+      return (
+        <Box
+          sx={{
+            backgroundColor: "transparent",
+            display: "flex",
+            justifyContent: "center",
+            width: "100%",
+            marginBottom: 2,
+          }}
+        >
+          <Alert severity="info" style={{ width: "50%" }}>
+            <AlertTitle>Info</AlertTitle>
+            <Typography>
+              The telescope parameters have been updated and the sky background magnitudes
+              in each passband may be incorrect. Please save the background parameters
+              again.
+            </Typography>
+          </Alert>
+        </Box>
+      );
+    } else {
+      return <div />;
+    }
+  } else {
+    return <div />;
+  }
 };
 
 const backgroundValidationSchema = Yup.object({
@@ -218,24 +358,17 @@ const backgroundValidationSchema = Yup.object({
   }),
   geocoronalEmission: Yup.array().of(
     Yup.object({
-      // TODO: add proper validation for flux. Should match "high", "medium", or "low", or be a positive number
-      flux: Yup.string().required("Flux is a required field"),
-      // flux: Yup.string().lowercase().oneOf(["high", "average", "low"]).required(),
-      // flux: Yup.lazy(
-      //   (value) =>
-      //     typeof value === "number"
-      //       ? Yup.number()
-      //           .required("Required field")
-      //           .positive()
-      //           .typeError("Required field")
-      //       : Yup.string()
-      //           .lowercase()
-      //           .oneOf(["high", "average", "low"])
-      //           .required()
-      //           .typeError("Required field") // typeError is necessary here, otherwise we get a bad-looking yup error
-      // ),
-      // flux: Yup.number().transform((value, originalValue) => { return Yup.isType(value) ? value.})
-      // number().required().typeError().,
+      // This validation took me so long to do! I hope you appreciate it...
+      flux: Yup.string()
+        .required("Flux is a required field")
+        .test(
+          "geocoronalInputs",
+          "Flux must be one of the predetermined values or a number > 0.",
+          (value: any) =>
+            /(^[+]?([1-9][0-9]*(?:[\.][0-9]*)?|0*\.0*[1-9][0-9]*)((?:[eE][+-]?[0-9]+[\.]?[0-9]+)?|(?:[eE][+-]?[0-9]+)?)$)|(^(high|average|low)$)/i.test(
+              value
+            )
+        ),
       wavelength: Yup.number()
         .required("Wavelength is a required field")
         .typeError("Wavelength must be a number > 0")
@@ -249,7 +382,13 @@ const backgroundValidationSchema = Yup.object({
   ),
 });
 
-const BackgroundForm: React.FC<CommonFormProps> = ({
+type BackgroundFormProps = {
+  // isTelescopeUpdated: boolean;
+  isBackgroundSyncTelescope: boolean;
+  setIsBackgroundSyncTelescope: (value: boolean) => void;
+} & CommonFormProps;
+
+const BackgroundForm: React.FC<BackgroundFormProps> = ({
   setIsSavedAndUnsubmitted,
   setIsChanged,
   prevFormValues,
@@ -258,6 +397,8 @@ const BackgroundForm: React.FC<CommonFormProps> = ({
   setIsError,
   errorMessage,
   setErrorMessage,
+  isBackgroundSyncTelescope,
+  setIsBackgroundSyncTelescope,
 }) => {
   // Save user form inputs between tab switches
   const FORM_SESSION = "backgroundForm"; // key for sessionStorage (user inputs)
@@ -309,53 +450,54 @@ const BackgroundForm: React.FC<CommonFormProps> = ({
             setSubmitting(true);
             console.log(data);
 
-            // ! Move to async call after
-            setIsSavedAndUnsubmitted(true);
-            setPrevFormValues(data);
-            setIsChanged(false);
-            sessionStorage.setItem(FORM_SESSION, JSON.stringify(data));
+            // // ! Move to async call after
+            // setIsSavedAndUnsubmitted(true);
+            // setPrevFormValues(data);
+            // setIsChanged(false);
+            // sessionStorage.setItem(FORM_SESSION, JSON.stringify(data));
+            // setSubmitting(false);
 
-            // // Make async call
-            // const response = await axios
-            //   .put(API_URL + "background", data)
-            //   .then((response) => response.data)
-            //   .then((response) =>
-            //     sessionStorage.setItem(FORM_PARAMS, JSON.stringify(response))
-            //   )
-            //   .then(() => {
-            //     // TODO: remove console.log() when done testing
-            //     console.log(sessionStorage.getItem(FORM_PARAMS));
-            //     setIsSavedAndUnsubmitted(true);
-            //     setPrevFormValues(data);
-            //     setIsChanged(false);
-            //     sessionStorage.setItem(FORM_SESSION, JSON.stringify(data));
-            //   })
-            //   .catch((error) => {
-            //     console.log(error);
-            //     setIsError(true);
-            //     // console.log(JSON.stringify(error));
-            //     setErrorMessage(error.message);
-            //   })
-            //   .finally(() => setSubmitting(false));
+            // Make async call
+            const response = await axios
+              .put(API_URL + "background", data)
+              .then((response) => response.data)
+              .then((response) =>
+                sessionStorage.setItem(FORM_PARAMS, JSON.stringify(response))
+              )
+              .then(() => {
+                // TODO: remove console.log() when done testing
+                setIsSavedAndUnsubmitted(true);
+                setPrevFormValues(data);
+                setIsChanged(false);
+                sessionStorage.setItem(FORM_SESSION, JSON.stringify(data));
+                setIsBackgroundSyncTelescope(true);
+              })
+              .catch((error) => {
+                console.log(error);
+                setIsError(true);
+                setErrorMessage(error.message);
+              })
+              .finally(() => setSubmitting(false));
           } // end async function
         } // end onSubmit
-        // FIXME: should validate as typing without needing to press save first too...?
         validateOnChange={true}
         validationSchema={backgroundValidationSchema}
         validateOnMount={true}
       >
         {({
           values,
-          // errors,
-          // touched,
+          errors,
+          touched,
           handleChange,
           // handleBlur,
           // handleSubmit,
           isSubmitting,
           isValid,
-          setFieldValue,
         }) => (
           <Form>
+            <AlertIfTelescopeParamsChanged
+              isBackgroundSyncTelescope={isBackgroundSyncTelescope}
+            />
             <FormControl component="fieldset" variant="standard" fullWidth={true}>
               <FormLabel
                 component="legend"
@@ -412,81 +554,11 @@ const BackgroundForm: React.FC<CommonFormProps> = ({
                 3.0×10⁻¹⁵, 1.5×10⁻¹⁵, and 7.5×10⁻¹⁷ erg/s/cm² per sq. arcsec,
                 respectively.
               </FormHelperText>
-              <FieldArray name="geocoronalEmission">
-                {(arrayHelpers) => (
-                  <div>
-                    <Button
-                      size="large"
-                      variant="contained"
-                      onClick={() =>
-                        arrayHelpers.push({
-                          flux: "Average",
-                          wavelength: "2471",
-                          linewidth: "0.023",
-                          id: "" + Math.random(),
-                        })
-                      }
-                      sx={{ marginBottom: 1 }}
-                    >
-                      Add Geocoronal Emission Line
-                    </Button>
-                    {values.geocoronalEmission.map((geoLine: any, index: number) => {
-                      return (
-                        <div
-                          key={geoLine.id}
-                          style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Grid container justifyContent="center" alignItems="center">
-                            <Autocomplete
-                              // https://stackoverflow.com/a/59217951
-                              freeSolo
-                              sx={{ marginTop: 2, width: "25%" }}
-                              onChange={(event, value) =>
-                                setFieldValue(`geocoronalEmission.${index}.flux`, value)
-                              }
-                              options={["High", "Average", "Low"].map(
-                                (flux: string) => flux
-                              )}
-                              value={values.geocoronalEmission[index].flux}
-                              renderInput={(params) => (
-                                <TextField
-                                  {...params}
-                                  name={`geocoronalEmission.${index}.flux`}
-                                  placeholder="Example: 1.5e-15"
-                                  label="Flux (erg/s/cm² per sq. arcsec)"
-                                  onChange={handleChange}
-                                  required={true}
-                                />
-                              )}
-                            />
-                            <Grid item alignItems="stretch" style={{ display: "flex" }}>
-                              <Button
-                                style={{
-                                  marginTop: 16,
-                                  marginBottom: 0,
-                                  marginRight: 0,
-                                  marginLeft: 0,
-                                  padding: 0,
-                                  fontSize: 30,
-                                }}
-                                variant="outlined"
-                                size="large"
-                                onClick={() => arrayHelpers.remove(index)}
-                              >
-                                ×
-                              </Button>
-                            </Grid>
-                          </Grid>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </FieldArray>
+              <GeocoronalEmissionGroup
+                name="geocoronalEmission"
+                values={values}
+                handleChange={handleChange}
+              />
             </FormControl>
             <br />
             <SaveButton isSubmitting={isSubmitting} isValid={isValid} />
