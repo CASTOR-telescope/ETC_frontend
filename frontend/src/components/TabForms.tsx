@@ -12,6 +12,7 @@ import Box from "@mui/material/Box";
 import TelescopeForm from "./forms/TelescopeForm";
 import BackgroundForm from "./forms/BackgroundForm";
 import PhotometryForm from "./forms/PhotometryForm";
+import SourceForm from "./forms/SourceForm";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -138,7 +139,11 @@ const TabForms: React.FC<TabFormsProps> = ({ incrNumTelescopeSaved }) => {
           <Tab
             label="Photometry"
             {...a11yProps(3)}
-            // TODO: disable tab if telescopeParams not saved or if isBackgroundSyncTelescope is false or if isSourceSyncTelescope is false
+            disabled={
+              sessionStorage.getItem("telescopeParams") === null ||
+              !isBackgroundSyncTelescope ||
+              !isSourceSyncTelescope
+            }
           />
           {/* <Tab label="Spectroscopy" {...a11yProps(4)} /> */}
         </Tabs>
@@ -169,13 +174,24 @@ const TabForms: React.FC<TabFormsProps> = ({ incrNumTelescopeSaved }) => {
           setIsError={setIsError}
           errorMessage={errorMessage}
           setErrorMessage={setErrorMessage}
-          // isTelescopeUpdated={isTelescopeUpdated}
           isBackgroundSyncTelescope={isBackgroundSyncTelescope}
           setIsBackgroundSyncTelescope={setIsBackgroundSyncTelescope}
         />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        Item Three
+        <SourceForm
+          setIsSavedAndUnsubmitted={setIsSavedAndUnsubmitted}
+          setIsChanged={setIsChanged}
+          prevFormValues={prevFormValues}
+          setPrevFormValues={setPrevFormValues}
+          isError={isError}
+          setIsError={setIsError}
+          errorMessage={errorMessage}
+          setErrorMessage={setErrorMessage}
+          isSourceSyncTelescope={isSourceSyncTelescope}
+          setIsSourceSyncTelescope={setIsSourceSyncTelescope}
+          incrNumTelescopeSaved={incrNumTelescopeSaved}
+        />
       </TabPanel>
       <TabPanel value={value} index={3}>
         <PhotometryForm

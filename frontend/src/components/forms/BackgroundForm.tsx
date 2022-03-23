@@ -26,10 +26,9 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import Stack from "@mui/material/Stack";
 import * as Yup from "yup";
 import axios from "axios";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import {
   useGetIfFormChanged,
@@ -40,38 +39,6 @@ import {
 } from "../CommonFormElements";
 import { API_URL } from "../../service/env";
 import React from "react";
-
-export type SkyBackgroundTextField = {
-  placeholder: string;
-  label: string;
-  required?: boolean;
-} & FieldAttributes<{}>;
-
-const SkyBackgroundTextField: React.FC<SkyBackgroundTextField> = ({
-  placeholder,
-  label,
-  required = true,
-  ...props
-}) => {
-  const [field, meta] = useField<{}>(props);
-  const errorText = meta.error || meta.touched ? meta.error : "";
-
-  return (
-    <Field
-      placeholder={placeholder}
-      label={label}
-      // Consistent props
-      as={TextField}
-      type="input"
-      fullWidth
-      required={required}
-      sx={{ marginTop: "auto", marginBottom: 2 }}
-      helperText={errorText}
-      error={!!errorText} // True if errorText is non-empty
-      {...field}
-    />
-  );
-};
 
 type SkyBackgroundRadioGroupProps = {
   values: { [value: string]: any }; // any object props
@@ -429,7 +396,7 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
 
   return (
     <div>
-      <Typography variant="h5">Please characterize the sky background below.</Typography>
+      <Typography variant="h5">Characterize the sky background below.</Typography>
       <Typography variant="body1" style={{ marginBottom: 16 }}>
         Custom sky background spectra upload and non-uniform sky backgrounds are not yet
         available on this GUI. Please use the Python{" "}
@@ -448,14 +415,6 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
         onSubmit={
           async (data, { setSubmitting }) => {
             setSubmitting(true);
-            console.log(data);
-
-            // // ! Move to async call after
-            // setIsSavedAndUnsubmitted(true);
-            // setPrevFormValues(data);
-            // setIsChanged(false);
-            // sessionStorage.setItem(FORM_SESSION, JSON.stringify(data));
-            // setSubmitting(false);
 
             // Make async call
             const response = await axios
@@ -562,7 +521,6 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
             </FormControl>
             <br />
             <SaveButton isSubmitting={isSubmitting} isValid={isValid} />
-            <pre>{JSON.stringify(values, null, 2)}</pre>
             <AlertError
               isError={isError}
               setIsError={setIsError}

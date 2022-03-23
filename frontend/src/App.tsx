@@ -32,6 +32,7 @@ function App() {
   // console.log("api_url", API_URL);
 
   // To update the ResponseCurveSpectrumPlot once new Telescope parameters are returned
+  // TODO: rename this to reflect source + telescope dependence
   const [numTelescopeSaved, setNumTelescopeSaved] = useState(0);
   const incrNumTelescopeSaved = () => {
     setNumTelescopeSaved(numTelescopeSaved + 1);

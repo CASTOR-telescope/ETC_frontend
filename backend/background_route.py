@@ -1,12 +1,11 @@
 """
-telescope_route.py
+background_route.py
 
-Wrapper for the Flask API interfacing with the castor_etc Telescope class.
+Wrapper for the Flask API interfacing with the castor_etc Background class.
 
 Isaac Cheng - 2022
 """
 
-import astropy.units as u
 from castor_etc.background import Background
 from flask import jsonify, request
 
@@ -23,7 +22,7 @@ def put_background_json():
     Attributes (for `DataHolder` class)
     ----------
       BackgroundObj :: `Background` object
-        The `Background` object created from the given kwargs.
+        The `Background` object created from the request parameters.
 
     Returns
     -------

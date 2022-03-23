@@ -29,7 +29,7 @@ def put_telescope_json():
     Attributes (for `DataHolder` class)
     ----------
       TelescopeObj :: `Telescope` object
-        The `Telescope` object created from the given kwargs.
+        The `Telescope` object created from the request parameters.
 
     Returns
     -------

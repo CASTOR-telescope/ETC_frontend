@@ -1,4 +1,4 @@
-import { Formik, Field, Form, useField, FieldAttributes } from "formik";
+import { Formik, Field, Form, useField, FieldAttributes, useFormikContext } from "formik";
 import {
   Button,
   FormControl,
@@ -20,6 +20,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Grid,
 } from "@mui/material";
 import LoadingButton from "@mui/lab/LoadingButton";
 import * as Yup from "yup";
@@ -30,9 +31,12 @@ import { themeYellowColor } from "../DarkModeTheme";
 
 import {
   CommonFormProps,
+  CommonTextField,
+  useGetIfFormChanged,
   // CommonTextFieldWithTracker,
   // CommonTextField
 } from "../CommonFormElements";
+import React from "react";
 
 type AlertIfSavedButNotSubmittedProps = {
   isSavedAndUnsubmitted: boolean;
@@ -77,6 +81,100 @@ const AlertIfSavedButNotSubmitted: React.FC<AlertIfSavedButNotSubmittedProps> = 
   } else {
     return <div />;
   }
+};
+
+type ExtinctionCoeffGroupProps = {
+  values: { [value: string]: any }; // any object props
+  prevFormValues: Object;
+  setIsChanged: (value: boolean) => void;
+} & FieldAttributes<{}>;
+
+// * USE THIS FOR EXTINCTION IN EACH BAND *
+const ExtinctionCoeffGroup: React.FC<ExtinctionCoeffGroupProps> = ({
+  values,
+  prevFormValues,
+  setIsChanged,
+  ...props // any object props
+}) => {
+  const { setFieldValue } = useFormikContext();
+  const [field] = useField<{}>(props);
+
+  useGetIfFormChanged(setIsChanged, prevFormValues);
+
+  return (
+    <React.Fragment>
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <FormControl
+          component="fieldset"
+          variant="standard"
+          sx={{
+            marginTop: -2,
+            marginBottom: 2,
+            width: "85%",
+            justifyContent: "center",
+          }}
+          fullWidth={false}
+          color="secondary"
+        >
+          <FormLabel
+            component="legend"
+            required={true}
+            sx={{
+              fontSize: 17.5,
+              // fontWeight: "bold",
+            }}
+            filled={true}
+          >
+            Extinction Coefficients
+          </FormLabel>
+          <FormHelperText
+            sx={{
+              fontSize: "medium",
+              fontWeight: "normal",
+              marginBottom: 2,
+              textAlign: "center",
+            }}
+          >
+            Please input the average sky background AB magnitude per square arcsecond in
+            each passband.
+          </FormHelperText>
+          <FormGroup>
+            <Grid container spacing={2} columns={12}>
+              <Grid item xs={4}>
+                <CommonTextField
+                  name="customSkyBackground.uv"
+                  // value={values.customSkyBackground.uv}
+                  placeholder={"Example: 26.08"}
+                  label="UV-Band (AB mag per sq. arcsec)"
+                  required={true}
+                  // prevFormValues={prevFormValues}
+                  // setIsChanged={setIsChanged}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <CommonTextField
+                  name="customSkyBackground.u"
+                  // value={values.customSkyBackground.u}
+                  placeholder={"Example: 23.74"}
+                  label="u-Band (AB mag per sq. arcsec)"
+                  required={true}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <CommonTextField
+                  name="customSkyBackground.g"
+                  // value={values.customSkyBackground.g}
+                  placeholder={"Example: 22.60"}
+                  label="g-Band (AB mag per sq. arcsec)"
+                  required={true}
+                />
+              </Grid>
+            </Grid>
+          </FormGroup>
+        </FormControl>
+      </div>
+    </React.Fragment>
+  );
 };
 
 /**
@@ -181,12 +279,11 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
         package instead.
       </Typography>
       <Formik
-        initialValues={
-          {
-            // targetValueType: "snr",
-            // Use text fields beside checkboxes for "S/N" and "Time (s)"
-          }
-        }
+        initialValues={{
+          extinctionCoeffs: { uv: "0", u: "0", g: "0" }, // AB mags
+          // targetValueType: "snr",
+          // Use text fields beside checkboxes for "S/N" and "Time (s)"
+        }}
         onSubmit={async (data, { setSubmitting }) => {
           setSubmitting(true);
 

@@ -10,62 +10,65 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
 }) => {
   // Re-render plot (more robust this way because it persists across refreshes, unlike
   // numTelescopeSaved > 0)
+  const data = [];
   if (sessionStorage.getItem("telescopeParams") !== null) {
-    // setIsNewTelescopeSaved(false);
     // Update to proper sessionStorage key after
-    const plotData = JSON.parse(`${sessionStorage.getItem("telescopeParams")}`)[
+    let plotData = JSON.parse(`${sessionStorage.getItem("telescopeParams")}`)[
       "fullPassbandCurves"
     ];
-    console.log("updating ResponseCurveSpectrumPlot");
+    console.log("updating ResponseCurveSpectrumPlot telescopeParams");
+    data.push(
+      {
+        x: plotData.uv.wavelength,
+        y: plotData.uv.response,
+        mode: "lines",
+        line: { color: "magenta" }, // or "violet" or "fuchsia"
+        name: "UV-Band",
+      },
+      {
+        x: plotData.u.wavelength,
+        y: plotData.u.response,
+        mode: "lines",
+        line: { color: "cyan" },
+        name: "u-Band",
+      },
+      {
+        x: plotData.g.wavelength,
+        y: plotData.g.response,
+        mode: "lines",
+        line: { color: "palegreen" },
+        name: "g-Band",
+      }
+    );
+    // data.push({
+    //   x: [1000, 3000, 10000],
+    //   y: [25, 40, 35],
+    //   mode: "lines",
+    //   line: { color: "white" },
+    //   name: "Source",
+    //   yaxis: "y2",
+    //   // line: { width: 1 },
+    // });
+    if (sessionStorage.getItem("sourceParams") !== null) {
+      // Recall that telescopeParams must not be null to have sourceParams
+      console.log("updating ResponseCurveSpectrumPlot sourceParams");
+      let plotData = JSON.parse(`${sessionStorage.getItem("sourceParams")}`);
+      data.push({
+        x: plotData.wavelengths,
+        y: plotData.spectrum,
+        mode: "lines",
+        line: { color: "white" },
+        name: "Source",
+        yaxis: "y2",
+        // line: { width: 1 },
+      });
+    }
+    console.log("ResponseCurveSpectrumPlot data", data);
     return (
       <ResponsivePlot
         // React re-renders the plot when any state, prop, or parent component changes
         divId={`passband-source-spectrum-plot-${numTelescopeSaved}`}
-        data={[
-          {
-            x: plotData.uv.wavelength,
-            y: plotData.uv.response,
-            mode: "lines",
-            line: { color: "magenta" }, // or "violet" or "fuchsia"
-            name: "UV-Band",
-          },
-          {
-            x: plotData.u.wavelength,
-            y: plotData.u.response,
-            mode: "lines",
-            line: { color: "cyan" },
-            name: "u-Band",
-          },
-          {
-            x: plotData.g.wavelength,
-            y: plotData.g.response,
-            mode: "lines",
-            line: { color: "palegreen" },
-            name: "g-Band",
-          },
-          {
-            x: [1000, 3000, 10000],
-            y: [25, 40, 35],
-            mode: "lines",
-            line: { color: "white" },
-            name: "Source Spectrum",
-            yaxis: "y2",
-            // line: { width: 1 },
-          },
-          // Just to check if updating properly
-          {
-            x: [3500],
-            y: [
-              JSON.parse(`${sessionStorage.getItem("telescopeParams")}`)[
-                "mirrorDiameter"
-              ] / 3,
-            ],
-            name: "1/3 mirrorDiameter (for debug)",
-            mode: "markers",
-            marker: { color: "red", size: 18 },
-            yaxis: "y2",
-          },
-        ]}
+        data={data}
         layout={{
           // title: "Passband Response Curves & Source Spectrum",
           font: { color: "white", size: 14 },
@@ -82,19 +85,20 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
             showgrid: true,
             gridcolor: "grey",
             title: "Passband Reponse",
+            rangemode: "tozero",
           },
           yaxis2: {
             title: "Source Flux Density (erg s⁻¹ cm⁻² Å⁻¹)",
+            showgrid: false,
+            gridcolor: "grey",
             overlaying: "y",
             side: "right",
+            visible: true,
+            exponentformat: "power",
+            automargin: true,
+            rangemode: "tozero",
           },
-          margin: {
-            // l: 12,
-            // r: 12,
-            // b: 12,
-            t: 12,
-            // pad: 4,
-          },
+          margin: { t: 12 },
           showlegend: true,
           // Put legend on top left
           legend: {
@@ -104,9 +108,9 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
           },
         }}
         useResizeHandler={true}
-        // style={{ width: "100%", height: "100%" }}
         config={{
           displaylogo: false,
+          modeBarButtonsToRemove: ["zoomIn2d", "zoomOut2d"],
           toImageButtonOptions: { filename: "response_and_spectrum" },
           // Allow users to edit chart
           showEditInChartStudio: true,
@@ -115,27 +119,12 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
       />
     );
   } else {
-    // } else if (sessionStorage.getItem("telescopeParams") === null) {
     return (
-      // Maybe put CASTOR logo here!
-      // <div>Please save Telescope parameters first (I'll prettify this message later)</div>
+      // Initial startup plot
       <ResponsivePlot
         // React re-renders the plot when any state, prop, or parent component changes
         divId={`passband-source-spectrum-plot-${numTelescopeSaved}`}
         data={[
-          //   {
-          //     x: [1000, 2000, 3000, 4000, 5000, 6000],
-          //     y: [0, 0.2, 0.4, 0.6, 0.8, 1],
-          //     marker: { color: "transparent", size: 0 },
-          //     yaxis: "y",
-          //   },
-          //   {
-          //     x: [1000, 2000, 3000, 4000, 5000, 6000],
-          //     y: [0, 200, 400, 600, 800, 1000],
-          //     marker: { color: "red", size: 0 },
-          //     yaxis: "y2",
-          //   },
-          // ]}
           {
             x: [],
             y: [],
@@ -168,23 +157,21 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
             title: "Passband Reponse",
             range: [0, 1],
             visible: true,
+            rangemode: "tozero",
           },
           yaxis2: {
             title: "Source Flux Density (erg s⁻¹ cm⁻² Å⁻¹)",
-            showgrid: true,
+            showgrid: false,
             gridcolor: "grey",
             overlaying: "y",
             side: "right",
-            range: [0, 1000],
+            // range: [0, 1e-15],
             visible: true,
+            exponentformat: "power",
+            automargin: true,
+            rangemode: "tozero",
           },
-          margin: {
-            // l: 12,
-            // r: 12,
-            // b: 12,
-            t: 26,
-            // pad: 4,
-          },
+          margin: { t: 26 },
           showlegend: false,
           annotations: [
             {
@@ -199,9 +186,9 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
           ],
         }}
         useResizeHandler={true}
-        // style={{ width: "100%", height: "100%" }}
         config={{
           displaylogo: false,
+          modeBarButtonsToRemove: ["zoomIn2d", "zoomOut2d"],
           toImageButtonOptions: { filename: "response_and_spectrum" },
           // Allow users to edit chart
           showEditInChartStudio: true,

@@ -25,6 +25,7 @@ from flask_cors import CORS
 from utils import app, api, cors, DataHolder, bad_request, bad_route
 from telescope_route import put_telescope_json
 from background_route import put_background_json
+from source_route import put_source_json
 
 # from utils import MyCustomJsonEncoder
 
@@ -82,6 +83,12 @@ def redirect(path):
         if request.method != "PUT":
             abort(405)
         return put_background_json()
+
+    if re.search(r"\bsource\b", path) is not None:  # match whole word
+        print("Redirecting request to /source")
+        if request.method != "PUT":
+            abort(405)
+        return put_source_json()
 
     elif re.search(r"\bphotometry\b", path) is not None:  # match whole word
         print(request.method)

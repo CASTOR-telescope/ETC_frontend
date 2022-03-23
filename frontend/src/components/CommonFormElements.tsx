@@ -93,6 +93,7 @@ export const useGetIfFormChanged = (
 export type CommonTextFieldProps = {
   placeholder: string;
   label: string;
+  fullWidth?: boolean;
   required?: boolean;
 } & FieldAttributes<{}>;
 
@@ -108,6 +109,7 @@ export const CommonTextField: React.FC<CommonTextFieldProps> = ({
   placeholder,
   label,
   required = true,
+  fullWidth = true,
   ...props
 }) => {
   const [field, meta] = useField<{}>(props);
@@ -121,7 +123,7 @@ export const CommonTextField: React.FC<CommonTextFieldProps> = ({
       // Consistent props
       as={TextField}
       type="input"
-      fullWidth
+      fullWidth={fullWidth}
       required={required}
       sx={{ marginTop: "auto", marginBottom: 2 }}
       helperText={errorText}
@@ -137,6 +139,7 @@ export type CommonTextFieldWithTrackerProps = {
   label: string;
   required?: boolean;
   // values: Object;
+  fullWidth?: boolean;
   prevFormValues: Object;
   setIsChanged: (value: boolean) => void;
 } & FieldAttributes<{}>;
@@ -153,6 +156,7 @@ export const CommonTextFieldWithTracker: React.FC<CommonTextFieldWithTrackerProp
   placeholder,
   label,
   required = true,
+  fullWidth = true,
   // values,
   prevFormValues,
   setIsChanged,
@@ -199,7 +203,7 @@ export const CommonTextFieldWithTracker: React.FC<CommonTextFieldWithTrackerProp
       // Consistent props
       as={TextField}
       type="input"
-      fullWidth
+      fullWidth={fullWidth}
       required={required}
       sx={{ marginTop: "auto", marginBottom: 2 }}
       helperText={errorText}
@@ -214,6 +218,7 @@ export const SaveButton: React.FC<{ isSubmitting: boolean; isValid: boolean }> =
   isSubmitting,
   isValid,
 }) => {
+  // console.log("isValid?", isValid);
   return (
     <LoadingButton
       type="submit"
