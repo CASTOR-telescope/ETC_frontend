@@ -26,6 +26,7 @@ from utils import app, api, cors, DataHolder, bad_request, bad_route
 from telescope_route import put_telescope_json
 from background_route import put_background_json
 from source_route import put_source_json
+from photometry_route import put_photometry_json
 
 # from utils import MyCustomJsonEncoder
 
@@ -92,47 +93,49 @@ def redirect(path):
 
     elif re.search(r"\bphotometry\b", path) is not None:  # match whole word
         print(request.method)
-        if request.method != "GET" and request.method != "PUT":
+        if request.method != "PUT":
             abort(405)
 
-        MyTelescope = Telescope()
-        #
-        MyBackground = Background()
-        MyBackground.add_geocoronal_emission(flux="high")
-        MyBackground.calc_mags_per_sq_arcsec(MyTelescope)
-        #
-        flux_profile = Profiles.uniform()
-        MySource = PointSource(flux_profile, angle=0.1 * u.arcsec)
-        MySource.generate_bb(5500 * u.K)  # (in erg/s/cm^2/A)
-        MySource.add_emission_line(
-            center=3000 * u.AA,
-            fwhm=200 * u.AA,
-            peak=2e-15,
-            shape="gaussian",
-            abs_peak=False,
-        )
-        MySource.add_absorption_line(
-            center=5005 * u.AA,
-            fwhm=50 * u.AA,
-            dip=2e-15,
-            shape="lorentzian",
-            abs_dip=True,
-        )
-        MySource.norm_to_value(
-            28,
-            "mag",
-            passband_lims=MyTelescope.passband_limits["uv"],
-            pivot_wavelength=MyTelescope.passband_pivots["uv"],
-        )
-        print(
-            "\nSource AB mags",
-            MySource.get_avg_value(value_type="mag", TelescopeObj=MyTelescope),
-        )
-        print()
-        MyPhot = Photometry(MyTelescope, MySource, MyBackground)
-        MyPhot.use_optimal_aperture(quiet=True)
-        result = MyPhot.calc_snr_or_t(snr=5, include_redleak=False)
-        return result
+        return put_photometry_json()
+
+        # MyTelescope = Telescope()
+        # #
+        # MyBackground = Background()
+        # MyBackground.add_geocoronal_emission(flux="high")
+        # MyBackground.calc_mags_per_sq_arcsec(MyTelescope)
+        # #
+        # flux_profile = Profiles.uniform()
+        # MySource = PointSource(flux_profile, angle=0.1 * u.arcsec)
+        # MySource.generate_bb(5500 * u.K)  # (in erg/s/cm^2/A)
+        # MySource.add_emission_line(
+        #     center=3000 * u.AA,
+        #     fwhm=200 * u.AA,
+        #     peak=2e-15,
+        #     shape="gaussian",
+        #     abs_peak=False,
+        # )
+        # MySource.add_absorption_line(
+        #     center=5005 * u.AA,
+        #     fwhm=50 * u.AA,
+        #     dip=2e-15,
+        #     shape="lorentzian",
+        #     abs_dip=True,
+        # )
+        # MySource.norm_to_value(
+        #     28,
+        #     "mag",
+        #     passband_lims=MyTelescope.passband_limits["uv"],
+        #     pivot_wavelength=MyTelescope.passband_pivots["uv"],
+        # )
+        # print(
+        #     "\nSource AB mags",
+        #     MySource.get_avg_value(value_type="mag", TelescopeObj=MyTelescope),
+        # )
+        # print()
+        # MyPhot = Photometry(MyTelescope, MySource, MyBackground)
+        # MyPhot.use_optimal_aperture(quiet=True)
+        # result = MyPhot.calc_snr_or_t(snr=5, include_redleak=False)
+        # return result
 
     elif re.search(r"\bbar\b", path) is not None:
         # Do something

@@ -6,11 +6,16 @@ Wrapper for the Flask API interfacing with the castor_etc Telescope class.
 Isaac Cheng - 2022
 """
 
+import re
+
 import astropy.units as u
 from castor_etc.photometry import Photometry
 from flask import jsonify, request
 
-from utils import app, DataHolder, bad_request
+from utils import DataHolder, app, bad_request, server_error
+
+import pandas as pd
+import numpy as np
 
 
 @app.route("/photometry", methods=["PUT"])
@@ -42,85 +47,92 @@ def put_photometry_json():
         passband_pivots, fwhm, px_scale, dark_current, read_noise, redleak_thresholds) of
         the `Telescope` object as a JSON response.
     """
+    # TODO: redleak fraction
+
     # Flask will raise exception 500 if any code raises an error
-    # print("request_data:", request.get_json())
-    # try:
-    #     #
-    #     # Check inputs
-    #     #
-    #     try:
-    #         # Convert all inputs to floats
-    #         request_data = request.get_json()
-    #         fwhm = float(request_data["fwhm"])
-    #         px_scale = float(request_data["pxScale"])
-    #         mirror_diameter = float(request_data["mirrorDiameter"])
-    #         dark_current = float(request_data["darkCurrent"])
-    #         read_noise = float(request_data["readNoise"])
-    #         redleak_thresholds = request_data["redleakThresholds"]
-    #         for band in redleak_thresholds:
-    #             redleak_thresholds[band] = float(redleak_thresholds[band])
-    #     except Exception:
-    #         return bad_request(
-    #             "Inputs to initialize the `Telescope` object "
-    #             + "do not match required inputs."
-    #         )
-    #     #
-    #     # Create and store `Telescope` object
-    #     #
-    #     TelescopeObj = Telescope(
-    #         fwhm=fwhm << u.arcsec,
-    #         px_scale=px_scale << u.arcsec,
-    #         mirror_diameter=mirror_diameter << u.cm,
-    #         dark_current=dark_current,
-    #         read_noise=read_noise,
-    #         redleak_thresholds={
-    #             # Convert float to `astropy.Quantity`
-    #             key: val << u.AA
-    #             for key, val in redleak_thresholds.items()
-    #         },
-    #     )
-    #     DataHolder.TelescopeObj = TelescopeObj
-    #     # Only return the attributes that we want to show on the frontend
-    #     return jsonify(
-    #         passbandLimits={
-    #             # Convert numpy arrays to list of floats
-    #             key: val.to(u.AA).value.tolist()
-    #             for key, val in TelescopeObj.passband_limits.items()
-    #         },
-    #         # Full passband curves is around 123 kB (estimated using `sys.getsizeof()`)
-    #         fullPassbandCurves={
-    #             band: {
-    #                 "wavelength": curve["wavelength"].to(u.AA).value.tolist(),
-    #                 "response": curve["response"].tolist(),
-    #             }
-    #             for band, curve in TelescopeObj.full_passband_curves.items()
-    #         },
-    #         mirrorDiameter=float(TelescopeObj.mirror_diameter.to(u.cm).value),
-    #         photZpts={
-    #             # Convert numpy float to Python float
-    #             key: float(val)
-    #             for key, val in TelescopeObj.phot_zpts.items()
-    #         },
-    #         passbandPivots={
-    #             # Convert `astropy.Quantity` to float
-    #             key: float(val.to(u.AA).value)
-    #             for key, val in TelescopeObj.passband_pivots.items()
-    #         },
-    #         fwhm=float(TelescopeObj.fwhm.to(u.arcsec).value),
-    #         pxScale=float(TelescopeObj.px_scale.to(u.arcsec).value),
-    #         darkCurrent=float(TelescopeObj.dark_current),
-    #         readNoise=float(TelescopeObj.read_noise),
-    #         redleakThresholds={
-    #             # Convert `astropy.Quantity` to float
-    #             key: float(val.to(u.AA).value)
-    #             for key, val in TelescopeObj.redleak_thresholds.items()
-    #         },
-    #     )
-    # except Exception:
-    #     return bad_request(
-    #         "There was a problem initializing the `Telescope` object and "
-    #         + "returning some of its attributes in a JSON format."
-    #     )
+    print("request_data:", request.get_json())
+    try:
+        #
+        # Check inputs
+        #
+        try:
+            # Convert all inputs to floats
+            request_data = request.get_json()
+            extinction_coeffs = {
+                band: float(coeff)
+                for band, coeff in request_data["extinctionCoeffs"].items()
+            }
+            aper_shape = request_data["aperShape"].lower()
+            aper_params_input = request_data["aperParams"]  # dict of dicts
+            phot_input = request_data["photInput"]  # dict
+            #
+            aper_params = dict.fromkeys(aper_params_input[aper_shape])
+            for key, val in aper_params_input[aper_shape].items():
+                try:
+                    parsed_val = float(val)
+                    if key != "rotation":
+                        parsed_val *= u.arcsec
+                except Exception:
+                    # Extract numbers from string (for center)
+                    parsed_val = [
+                        float(num) for num in re.findall(r"-?\d+\.?\d*", val)
+                    ] << u.arcsec
+                aper_params[key] = parsed_val
+        except Exception:
+            return bad_request(
+                "Inputs to initialize the `Photometry` object "
+                + "do not match required inputs."
+            )
+        #
+        # Create the `Photometry` object
+        #
+        try:
+            PhotometryObj = Photometry(
+                DataHolder.TelescopeObj, DataHolder.SourceObj, DataHolder.BackgroundObj
+            )
+        except Exception:
+            return server_error(
+                "Server could not initialize the `Photometry` object "
+                + "from server-side stored data"
+            )
+        #
+        # TODO: validation of all request data
+        #
+        # For now, just return the attributes I know I will have set
+        PhotometryObj.use_elliptical_aperture(**aper_params)
+        if phot_input["val_type"] == "snr":
+            phot_results = PhotometryObj.calc_snr_or_t(
+                snr=float(phot_input["val"]), extinction=extinction_coeffs
+            )
+        elif phot_input["val_type"] == "t":
+            phot_results = PhotometryObj.calc_snr_or_t(
+                t=float(phot_input["val"]), extinction=extinction_coeffs
+            )
+        else:
+            return bad_request("Couldn't read `photInput`")
+        DataHolder.PhotometryObj = PhotometryObj
+        #
+        # Convert 2D arrays to JSON, replace NaN with null, and only want the data array
+        #
+        aper_mask = pd.DataFrame(PhotometryObj._aper_mask).to_json(orient="values")
+        source_weights = pd.DataFrame(PhotometryObj.source_weights).to_json(
+            orient="values"
+        )
+        # Only return the attributes that we want to show on the frontend
+        return jsonify(
+            photResults=phot_results,
+            effNpix=PhotometryObj._eff_npix,
+            # aperMask=PhotometryObj._aper_mask.tolist(),
+            # sourceWeights=PhotometryObj.source_weights.tolist(),
+            aperMask=aper_mask,
+            sourceWeights=source_weights,
+            aperExtent=PhotometryObj._aper_extent,  # already a list
+        )
+    except Exception:
+        return bad_request(
+            "There was a problem initializing the `Photometry` object and "
+            + "returning some of its attributes in a JSON format."
+        )
 
 
 # if __name__ == "__main__":

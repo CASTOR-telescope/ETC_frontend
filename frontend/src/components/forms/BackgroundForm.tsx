@@ -475,10 +475,10 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
                 }}
               >
                 The default sky background is estimated using average Earthshine and
-                zodiacal light spectra from HST (? VERIFY). If using a custom sky
-                background, please specify the AB magnitude (TODO: insert link) per square
-                arcsecond in each telescope band. These magnitudes should include both the
-                Earthshine and zodiacal light components.
+                zodiacal light spectra from HST. If using a custom sky background, please
+                specify the AB magnitude per square arcsecond in each telescope band.
+                These magnitudes should include both the Earthshine and zodiacal light
+                components.
               </FormHelperText>
               <SkyBackgroundRadioGroup
                 name="useDefaultSkyBackground"

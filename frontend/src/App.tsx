@@ -1,5 +1,3 @@
-import { API_URL } from "service/env";
-// import logo from "./logo-fullsize.png";
 import "./App.css";
 import "./components/react-tabs.css";
 import { ThemeProvider, useTheme } from "@mui/material/styles";
@@ -10,7 +8,6 @@ import "./components/react-resizable.css";
 import "./components/react-grid-layout.css";
 
 import TabForms from "./components/TabForms";
-// import ApiService from "./service/ApiService";
 
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
@@ -19,9 +16,9 @@ import "allotment/dist/style.css";
 import ResponsivePlot from "./components/ResponsivePlot";
 import ResponseCurveSpectrumPlot from "./components/plots/ResponseCurveSpectrumPlot";
 import { useEffect, useState } from "react";
+import SourceWeightsPlot from "./components/plots/SourceWeightsPlot";
+import AperMaskPlot from "./components/plots/AperMaskPlot";
 // import PanePlots from "./components/PanePlots";
-
-// const myLogo: string = process.env.PUBLIC_URL + "/logo-fullsize.png";
 
 function App() {
   // Set Material UI theme
@@ -38,6 +35,12 @@ function App() {
     setNumTelescopeSaved(numTelescopeSaved + 1);
   };
 
+  // To update image plots on each new Photometry submission
+  const [numPhotometrySubmit, setNumPhotometrySubmit] = useState(0);
+  const incrNumPhotometrySubmit = () => {
+    setNumPhotometrySubmit(numPhotometrySubmit + 1);
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -45,7 +48,6 @@ function App() {
           style={{
             position: "relative",
             width: "100%",
-            // height: "100vh",
             height: "100%",
           }}
         >
@@ -59,7 +61,10 @@ function App() {
               }}
             >
               <Allotment.Pane>
-                <TabForms incrNumTelescopeSaved={incrNumTelescopeSaved} />
+                <TabForms
+                  incrNumTelescopeSaved={incrNumTelescopeSaved}
+                  incrNumPhotometrySubmit={incrNumPhotometrySubmit}
+                />
               </Allotment.Pane>
             </div>
 
@@ -67,104 +72,8 @@ function App() {
               <Allotment vertical defaultSizes={[50, 50]} minSize={0}>
                 <Allotment.Pane>
                   <Allotment defaultSizes={[50, 50]} minSize={0}>
-                    <ResponsivePlot
-                      divId="source-weights-plot"
-                      data={[
-                        {
-                          x: [1, 2, 3],
-                          y: [2, 6, 3],
-                          type: "scatter",
-                          mode: "lines+markers",
-                          marker: { color: "red" },
-                        },
-                        { type: "bar", x: [1, 2, 3], y: [2, 5, 3] },
-                      ]}
-                      layout={{
-                        title: "Source Pixel Weights",
-                        font: { color: "white" },
-                        autosize: true,
-                        paper_bgcolor: "#282c34", // MUI background.default color
-                        plot_bgcolor: "#282c34", // MUI background.default color
-                        xaxis: {
-                          showgrid: true,
-                          gridcolor: "grey",
-                          title: "Integration Time (s)",
-                        },
-                        yaxis: {
-                          showgrid: true,
-                          gridcolor: "grey",
-                          title: "Signal-to-Noise Ratio",
-                        },
-                      }}
-                      useResizeHandler={true}
-                      // style={{ width: "100%", height: "100%" }}
-                      config={{ displaylogo: false }}
-                    />
-                    {/* <ResponsivePlot
-                      divId="source-weights-plot"
-                      data={[
-                        {
-                          x: [1, 4, 9, 16, 25],
-                          y: [1, 2, 3, 4, 5],
-                          type: "scatter",
-                          mode: "lines+markers",
-                          marker: { color: "PaleGreen" },
-                        },
-                      ]}
-                      layout={{
-                        title: "Source Weights",
-                        font: { color: "white" },
-                        autosize: true,
-                        paper_bgcolor: "#282c34", // MUI background.default color
-                        plot_bgcolor: "#282c34", // MUI background.default color
-                        xaxis: {
-                          showgrid: true,
-                          gridcolor: "grey",
-                          title: "Integration Time (s)",
-                        },
-                        yaxis: {
-                          showgrid: true,
-                          gridcolor: "grey",
-                          title: "Signal-to-Noise Ratio",
-                        },
-                      }}
-                      useResizeHandler={true}
-                      // style={{ width: "100%", height: "100%" }}
-                      config={{ displaylogo: false }}
-                    /> */}
-
-                    <ResponsivePlot
-                      divId="aper-weights-plot"
-                      data={[
-                        {
-                          x: [1, 4, 9, 16, 25],
-                          y: [1, 2, 3, 4, 5],
-                          type: "scatter",
-                          mode: "lines+markers",
-                          marker: { color: "PaleGreen" },
-                        },
-                      ]}
-                      layout={{
-                        title: "Aperture Pixel Weights",
-                        font: { color: "white" },
-                        autosize: true,
-                        paper_bgcolor: "#282c34", // MUI background.default color
-                        plot_bgcolor: "#282c34", // MUI background.default color
-                        xaxis: {
-                          showgrid: true,
-                          gridcolor: "grey",
-                          title: "Integration Time (s)",
-                        },
-                        yaxis: {
-                          showgrid: true,
-                          gridcolor: "grey",
-                          title: "Signal-to-Noise Ratio",
-                        },
-                      }}
-                      useResizeHandler={true}
-                      // style={{ width: "100%", height: "100%" }}
-                      config={{ displaylogo: false }}
-                    />
+                    <SourceWeightsPlot numPhotometrySubmit={numPhotometrySubmit} />
+                    <AperMaskPlot numPhotometrySubmit={numPhotometrySubmit} />
                   </Allotment>
                 </Allotment.Pane>
                 <Allotment.Pane>

@@ -140,8 +140,14 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                 setIsChanged(false);
                 sessionStorage.setItem(FORM_SESSION, JSON.stringify(data));
                 incrNumTelescopeSaved();
-                // setIsTelescopeUpdated(true);
-                setIsBackgroundSyncTelescope(false);
+                if (
+                  sessionStorage.getItem("backgroundForm") !== null &&
+                  JSON.parse(`${sessionStorage.getItem("backgroundForm")}`)[
+                    "useDefaultSkyBackground"
+                  ].toLowerCase() === "true"
+                ) {
+                  setIsBackgroundSyncTelescope(false);
+                }
                 setIsSourceSyncTelescope(false);
               })
               .catch((error) => {

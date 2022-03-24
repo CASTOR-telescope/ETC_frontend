@@ -54,6 +54,15 @@ def bad_request(message):
     return response
 
 
+def server_error(message):
+    """
+    Return a 500 error with the given message as JSON.
+    """
+    response = jsonify({"error": message})
+    response.status_code = 500
+    return response
+
+
 def bad_route(path):
     """
     Return a 404 error with the given path contained in the HTML.

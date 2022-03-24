@@ -97,6 +97,7 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
             exponentformat: "power",
             automargin: true,
             rangemode: "tozero",
+            range: [0, 9.5e-16], // REVIEW: remove after demo
           },
           margin: { t: 12 },
           showlegend: true,
@@ -165,7 +166,7 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
             gridcolor: "grey",
             overlaying: "y",
             side: "right",
-            // range: [0, 1e-15],
+            // range: [0, 1e-15], // REVIEW: remove after demo
             visible: true,
             exponentformat: "power",
             automargin: true,

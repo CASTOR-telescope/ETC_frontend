@@ -174,7 +174,7 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
     }
   }, []);
 
-  // TODO: add upload spectrum button
+  // TODO: add upload spectrum button functionality
 
   return (
     <FormControl component="fieldset" variant="standard" fullWidth={true}>
@@ -687,33 +687,25 @@ const AlertIfTelescopeParamsChanged: React.FC<AlertIfTelescopeParamsChangedProps
   isSourceSyncTelescope,
 }) => {
   if (sessionStorage.getItem("sourceForm") !== null && !isSourceSyncTelescope) {
-    if (
-      JSON.parse(`${sessionStorage.getItem("sourceForm")}`)
-        ["normMethod"].toLowerCase()
-        .includes("passband")
-    ) {
-      return (
-        <Box
-          sx={{
-            backgroundColor: "transparent",
-            display: "flex",
-            justifyContent: "center",
-            width: "100%",
-            marginBottom: 2,
-          }}
-        >
-          <Alert severity="info" style={{ width: "50%" }}>
-            <AlertTitle>Info</AlertTitle>
-            <Typography>
-              The telescope parameters have been updated and the source normalization in
-              the passband may be incorrect. Please save the source parameters again.
-            </Typography>
-          </Alert>
-        </Box>
-      );
-    } else {
-      return <div />;
-    }
+    return (
+      <Box
+        sx={{
+          backgroundColor: "transparent",
+          display: "flex",
+          justifyContent: "center",
+          width: "100%",
+          marginBottom: 2,
+        }}
+      >
+        <Alert severity="info" style={{ width: "50%" }}>
+          <AlertTitle>Info</AlertTitle>
+          <Typography>
+            The telescope parameters have been updated and the source AB magnitudes in
+            each passband may be incorrect. Please save the source parameters again.
+          </Typography>
+        </Alert>
+      </Box>
+    );
   } else {
     return <div />;
   }
