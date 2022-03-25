@@ -64,6 +64,7 @@ function App() {
                 <TabForms
                   incrNumTelescopeSaved={incrNumTelescopeSaved}
                   incrNumPhotometrySubmit={incrNumPhotometrySubmit}
+                  numPhotometrySubmit={numPhotometrySubmit}
                 />
               </Allotment.Pane>
             </div>

@@ -57,11 +57,13 @@ function a11yProps(index: number) {
 type TabFormsProps = {
   incrNumTelescopeSaved: () => void;
   incrNumPhotometrySubmit: () => void;
+  numPhotometrySubmit: number;
 };
 
 const TabForms: React.FC<TabFormsProps> = ({
   incrNumTelescopeSaved,
   incrNumPhotometrySubmit,
+  numPhotometrySubmit,
 }) => {
   // For tracking tabs
   const [value, setValue] = React.useState(0);
@@ -209,6 +211,7 @@ const TabForms: React.FC<TabFormsProps> = ({
           errorMessage={errorMessage}
           setErrorMessage={setErrorMessage}
           incrNumPhotometrySubmit={incrNumPhotometrySubmit}
+          numPhotometrySubmit={numPhotometrySubmit}
         />
       </TabPanel>
       {/* <TabPanel value={value} index={4}>

@@ -393,7 +393,12 @@ const DisplayParams = () => {
   );
 };
 
-const DisplayResults: React.FC = () => {
+type DisplayResultsProps = {
+  numPhotometrySubmit: number;
+};
+
+// FIXME: if statement does not update in real time.
+const DisplayResults: React.FC<DisplayResultsProps> = ({ numPhotometrySubmit }) => {
   const photParams = JSON.parse(`${sessionStorage.getItem("photometryParams")}`);
   const photForm = JSON.parse(`${sessionStorage.getItem("photometryForm")}`);
 
@@ -405,7 +410,7 @@ const DisplayResults: React.FC = () => {
     sessionStorage.getItem("photometryForm") !== null
   ) {
     return (
-      <div>
+      <div id={`display-results-${numPhotometrySubmit}`}>
         <Typography variant="h5" color="secondary" style={{ marginBottom: 12 }}>
           Photometry Results
         </Typography>
@@ -569,6 +574,7 @@ type PhotometryFormProps = {
   isSavedAndUnsubmitted: boolean;
   setIsSavedAndUnsubmitted: (value: boolean) => void;
   incrNumPhotometrySubmit: () => void;
+  numPhotometrySubmit: number;
 } & CommonFormProps;
 
 const PhotometryForm: React.FC<PhotometryFormProps> = ({
@@ -582,6 +588,7 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
   setIsError,
   errorMessage,
   setErrorMessage,
+  numPhotometrySubmit,
 }) => {
   // Save user form inputs between tab switches
   const FORM_SESSION = "photometryForm"; // key for sessionStorage (user inputs)
@@ -836,7 +843,7 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
           </Form>
         )}
       </Formik>
-      <DisplayResults />
+      <DisplayResults numPhotometrySubmit={numPhotometrySubmit} />
       {/* <pre>
         {JSON.stringify(JSON.parse(`${sessionStorage.getItem(FORM_PARAMS)}`), null, 2)}
       </pre> */}
