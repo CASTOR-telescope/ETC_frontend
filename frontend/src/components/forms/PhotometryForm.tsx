@@ -393,180 +393,180 @@ const DisplayParams = () => {
   );
 };
 
-type DisplayResultsProps = {
-  numPhotometrySubmit: number;
-};
-
-// FIXME: if statement does not update in real time.
-const DisplayResults: React.FC<DisplayResultsProps> = ({ numPhotometrySubmit }) => {
+const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
+  numPhotometrySubmit,
+}) => {
   const photParams = JSON.parse(`${sessionStorage.getItem("photometryParams")}`);
   const photForm = JSON.parse(`${sessionStorage.getItem("photometryForm")}`);
 
   const tableCellFontSize = 17;
   const tableHeadFontSize = 18;
 
-  if (
-    sessionStorage.getItem("photometryParams") !== null &&
-    sessionStorage.getItem("photometryForm") !== null
-  ) {
-    return (
-      <div id={`display-results-${numPhotometrySubmit}`}>
-        <Typography variant="h5" color="secondary" style={{ marginBottom: 12 }}>
-          Photometry Results
-        </Typography>
-        <div
-          style={{
-            justifyContent: "center",
-            alignItems: "center",
-            display: "flex",
-          }}
-        >
-          <TableContainer component={Paper} sx={{ minWidth: 500, width: "85%" }}>
-            <Table
-              sx={{ minWidth: 400, justifyContent: "center" }}
-              aria-label="photometry-results-table"
-            >
-              <TableHead style={{ width: "100%" }}>
-                <TableRow>
-                  <TableCell sx={{ fontSize: tableHeadFontSize }} align="left">
-                    Passband
-                  </TableCell>
-                  <TableCell sx={{ fontSize: tableHeadFontSize }} align="right">
-                    S/N&nbsp;Ratio
-                  </TableCell>
-                  <TableCell sx={{ fontSize: tableHeadFontSize }} align="right">
-                    Integration&nbsp;Time&nbsp;(s)
-                  </TableCell>
-                  {/* <TableCell align="right">Redleak&nbsp;Fraction</TableCell> */}
-                </TableRow>
-              </TableHead>
-              {(() =>
-                photForm["photInput"].val_type === "snr" ? (
-                  // Render same SNR in column
-                  <TableBody style={{ width: "100%" }}>
-                    <TableRow
-                      key={"uv"}
-                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+  return (
+    <div id={`display-results-${numPhotometrySubmit}`}>
+      <Typography variant="h5" color="secondary" style={{ marginBottom: 12 }}>
+        Photometry Results
+      </Typography>
+      <div
+        style={{
+          justifyContent: "center",
+          alignItems: "center",
+          display: "flex",
+        }}
+      >
+        <TableContainer component={Paper} sx={{ minWidth: 500, width: "85%" }}>
+          <Table
+            sx={{ minWidth: 400, justifyContent: "center" }}
+            aria-label="photometry-results-table"
+          >
+            <TableHead style={{ width: "100%" }}>
+              <TableRow>
+                <TableCell sx={{ fontSize: tableHeadFontSize }} align="left">
+                  Passband
+                </TableCell>
+                <TableCell sx={{ fontSize: tableHeadFontSize }} align="right">
+                  S/N&nbsp;Ratio
+                </TableCell>
+                <TableCell sx={{ fontSize: tableHeadFontSize }} align="right">
+                  Integration&nbsp;Time&nbsp;(s)
+                </TableCell>
+                {/* <TableCell align="right">Redleak&nbsp;Fraction</TableCell> */}
+              </TableRow>
+            </TableHead>
+            {(() =>
+              photForm["photInput"].val_type === "snr" ? (
+                // Render same SNR in column
+                <TableBody style={{ width: "100%" }}>
+                  <TableRow
+                    key={"uv"}
+                    sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                  >
+                    <TableCell
+                      component="th"
+                      scope="row"
+                      sx={{ fontSize: tableCellFontSize }}
                     >
-                      <TableCell
-                        component="th"
-                        scope="row"
-                        sx={{ fontSize: tableCellFontSize }}
-                      >
-                        UV
-                      </TableCell>
-                      <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                        {photForm["photInput"].val}
-                      </TableCell>
-                      <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                        {photParams["photResults"].uv}
-                      </TableCell>
-                    </TableRow>
-                    <TableRow
-                      key={"u"}
-                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                      UV
+                    </TableCell>
+                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
+                      {photForm["photInput"].val}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
+                      {photParams["photResults"].uv}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow
+                    key={"u"}
+                    sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                  >
+                    <TableCell
+                      component="th"
+                      scope="row"
+                      sx={{ fontSize: tableCellFontSize }}
                     >
-                      <TableCell
-                        component="th"
-                        scope="row"
-                        sx={{ fontSize: tableCellFontSize }}
-                      >
-                        u
-                      </TableCell>
-                      <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                        {photForm["photInput"].val}
-                      </TableCell>
-                      <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                        {photParams["photResults"].u}
-                      </TableCell>
-                    </TableRow>
-                    <TableRow
-                      key={"g"}
-                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                      u
+                    </TableCell>
+                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
+                      {photForm["photInput"].val}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
+                      {photParams["photResults"].u}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow
+                    key={"g"}
+                    sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                  >
+                    <TableCell
+                      component="th"
+                      scope="row"
+                      sx={{ fontSize: tableCellFontSize }}
                     >
-                      <TableCell
-                        component="th"
-                        scope="row"
-                        sx={{ fontSize: tableCellFontSize }}
-                      >
-                        u
-                      </TableCell>
-                      <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                        {photForm["photInput"].val}
-                      </TableCell>
-                      <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                        {photParams["photResults"].g}
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                ) : (
-                  // Render same time in column
-                  <TableBody style={{ width: "100%" }}>
-                    <TableRow
-                      key={"uv"}
-                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                      u
+                    </TableCell>
+                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
+                      {photForm["photInput"].val}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
+                      {photParams["photResults"].g}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              ) : (
+                // Render same time in column
+                <TableBody style={{ width: "100%" }}>
+                  <TableRow
+                    key={"uv"}
+                    sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                  >
+                    <TableCell
+                      component="th"
+                      scope="row"
+                      sx={{ fontSize: tableCellFontSize }}
                     >
-                      <TableCell
-                        component="th"
-                        scope="row"
-                        sx={{ fontSize: tableCellFontSize }}
-                      >
-                        UV
-                      </TableCell>
-                      <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                        {photParams["photResults"].uv}
-                      </TableCell>
-                      <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                        {photForm["photInput"].val}
-                      </TableCell>
-                    </TableRow>
-                    <TableRow
-                      key={"u"}
-                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                      UV
+                    </TableCell>
+                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
+                      {photParams["photResults"].uv}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
+                      {photForm["photInput"].val}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow
+                    key={"u"}
+                    sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                  >
+                    <TableCell
+                      component="th"
+                      scope="row"
+                      sx={{ fontSize: tableCellFontSize }}
                     >
-                      <TableCell
-                        component="th"
-                        scope="row"
-                        sx={{ fontSize: tableCellFontSize }}
-                      >
-                        u
-                      </TableCell>
-                      <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                        {photParams["photResults"].u}
-                      </TableCell>
-                      <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                        {photForm["photInput"].val}
-                      </TableCell>
-                    </TableRow>
-                    <TableRow
-                      key={"g"}
-                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                      u
+                    </TableCell>
+                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
+                      {photParams["photResults"].u}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
+                      {photForm["photInput"].val}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow
+                    key={"g"}
+                    sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                  >
+                    <TableCell
+                      component="th"
+                      scope="row"
+                      sx={{ fontSize: tableCellFontSize }}
                     >
-                      <TableCell
-                        component="th"
-                        scope="row"
-                        sx={{ fontSize: tableCellFontSize }}
-                      >
-                        g
-                      </TableCell>
-                      <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                        {photParams["photResults"].g}
-                      </TableCell>
-                      <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                        {photForm["photInput"].val}
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                ))()}
-            </Table>
-          </TableContainer>
-        </div>
+                      g
+                    </TableCell>
+                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
+                      {photParams["photResults"].g}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
+                      {photForm["photInput"].val}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              ))()}
+          </Table>
+        </TableContainer>
       </div>
-    );
-  } else {
-    return <div />;
-  }
+    </div>
+  );
 };
+
+// // FIXME: if statement does not update in real time.
+// const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
+//   numPhotometrySubmit,
+// }) => {
+//   return sessionStorage.getItem("photometryParams") !== null &&
+//     sessionStorage.getItem("photometryForm") !== null ? (
+//     <ResultsPaper numPhotometrySubmit={numPhotometrySubmit} />
+//   ) : null;
+// };
 
 const photometryValidationSchema = Yup.object({});
 
@@ -661,16 +661,17 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
           const response = await axios
             .put(API_URL + "photometry", data)
             .then((response) => response.data)
-            .then((response) =>
-              sessionStorage.setItem(FORM_PARAMS, JSON.stringify(response))
-            )
+            .then((response) => {
+              sessionStorage.setItem(FORM_PARAMS, JSON.stringify(response));
+              sessionStorage.setItem(FORM_SESSION, JSON.stringify(data));
+            })
             .then(() => {
               // Set state to indicate that the parameters have been submitted
+              // MUST have this after BOTH sessionStorage.setItem() calls above
               setIsSavedAndUnsubmitted(false);
               setPrevFormValues(data);
               setIsChanged(false);
               incrNumPhotometrySubmit();
-              sessionStorage.setItem(FORM_SESSION, JSON.stringify(data));
               setSubmitting(false);
             })
             .catch((error) => {
@@ -843,7 +844,10 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
           </Form>
         )}
       </Formik>
-      <DisplayResults numPhotometrySubmit={numPhotometrySubmit} />
+      {sessionStorage.getItem("photometryParams") !== null &&
+      sessionStorage.getItem("photometryForm") !== null ? (
+        <DisplayResults numPhotometrySubmit={numPhotometrySubmit} />
+      ) : null}
       {/* <pre>
         {JSON.stringify(JSON.parse(`${sessionStorage.getItem(FORM_PARAMS)}`), null, 2)}
       </pre> */}
