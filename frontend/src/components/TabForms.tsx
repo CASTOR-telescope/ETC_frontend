@@ -3,16 +3,18 @@
  *
  */
 
-import React from "react";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import Typography from "@mui/material/Typography";
+import { Avatar } from "@mui/material";
 import Box from "@mui/material/Box";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
+import Typography from "@mui/material/Typography";
+import React from "react";
 
-import TelescopeForm from "./forms/TelescopeForm";
 import BackgroundForm from "./forms/BackgroundForm";
 import PhotometryForm from "./forms/PhotometryForm";
 import SourceForm from "./forms/SourceForm";
+import TelescopeForm from "./forms/TelescopeForm";
+import logo from "./logo-fullsize.png";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -45,10 +47,11 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
-function a11yProps(index: number) {
+function TabProps(index: number) {
   return {
     id: `form-tab-${index}`,
     "aria-controls": `form-tabpanel-${index}`,
+    sx: { fontSize: 17 },
   };
 }
 
@@ -113,6 +116,7 @@ const TabForms: React.FC<TabFormsProps> = ({
       }}
     >
       <Box
+        // For centering Tabs
         sx={{
           borderBottom: 1,
           borderColor: "divider",
@@ -122,36 +126,41 @@ const TabForms: React.FC<TabFormsProps> = ({
           width: "100%",
         }}
       >
+        <Avatar
+          alt="logo"
+          src={logo}
+          sx={{ marginLeft: "0.5em", marginRight: "1em", marginTop: "0.2em" }}
+        />
         <Tabs
           value={value}
           onChange={handleChange}
           aria-label="form tabs"
           variant="scrollable"
           scrollButtons="auto"
-          // centered  // Doesn't work. Need to set Box display, justifyContent, and width
-          TabIndicatorProps={{ style: { backgroundColor: "transparent" } }}
+          centered
+          // TabIndicatorProps={{ style: { backgroundColor: "transparent" } }} // hide underline
         >
-          <Tab label="Telescope Parameters" {...a11yProps(0)} />
+          <Tab label="Telescope Parameters" {...TabProps(0)} />
           <Tab
             label="Background Parameters"
-            {...a11yProps(1)}
+            {...TabProps(1)}
             disabled={sessionStorage.getItem("telescopeParams") === null}
           />
           <Tab
             label="Source Parameters"
-            {...a11yProps(2)}
+            {...TabProps(2)}
             disabled={sessionStorage.getItem("telescopeParams") === null}
           />
           <Tab
             label="Photometry"
-            {...a11yProps(3)}
+            {...TabProps(3)}
             disabled={
               sessionStorage.getItem("telescopeParams") === null ||
               !isBackgroundSyncTelescope ||
               !isSourceSyncTelescope
             }
           />
-          {/* <Tab label="Spectroscopy" {...a11yProps(4)} /> */}
+          {/* <Tab label="Spectroscopy" {...TabProps(4)} /> */}
         </Tabs>
       </Box>
       <TabPanel value={value} index={0}>

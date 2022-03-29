@@ -1,11 +1,9 @@
 import "./App.css";
-import "./components/react-tabs.css";
 import { ThemeProvider, useTheme } from "@mui/material/styles";
 
 import { DarkModeTheme } from "./components/DarkModeTheme";
 import { Container, CssBaseline } from "@mui/material";
 import "./components/react-resizable.css";
-import "./components/react-grid-layout.css";
 
 import TabForms from "./components/TabForms";
 
