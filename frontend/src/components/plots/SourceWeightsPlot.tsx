@@ -34,9 +34,10 @@ const SourceWeightsPlot: React.FC<SourceWeightsPlotProps> = ({ numPhotometrySubm
               },
             },
             x0: extent[0],
-            dx: (extent[1] - extent[0]) / plotLengths[0],
+            dx: (extent[1] - extent[0]) / plotLengths[1],
             y0: extent[2],
-            dy: (extent[3] - extent[2]) / plotLengths[1],
+            dy: (extent[3] - extent[2]) / plotLengths[0],
+            transpose: false,
           },
         ]}
         layout={{
