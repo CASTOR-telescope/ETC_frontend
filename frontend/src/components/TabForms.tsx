@@ -137,7 +137,7 @@ const TabForms: React.FC<TabFormsProps> = ({
           aria-label="form tabs"
           variant="scrollable"
           scrollButtons="auto"
-          centered
+          // centered  // incompatible with variant="scrollable"
           // TabIndicatorProps={{ style: { backgroundColor: "transparent" } }} // hide underline
         >
           <Tab label="Telescope Parameters" {...TabProps(0)} />
