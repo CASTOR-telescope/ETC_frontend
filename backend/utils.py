@@ -8,8 +8,10 @@ Isaac Cheng - 2022
 
 # import json
 
+from logging import WARNING, FileHandler, StreamHandler, Formatter, DEBUG
+
 # from astropy.utils.misc import JsonCustomEncoder
-from flask import Flask, jsonify, Response
+from flask import Flask, Response, jsonify
 
 # from flask.json import JSONEncoder
 from flask_cors import CORS
@@ -19,6 +21,12 @@ app = Flask(__name__)
 api = Api(app)
 cors = CORS()
 
+# log_handler = FileHandler("etc_frontend.log")
+log_handler = StreamHandler()
+log_formatter = Formatter("%(asctime)s [%(name)-12s] %(levelname)-8s %(message)s")
+log_handler.setFormatter(log_formatter)
+log_handler.setLevel(DEBUG)  # only logs application errors, not HTTP errors
+app.logger.addHandler(log_handler)
 
 # class MyCustomJsonEncoder(JSONEncoder):
 #     """
@@ -35,6 +43,13 @@ class DataHolder:
     """
     Class to store data between Flask requests. Idea from
     <https://stackoverflow.com/q/63195823>.
+
+    Note that this approach is NOT safe for multiple or concurrent users. I am simply
+    taking advantage of the fact that all sessions will be run inside individual Docker
+    containers with a maximum limit of 1 container per person.
+
+    For multi-user support, something along the lines of redis + cookie-based session
+    storage would be required.
     """
 
     # Class variables
