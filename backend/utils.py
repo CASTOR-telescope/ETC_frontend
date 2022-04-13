@@ -8,7 +8,7 @@ Isaac Cheng - 2022
 
 # import json
 
-from logging import WARNING, FileHandler, StreamHandler, Formatter, DEBUG
+from logging import WARNING, StreamHandler, Formatter, DEBUG, getLogger
 
 # from astropy.utils.misc import JsonCustomEncoder
 from flask import Flask, Response, jsonify
@@ -21,12 +21,20 @@ app = Flask(__name__)
 api = Api(app)
 cors = CORS()
 
-# log_handler = FileHandler("etc_frontend.log")
-log_handler = StreamHandler()
+app.logger.handlers.clear()  # prevent double-logging with Flask logger
+
+log_handler = StreamHandler()  # don't log to file within Docker container
+# # If not in Docker container (e.g., not deployed on CANFAR), may want to log to file
+# log_handler = FileHandler("etc_frontend.log")  # need `from logging import FileHandler`
+
+# Add logger to Flask app
 log_formatter = Formatter("%(asctime)s [%(name)-12s] %(levelname)-8s %(message)s")
 log_handler.setFormatter(log_formatter)
 log_handler.setLevel(DEBUG)  # only logs application errors, not HTTP errors
 app.logger.addHandler(log_handler)
+
+# Use this logger for manual addition of log messages
+logger = getLogger("werkzeug")
 
 # class MyCustomJsonEncoder(JSONEncoder):
 #     """
