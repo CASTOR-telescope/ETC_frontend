@@ -4,6 +4,7 @@ import {
   FormGroup,
   FormHelperText,
   FormLabel,
+  Grid,
   Link,
   Typography,
 } from "@mui/material";
@@ -55,6 +56,20 @@ const telescopeValidationSchema = Yup.object({
       .typeError("Redleak threshold must be a number > 0")
       .positive("Redleak threshold must be a number > 0"),
   }),
+  extinctionCoeffs: Yup.object({
+    uv: Yup.number()
+      .required("Extinction coefficients is a required field")
+      .typeError("Extinction coefficients must be a number > 0")
+      .positive("Extinction coefficients must be a number > 0"),
+    u: Yup.number()
+      .required("Extinction coefficients is a required field")
+      .typeError("Extinction coefficients must be a number > 0")
+      .positive("Extinction coefficients must be a number > 0"),
+    g: Yup.number()
+      .required("Extinction coefficients is a required field")
+      .typeError("Extinction coefficients must be a number > 0")
+      .positive("Extinction coefficients must be a number > 0"),
+  }),
 });
 
 type TelescopeFormProps = {
@@ -95,6 +110,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
       darkCurrent: "0.01", // electron/s per pixel
       readNoise: "2.0", // electron/s per pixel
       redleakThresholds: { uv: "3880", u: "4730", g: "5660" }, // angstrom
+      extinctionCoeffs: { uv: 7.06, u: 4.35, g: 3.31 },
     };
   } else {
     myInitialValues = JSON.parse(`${sessionStorage.getItem(FORM_SESSION)}`);
@@ -268,6 +284,77 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                 />
               </FormGroup>
             </FormControl>
+            <br />
+            <div
+              style={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+            >
+              <FormControl
+                component="fieldset"
+                variant="standard"
+                sx={{
+                  width: "85%",
+                  justifyContent: "center",
+                }}
+                fullWidth={false}
+                color="secondary"
+              >
+                <FormLabel
+                  component="legend"
+                  required={true}
+                  sx={{
+                    fontSize: 18,
+                    // fontWeight: "bold",
+                  }}
+                  filled={true}
+                >
+                  Extinction Coefficients
+                </FormLabel>
+                <FormHelperText
+                  sx={{
+                    fontSize: "medium",
+                    fontWeight: "normal",
+                    marginBottom: 2,
+                    textAlign: "center",
+                  }}
+                >
+                  These are the <i>R&nbsp;&#8239;≡&nbsp;A&#8239;/&#8239;E(B-V)</i> values
+                  in each of the telescope passbands.
+                </FormHelperText>
+                <FormGroup>
+                  <Grid container spacing={2} columns={12}>
+                    <Grid item xs={4}>
+                      <CommonTextField
+                        name="extinctionCoeffs.uv"
+                        value={values.extinctionCoeffs.uv}
+                        placeholder={"Example: 7.06"}
+                        label="UV-Band"
+                        required={true}
+                        // prevFormValues={prevFormValues}
+                        // setIsChanged={setIsChanged}
+                      />
+                    </Grid>
+                    <Grid item xs={4}>
+                      <CommonTextField
+                        name="extinctionCoeffs.u"
+                        value={values.extinctionCoeffs.u}
+                        placeholder={"Example: 4.35"}
+                        label="u-Band"
+                        required={true}
+                      />
+                    </Grid>
+                    <Grid item xs={4}>
+                      <CommonTextField
+                        name="extinctionCoeffs.g"
+                        value={values.extinctionCoeffs.g}
+                        placeholder={"Example: 3.31"}
+                        label="g-Band"
+                        required={true}
+                      />
+                    </Grid>
+                  </Grid>
+                </FormGroup>
+              </FormControl>
+            </div>
             <br />
             <SaveButton isSubmitting={isSubmitting} isValid={isValid} />
             <AlertError
