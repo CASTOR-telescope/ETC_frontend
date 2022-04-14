@@ -11,7 +11,7 @@ Helpful links:
 """
 import re
 
-from flask import abort, request
+from flask import abort, request, send_from_directory
 
 from utils import app, cors, bad_route, logger
 from telescope_route import put_telescope_json
@@ -19,26 +19,21 @@ from background_route import put_background_json
 from source_route import put_source_json
 from photometry_route import put_photometry_json
 
-# from utils import MyCustomJsonEncoder
-
-# app = Flask(__name__)
-# api = Api(app)
-# cors = CORS()
-# app.json_encoder = MyCustomJsonEncoder
-
-
-@app.route("/")
-def index():
-    """
-    With this route, when the client requests the https://example.com/
-    the server will send the contents of the index.html static file.
-    """
-    return app.send_static_file("index.html")
+if __name__ != "__main__":
+    # i.e., run via gunicorn. Ensure app in utils.py is configured for gunicorn.
+    @app.route("/")
+    def index():
+        """
+        Serve the index.html file when client requests root (e.g.,
+        <http://localhost:5000>).
+        """
+        return app.send_static_file("index.html")
 
 
 # N.B. only use GET requests for default path
 # See <https://flask.palletsprojects.com/en/2.0.x/api/#url-route-registrations>
 @app.route("/", defaults={"path": ""})
+@app.route("/<string:path>", methods=["GET", "PUT"])  # needed to redirect everything else
 @app.route("/<path:path>", methods=["GET", "PUT"])
 def redirect(path):
     """
@@ -81,8 +76,38 @@ def redirect(path):
 
         return put_photometry_json()
 
+    elif re.search(r"\bmanifest.json\b", path) is not None:  # match whole word
+        logger.info("Serving manifest.json")
+        if request.method != "GET":
+            abort(405)
+        return app.send_static_file("manifest.json")
+
+    elif re.search(r"\bfavicon.ico\b", path) is not None:  # match whole word
+        logger.info("Serving favicon.ico")
+        if request.method != "GET":
+            abort(405)
+        return app.send_static_file("favicon.ico")
+
+    elif re.search(r"\brobots.txt\b", path) is not None:  # match whole word
+        logger.info("Serving robots.txt")
+        if request.method != "GET":
+            abort(405)
+        return app.send_static_file("robots.txt")
+
     else:
-        return bad_route(path)
+        # Match file type
+        other_path = re.search(r"[^/?]*\.(?:gif|png|jpeg|jpg|ico)$", path)
+        if other_path is not None and app.static_folder is not None:
+            logger.info("Serving some image...")
+            if request.method != "GET":
+                abort(405)
+            img_file = other_path.group()
+            # return app.send_static_file(img_file)
+            return send_from_directory(app.static_folder, img_file)
+
+        else:
+            logger.error("Bad route: " + str(path))
+            return bad_route(path)
 
 
 if __name__ == "__main__":
