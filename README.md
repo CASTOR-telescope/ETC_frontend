@@ -2,6 +2,8 @@
 
 Isaac Cheng - 2022
 
+**This is a work in progress!**
+
 This repository is for the  graphical user interface (GUI) frontend for the CASTOR
 Exposure Time Calculator (ETC). This is meant to be used with the CASTOR ETC Python
 backend.
@@ -19,9 +21,23 @@ Python backend using an application programming interface (API) created using th
 
 ---
 
-## Local Build
+## Build
 
-### Docker
+1. Download the git repo:
+
+   ```bash
+   git clone https://github.com/CASTOR-telescope/ETC_frontend.git
+   ```
+
+2. Ensure you have [Docker](https://docs.docker.com/get-started/) installed.
+
+3. Ensure you have `npm` installed (I am using v8.5.2). Go into the
+   [`frontend/`](frontend/) folder and run `npm run build` in the terminal to build the
+   React application (this may take some time). The aim of building locally rather than in
+   the Docker container is to minimize loading time (? Does this even affect CANFAR
+   loading time ?).
+
+Can override parameters (e.g., `VERSION`) in Docker_env.
 
 Make docker container. Don't forget to remove default node version and to install the
 CASTOR ETC Python package.
@@ -48,9 +64,10 @@ because of a dependency issue (<https://github.com/tomkp/react-split-pane/issues
 
 ## Help
 
-Please reach out to me at [isaac.cheng.ca@gmail.com](mailto:isaac.cheng.ca@gmail.com) if
-there are any questions. Larger issues or feature requests can be posted and tracked via
-the [issues page](https://github.com/CASTOR-telescope/ETC_frontend/issues).
+Please reach out to me at [isaac.cheng.ca@gmail.com](mailto:isaac.cheng.ca@gmail.com) or
+via the [discussions tab](https://github.com/CASTOR-telescope/ETC_frontend/discussions) on
+GitHub if there are any questions. Larger issues or feature requests can be posted and
+tracked via the [issues page](https://github.com/CASTOR-telescope/ETC_frontend/issues).
 
 ## Some notes for myself (remove later)
 
