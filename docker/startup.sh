@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LOGLEVEL=${1:debug}
+LOGLEVEL=${1:-debug}
 
 echo "Starting gunicorn..."
 

@@ -13,9 +13,9 @@ REPO_DIR="$(dirname "$SCRIPT_DIR")"
 # Load custom parameters
 #
 source ${SCRIPT_DIR}/Docker_env
-CACHEBUST_BACKEND=${1:1}
-CACHEBUST_CASTOR=${2:1}
-CACHEBUST_FRONTEND=${3:1}
+CACHEBUST_BACKEND=${1:-1}
+CACHEBUST_CASTOR=${2:-1}
+CACHEBUST_FRONTEND=${3:-1}
 #
 # Build the project
 #
