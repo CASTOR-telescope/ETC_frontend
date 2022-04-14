@@ -12,7 +12,7 @@ import astropy.units as u
 from castor_etc.photometry import Photometry
 from flask import jsonify, request
 
-from utils import DataHolder, app, bad_request, server_error
+from utils import DataHolder, app, bad_request, server_error, logger, log_traceback
 
 import pandas as pd
 import numpy as np
@@ -50,7 +50,6 @@ def put_photometry_json():
     # TODO: redleak fraction
 
     # Flask will raise exception 500 if any code raises an error
-    print("request_data:", request.get_json())
     try:
         #
         # Check inputs
@@ -58,6 +57,7 @@ def put_photometry_json():
         try:
             # Convert all inputs to floats
             request_data = request.get_json()
+            logger.info("Photometry request_data: " + str(request_data))
             extinction_coeffs = {
                 band: float(coeff)
                 for band, coeff in request_data["extinctionCoeffs"].items()
@@ -78,7 +78,12 @@ def put_photometry_json():
                         float(num) for num in re.findall(r"-?\d+\.?\d*", val)
                     ] << u.arcsec
                 aper_params[key] = parsed_val
-        except Exception:
+        except Exception as e:
+            log_traceback(e)
+            logger.error(
+                "Inputs to initialize the `Photometry` object "
+                + "do not match required inputs."
+            )
             return bad_request(
                 "Inputs to initialize the `Photometry` object "
                 + "do not match required inputs."
@@ -124,37 +129,13 @@ def put_photometry_json():
             sourceWeights=source_weights,
             aperExtent=PhotometryObj._aper_extent,  # already a list
         )
-    except Exception:
-        return bad_request(
+    except Exception as e:
+        log_traceback(e)
+        logger.error(
             "There was a problem initializing the `Photometry` object and "
             + "returning some of its attributes in a JSON format."
         )
-
-
-# if __name__ == "__main__":
-#     #     import json
-#     #     import jsonpickle
-#     #     import sys
-#     mydict = put_telescope_json(
-#         dark_current=1,
-#         fwhm=1 << u.arcsec,
-#         # px_scale=1,
-#         px_scale=1 << u.arcsec,
-#         read_noise=1,
-#         redleak_thresholds={"uv": 1 << u.AA, "u": 1 << u.AA, "g": 1 << u.AA},
-#     )
-#     # print(sys.getsizeof(mydict))
-#     # print(jsonpickle.decode(mydict).redleak_thresholds)
-#     # print(blah)
-#     # myjson = json.dumps(mydict, cls=JsonCustomEncoder)
-#     # print(json.loads(myjson)["redleak_thresholds"]["uv"])
-#     # print(sys.getsizeof(myjson))
-#     # print(pickle.load(mydict.stream))
-
-# # {
-# #     "darkCurrent": 1,
-# #     "fwhm": 2,
-# #     "pxScale": 3,
-# #     "readNoise": 4,
-# #     "redleakThresholds": {"uv": 5, "u": 6, "g": 7}
-# }
+        return server_error(
+            "There was a problem initializing the `Photometry` object and "
+            + "returning some of its attributes in a JSON format."
+        )

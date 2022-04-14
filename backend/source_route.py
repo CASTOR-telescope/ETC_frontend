@@ -10,7 +10,7 @@ import astropy.units as u
 from castor_etc.sources import PointSource, ExtendedSource, Profiles
 from flask import jsonify, request
 
-from utils import app, DataHolder, bad_request
+from utils import app, DataHolder, bad_request, logger, log_traceback, server_error
 
 
 @app.route("/source", methods=["PUT"])
@@ -34,7 +34,6 @@ def put_source_json():
         as a JSON response.
     """
     # Flask will raise exception 500 if any code raises an error
-    print("request_data:", request.get_json())
     try:
         #
         # Check inputs
@@ -42,6 +41,7 @@ def put_source_json():
         try:
             # TODO: deal with lots of these parameters later!
             request_data = request.get_json()
+            logger.info("Source request_data: " + str(request_data))
             source_type = request_data["sourceType"].lower()
             redshift = float(request_data["redshift"])
             predefined_spectrum = request_data["predefinedSpectrum"].lower()
@@ -61,7 +61,12 @@ def put_source_json():
             norm_params = {
                 param: float(value) for param, value in norm_params[norm_method].items()
             }
-        except Exception:
+        except Exception as e:
+            log_traceback(e)
+            logger.error(
+                "Inputs to initialize the `Source` object "
+                + "do not match required inputs."
+            )
             return bad_request(
                 "Inputs to initialize the `Source` object do not match required inputs."
             )
@@ -123,8 +128,13 @@ def put_source_json():
             spectrum=list(SourceObj.spectrum),  # y-values
             sourceMags=source_mags,  # dict of floats
         )
-    except Exception:
-        return bad_request(
+    except Exception as e:
+        log_traceback(e)
+        logger.error(
+            "There was a problem initializing the `Source` object and "
+            + "returning some of its attributes in a JSON format."
+        )
+        return server_error(
             "There was a problem initializing the `Source` object and "
             + "returning some of its attributes in a JSON format."
         )

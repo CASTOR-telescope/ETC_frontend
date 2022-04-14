@@ -10,7 +10,7 @@ import astropy.units as u
 from castor_etc.telescope import Telescope
 from flask import jsonify, request
 
-from utils import DataHolder, app, logger, log_traceback, bad_request
+from utils import DataHolder, app, logger, log_traceback, bad_request, server_error
 
 
 @app.route("/telescope", methods=["PUT"])
@@ -131,7 +131,7 @@ def put_telescope_json():
             "There was a problem initializing the `Telescope` object and "
             + "returning some of its attributes in a JSON format."
         )
-        return bad_request(
+        return server_error(
             "There was a problem initializing the `Telescope` object and "
             + "returning some of its attributes in a JSON format."
         )

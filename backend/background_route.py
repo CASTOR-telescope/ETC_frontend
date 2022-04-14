@@ -9,7 +9,7 @@ Isaac Cheng - 2022
 from castor_etc.background import Background
 from flask import jsonify, request
 
-from utils import app, DataHolder, bad_request
+from utils import app, DataHolder, bad_request, logger, log_traceback, server_error
 
 
 @app.route("/background", methods=["PUT"])
@@ -31,7 +31,6 @@ def put_background_json():
         geo_linewidth) of the `Background` object as a JSON response.
     """
     # Flask will raise exception 500 if any code raises an error
-    print("request_data:", request.get_json())
     try:
         #
         # Check inputs
@@ -39,6 +38,7 @@ def put_background_json():
         try:
             # Convert inputs to required types except geo_emission_params (for efficiency)
             request_data = request.get_json()
+            logger.info("Background request_data: " + str(request_data))
             use_default_sky_background = request_data["useDefaultSkyBackground"]
             custom_sky_background = request_data["customSkyBackground"]  # dict
             geo_emission_params = request_data["geocoronalEmission"]  # list of dicts
@@ -59,7 +59,12 @@ def put_background_json():
                 }
             else:
                 mags_per_sq_arcsec = None
-        except Exception:
+        except Exception as e:
+            log_traceback(e)
+            logger.error(
+                "Inputs to initialize the `Background` object "
+                + "do not match required inputs."
+            )
             return bad_request(
                 "Inputs to initialize the `Background` object "
                 + "do not match required inputs."
@@ -102,29 +107,13 @@ def put_background_json():
             geoWavelength=BackgroundObj.geo_wavelength,  # already floats (angstrom)
             geoLinewidth=BackgroundObj.geo_linewidth,  # already floats (angstrom)
         )
-    except Exception:
-        return bad_request(
+    except Exception as e:
+        log_traceback(e)
+        logger.error(
             "There was a problem initializing the `Background` object and "
             + "returning some of its attributes in a JSON format."
         )
-
-
-# if __name__ == "__main__":
-#     #     import json
-#     #     import jsonpickle
-#     #     import sys
-#     mydict = put_telescope_json(
-#         dark_current=1,
-#         fwhm=1 << u.arcsec,
-#         # px_scale=1,
-#         px_scale=1 << u.arcsec,
-#         read_noise=1,
-#         redleak_thresholds={"uv": 1 << u.AA, "u": 1 << u.AA, "g": 1 << u.AA},
-#     )
-#     # print(sys.getsizeof(mydict))
-#     # print(jsonpickle.decode(mydict).redleak_thresholds)
-#     # print(blah)
-#     # myjson = json.dumps(mydict, cls=JsonCustomEncoder)
-#     # print(json.loads(myjson)["redleak_thresholds"]["uv"])
-#     # print(sys.getsizeof(myjson))
-#     # print(pickle.load(mydict.stream))
+        return server_error(
+            "There was a problem initializing the `Background` object and "
+            + "returning some of its attributes in a JSON format."
+        )
