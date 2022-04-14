@@ -39,6 +39,9 @@ Python backend using an application programming interface (API) created using th
 
 Can override parameters (e.g., `VERSION`) in Docker_env.
 
+NOTE THAT DEBUG VERSION UTILS.PY IS DIFFERENT FROM PRODUCTION (I.E., CONTAINERIZED)
+UTILS.PY!!!
+
 Make docker container. Don't forget to remove default node version and to install the
 CASTOR ETC Python package.
 

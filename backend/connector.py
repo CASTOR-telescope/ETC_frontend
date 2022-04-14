@@ -87,8 +87,7 @@ def redirect(path):
 
 if __name__ == "__main__":
     cors.init_app(app)
-    # jsglue.init_app(app)
     # For development, port=5000 and debug=True
-    # app.run(port=5000, debug=True)
-    # Change port and debug mode in production
-    app.run(debug=False)
+    app.run(port=5000, debug=True)
+    # Change port and debug mode in production. not necessary since using gunicorn?
+    # app.run(debug=False)
