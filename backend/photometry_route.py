@@ -101,13 +101,9 @@ def put_photometry_json():
         # For now, just return the attributes I know I will have set
         PhotometryObj.use_elliptical_aperture(**aper_params)
         if phot_input["val_type"] == "snr":
-            phot_results = PhotometryObj.calc_snr_or_t(
-                snr=float(phot_input["val"]), extinction=extinction_coeffs
-            )
+            phot_results = PhotometryObj.calc_snr_or_t(snr=float(phot_input["val"]))
         elif phot_input["val_type"] == "t":
-            phot_results = PhotometryObj.calc_snr_or_t(
-                t=float(phot_input["val"]), extinction=extinction_coeffs
-            )
+            phot_results = PhotometryObj.calc_snr_or_t(t=float(phot_input["val"]))
         else:
             return bad_request("Couldn't read `photInput`")
         DataHolder.PhotometryObj = PhotometryObj

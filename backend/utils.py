@@ -6,35 +6,40 @@ General utilities for the CASTOR Flask API.
 Isaac Cheng - 2022
 """
 
-# import json
-
-from logging import WARNING, StreamHandler, Formatter, DEBUG, getLogger
+import logging
+from traceback import format_exception
 
 # from astropy.utils.misc import JsonCustomEncoder
 from flask import Flask, Response, jsonify
 
 # from flask.json import JSONEncoder
 from flask_cors import CORS
-from flask_restful import Api
+# from flask_restful import Api
 
-app = Flask(__name__)
-api = Api(app)
+app = Flask(__name__, static_folder="../frontend/build", static_url_path="/")  # gunicorn
+# app = Flask(__name__)  # python
+# api = Api(app)
 cors = CORS()
 
-app.logger.handlers.clear()  # prevent double-logging with Flask logger
+# --- Python ---
+# app.logger.handlers.clear()  # prevent double-logging with Flask logger
 
-log_handler = StreamHandler()  # don't log to file within Docker container
-# # If not in Docker container (e.g., not deployed on CANFAR), may want to log to file
-# log_handler = FileHandler("etc_frontend.log")  # need `from logging import FileHandler`
+# log_handler = logging.StreamHandler()  # log to stdout/stderr
+# # log_handler = logging.FileHandler("etc_frontend.log")  # log to file
 
-# Add logger to Flask app
-log_formatter = Formatter("%(asctime)s [%(name)-12s] %(levelname)-8s %(message)s")
-log_handler.setFormatter(log_formatter)
-log_handler.setLevel(DEBUG)  # only logs application errors, not HTTP errors
-app.logger.addHandler(log_handler)
+# # Add logger to Flask app
+# log_formatter = logging.Formatter("%(asctime)s [%(name)-12s] %(levelname)-8s %(message)s")
+# log_handler.setFormatter(log_formatter)
+# log_handler.setLevel(logging.DEBUG)  # only logs application errors, not HTTP errors
+# app.logger.addHandler(log_handler)
 
-# Use this logger for manual addition of log messages
-logger = getLogger("werkzeug")
+# # Use this logger for manual addition of log messages
+# logger = logging.getLogger("werkzeug")  # when using `python connector.py`
+
+# --- Gunicorn ---
+logger = logging.getLogger("gunicorn.error")
+app.logger.handlers = logger.handlers
+app.logger.setLevel(logger.level)
 
 # class MyCustomJsonEncoder(JSONEncoder):
 #     """
@@ -98,3 +103,9 @@ def bad_route(path):
     If you entered the URL manually please check your spelling and try again.</p>
     """
     return Response(response, status=404, mimetype="text/html")
+
+
+def log_traceback(e):
+    lines = format_exception(type(e), e, e.__traceback__)
+    traceback = "".join(lines)
+    logger.error(traceback)

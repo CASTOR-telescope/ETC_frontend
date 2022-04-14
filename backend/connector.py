@@ -11,10 +11,9 @@ Helpful links:
 """
 import re
 
-from flask import abort, jsonify, request
-from flask_restful import Resource
+from flask import abort, request
 
-from utils import app, api, cors, bad_route
+from utils import app, cors, bad_route, logger
 from telescope_route import put_telescope_json
 from background_route import put_background_json
 from source_route import put_source_json
@@ -28,21 +27,13 @@ from photometry_route import put_photometry_json
 # app.json_encoder = MyCustomJsonEncoder
 
 
-class ApiDir(Resource):
-    def get(self):
-        """
-        Get the URL of the session. Helpful link: <https://stackoverflow.com/a/15975041>.
-
-        Returns
-        -------
-          script_root :: str
-            The path of the current session. For example, if the requested URL is
-            `https://ws-uv.canfar.net/castor/<sessionID>/foo/page.html`, then script_root
-            is `/castor/<sessionID>`.
-        """
-        # return jsonify(path=app.instance_path)
-        return jsonify(path=request.script_root)
-        # return jsonify(path=request.base_url)
+@app.route("/")
+def index():
+    """
+    With this route, when the client requests the https://example.com/
+    the server will send the contents of the index.html static file.
+    """
+    return app.send_static_file("index.html")
 
 
 # N.B. only use GET requests for default path
@@ -62,47 +53,42 @@ def redirect(path):
         `castor/<sessionID>/foo`.
     """
 
-    print(app.url_map)
-    print(f"Parsing request for /{path}")
+    logger.info(f"Parsing request for /{path}")
+    logger.info("URL of request: " + str(request.url))
 
     if re.search(r"\btelescope\b", path) is not None:  # match whole word
-        print("Redirecting request to /telescope")
+        logger.info("Redirecting request to /telescope")
         if request.method != "PUT":
             abort(405)
         return put_telescope_json()
 
     if re.search(r"\bbackground\b", path) is not None:  # match whole word
-        print("Redirecting request to /background")
+        logger.info("Redirecting request to /background")
         if request.method != "PUT":
             abort(405)
         return put_background_json()
 
     if re.search(r"\bsource\b", path) is not None:  # match whole word
-        print("Redirecting request to /source")
+        logger.info("Redirecting request to /source")
         if request.method != "PUT":
             abort(405)
         return put_source_json()
 
     elif re.search(r"\bphotometry\b", path) is not None:  # match whole word
-        print(request.method)
+        logger.info(request.method)
         if request.method != "PUT":
             abort(405)
 
         return put_photometry_json()
 
-    elif re.search(r"\bapi\b", path) is not None:
-        return ApiDir().get()
-
     else:
         return bad_route(path)
 
-
-api.add_resource(ApiDir, "/api", endpoint="script_dir")
 
 if __name__ == "__main__":
     cors.init_app(app)
     # jsglue.init_app(app)
     # For development, port=5000 and debug=True
-    app.run(port=5000, debug=True)
+    # app.run(port=5000, debug=True)
     # Change port and debug mode in production
-    # app.run(debug=False)
+    app.run(debug=False)

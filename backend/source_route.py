@@ -107,6 +107,7 @@ def put_source_json():
         #
         # Get source magnitude in each passband
         #
+        # FIXME: remove get_avg_value() since it is incorrect!
         source_mags = SourceObj.get_avg_value(
             value_type="mag", TelescopeObj=DataHolder.TelescopeObj
         )
