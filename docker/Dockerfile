@@ -39,6 +39,12 @@ COPY --from=frontend-builder /frontend/build /frontend/build
 
 EXPOSE 5000
 
-# Change this to the proper CANFAR url & port
-WORKDIR /backend
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "connector:app", "--log-level=debug", "--log-file=/dev/stdout"]
+# Change this to the proper CANFAR URL & port
+
+# Use this or startup.sh?
+# WORKDIR /backend
+# CMD ["gunicorn", "-b", "0.0.0.0:5000", "connector:app", "--log-level=debug", "--log-file=/dev/stdout"]
+
+# RUN mkdir /skaha
+ADD docker/startup.sh /skaha/
+RUN chmod u+x /skaha/startup.sh
