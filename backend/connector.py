@@ -27,6 +27,7 @@ if __name__ != "__main__":
         Serve the index.html file when client requests root (e.g.,
         <http://localhost:5000>).
         """
+        logger.info(f"Serving index.html because client requested {app.static_url_path}")
         return app.send_static_file("index.html")
 
 
@@ -96,9 +97,9 @@ def redirect(path):
 
     else:
         # Match file type
-        other_path = re.search(r"[^/?]*\.(?:gif|png|jpeg|jpg|ico)$", path)
+        other_path = re.search(r"[^/?]*\.(?:gif|png|jpeg|jpg|ico|js|css)$", path)
         if other_path is not None and app.static_folder is not None:
-            logger.info("Serving some image...")
+            logger.info("Serving some image or js or css...")
             if request.method != "GET":
                 abort(405)
             img_file = other_path.group()
