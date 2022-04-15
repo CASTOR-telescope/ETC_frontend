@@ -22,6 +22,7 @@ RUN ./apt-install.sh sssd acl gunicorn gcc libcurl4-openssl-dev libssl-dev
 RUN pip3 install flask flask-cors wheel gunicorn
 
 ARG CACHEBUST_BACKEND=1
+# REVIEW: If you change CACHEBUST for COPY / ADD, it will seem like it doesn't invalidate the Docker cache but it actually does?
 WORKDIR /backend
 COPY backend /backend
 
@@ -41,10 +42,10 @@ EXPOSE 5000
 
 # Change this to the proper CANFAR URL & port
 
+# RUN mkdir /skaha
+ADD docker/startup.sh /skaha/
+RUN chmod a+x /skaha/startup.sh
+
 # Use this or startup.sh?
 # WORKDIR /backend
 # CMD ["gunicorn", "-b", "0.0.0.0:5000", "connector:app", "--log-level=debug", "--log-file=/dev/stdout"]
-
-# RUN mkdir /skaha
-ADD docker/startup.sh /skaha/
-RUN chmod u+x /skaha/startup.sh
