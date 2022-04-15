@@ -20,7 +20,8 @@ from flask_cors import CORS
 # TODO: check that the static url path works with CANFAR!
 app = Flask(
     __name__,
-    static_folder="../frontend/build",
+    # static_folder="../frontend/build",
+    static_folder="/backend/client",
     static_url_path="/session/castor-etc/" + str(os.getenv("session_id")) + "/",
 )  # gunicorn on CANFAR
 # app = Flask(__name__, static_folder="../frontend/build", static_url_path="/")  # gunicorn

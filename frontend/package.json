@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "repository": "https://github.com/CASTOR-telescope/ETC_frontend",
   "description": "Browser-based frontend for the CASTOR exposure time calculator",
+  "homepage": ".",
   "private": true,
   "devDependencies": {
     "@mui/icons-material": "^5.5.0",

@@ -96,15 +96,26 @@ def redirect(path):
         return app.send_static_file("robots.txt")
 
     else:
-        # Match file type
-        other_path = re.search(r"[^/?]*\.(?:gif|png|jpeg|jpg|ico|js|css)$", path)
-        if other_path is not None and app.static_folder is not None:
-            logger.info("Serving some image or js or css...")
+        # Everything after session/castor-etc/
+        after_url = re.search(r"(?<=session/castor-etc/).*$", path).group()
+        filename = re.search(r"[^/?]*\.(?:gif|png|jpeg|jpg|ico|js|css)$", path)
+        if filename is not None and after_url != "" and app.static_folder is not None:
             if request.method != "GET":
                 abort(405)
-            img_file = other_path.group()
+            logger.info(f"Serving some image/js/css (after_url={after_url})")
+            logger.info(f"Static folder: {app.static_folder}")
             # return app.send_static_file(img_file)
-            return send_from_directory(app.static_folder, img_file)
+            return send_from_directory(app.static_folder, after_url)
+        # Match file name & type
+        # other_path = re.search(r"[^/?]*\.(?:gif|png|jpeg|jpg|ico|js|css)$", path)
+        # if other_path is not None and app.static_folder is not None:
+        #     if request.method != "GET":
+        #         abort(405)
+        #     img_file = other_path.group()
+        #     logger.info(f"Serving some image or js or css (file={img_file})")
+        #     logger.info(f"Static folder: {app.static_folder} (+/static)")
+        #     # return app.send_static_file(img_file)
+        #     return send_from_directory(app.static_folder + "/static", img_file)
 
         else:
             logger.error(f"Bad route: route=/{path}")

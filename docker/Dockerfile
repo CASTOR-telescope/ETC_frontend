@@ -36,7 +36,8 @@ RUN pip3 install .
 
 # Copy the minified frontend files
 ARG CACHEBUST_FRONTEND=1
-COPY --from=frontend-builder /frontend/build /frontend/build
+# COPY --from=frontend-builder /frontend/build /frontend/build
+COPY --from=frontend-builder /frontend/build /backend/client
 
 EXPOSE 5000
 
