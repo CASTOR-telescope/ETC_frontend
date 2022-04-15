@@ -5,7 +5,7 @@ General utilities for the CASTOR Flask API.
 
 Isaac Cheng - 2022
 """
-
+import os
 import logging
 from traceback import format_exception
 
@@ -14,9 +14,16 @@ from flask import Flask, Response, jsonify
 
 # from flask.json import JSONEncoder
 from flask_cors import CORS
+
 # from flask_restful import Api
 
-app = Flask(__name__, static_folder="../frontend/build", static_url_path="/")  # gunicorn
+# TODO: check that the static url path works with CANFAR!
+app = Flask(
+    __name__,
+    static_folder="../frontend/build",
+    static_url_path="/session/castor-etc/" + str(os.getenv("session_id")) + "/",
+)  # gunicorn on CANFAR
+# app = Flask(__name__, static_folder="../frontend/build", static_url_path="/")  # gunicorn
 # app = Flask(__name__)  # python
 # api = Api(app)
 cors = CORS()

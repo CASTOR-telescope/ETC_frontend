@@ -21,7 +21,7 @@ from photometry_route import put_photometry_json
 
 if __name__ != "__main__":
     # i.e., run via gunicorn. Ensure app in utils.py is configured for gunicorn.
-    @app.route("/")
+    @app.route(app.static_url_path)
     def index():
         """
         Serve the index.html file when client requests root (e.g.,
@@ -106,7 +106,7 @@ def redirect(path):
             return send_from_directory(app.static_folder, img_file)
 
         else:
-            logger.error("Bad route: " + str(path))
+            logger.error(f"Bad route: route=/{path}")
             return bad_route(path)
 
 
