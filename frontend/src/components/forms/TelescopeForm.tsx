@@ -109,7 +109,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
       mirrorDiameter: "100", // cm
       darkCurrent: "0.01", // electron/s per pixel
       readNoise: "2.0", // electron/s per pixel
-      redleakThresholds: { uv: "3880", u: "4730", g: "5660" }, // angstrom
+      redleakThresholds: { uv: "3010", u: "4160", g: "5600" }, // angstrom
       extinctionCoeffs: { uv: 7.06, u: 4.35, g: 3.31 },
     };
   } else {
@@ -258,7 +258,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                 <CommonTextField
                   name="redleakThresholds.uv"
                   value={values.redleakThresholds.uv}
-                  placeholder={"Default: 3880"}
+                  placeholder={"Default: 3010"}
                   label="UV-Band (angstrom)"
                   // values={values}
                   // prevFormValues={prevFormValues}
@@ -267,7 +267,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                 <CommonTextField
                   name="redleakThresholds.u"
                   value={values.redleakThresholds.u}
-                  placeholder={"Default: 4730"}
+                  placeholder={"Default: 4160"}
                   label="u-Band (angstrom)"
                   // values={values}
                   // prevFormValues={prevFormValues}
@@ -276,7 +276,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                 <CommonTextField
                   name="redleakThresholds.g"
                   value={values.redleakThresholds.g}
-                  placeholder={"Default: 5660"}
+                  placeholder={"Default: 5600"}
                   label="g-Band (angstrom)"
                   // values={values}
                   // prevFormValues={prevFormValues}
