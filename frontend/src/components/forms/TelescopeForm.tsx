@@ -118,7 +118,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
       fwhm: "0.15", // arcsec
       pxScale: "0.1", // arcsec per pixel
       mirrorDiameter: "100", // cm
-      darkCurrent: "0.01", // electron/s per pixel
+      darkCurrent: "1e-4", // electron/s per pixel
       readNoise: "2.0", // electron/s per pixel
       redleakThresholds: { uv: "3010", u: "4160", g: "5600" }, // angstrom
       extinctionCoeffs: { uv: 7.06, u: 4.35, g: 3.31 },
@@ -307,7 +307,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
             <CommonTextField
               name="darkCurrent"
               value={values.darkCurrent}
-              placeholder={"Default: 0.01"}
+              placeholder={"Default: 1e-4"}
               label="Dark Current (electron/s per pixel)"
               // values={values}
               // prevFormValues={prevFormValues}
