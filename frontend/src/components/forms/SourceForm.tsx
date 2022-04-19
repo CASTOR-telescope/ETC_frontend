@@ -20,6 +20,7 @@ import {
   FormHelperText,
   FormLabel,
   Grid,
+  Input,
   InputLabel,
   Link,
   MenuItem,
@@ -53,6 +54,7 @@ type SourceSelectTypeFieldProps = {
   setIsChanged: (value: boolean) => void;
   handleChange: (event: React.ChangeEvent<{}>) => void;
   incrNumSourceTypeChanged: () => void;
+  setCustomSpectrumKey: (value: number) => void;
   required?: boolean;
 } & FieldAttributes<{}>;
 
@@ -62,9 +64,11 @@ const SourceSelectTypeField: React.FC<SourceSelectTypeFieldProps> = ({
   setIsChanged,
   handleChange,
   incrNumSourceTypeChanged,
+  setCustomSpectrumKey,
   required = true,
   ...props
 }) => {
+  const { setFieldValue } = useFormikContext();
   const [field, meta] = useField<{}>(props);
   const { onChange, ...fieldNoOnChange } = field;
   const errorText = meta.error || meta.touched ? meta.error : "";
@@ -85,6 +89,9 @@ const SourceSelectTypeField: React.FC<SourceSelectTypeFieldProps> = ({
         style={{ minWidth: "7rem" }}
         onChange={(e: React.ChangeEvent<any>) => {
           incrNumSourceTypeChanged(); // To let React know that source type has changed
+          setFieldValue("customSpectrum", "");
+          // Clear customSpectrum file name
+          setCustomSpectrumKey(Date.now());
           return handleChange(e);
         }}
         {...fieldNoOnChange}
@@ -101,12 +108,16 @@ type SpectrumFieldsProps = {
   values: { [value: string]: any }; // any object props
   handleChange: (event: React.ChangeEvent<{}>) => void;
   numSourceTypeChanged: number;
+  customSpectrumKey: number;
+  setCustomSpectrumKey: (value: number) => void;
 } & FieldAttributes<{}>;
 
 const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
   values,
   handleChange,
   numSourceTypeChanged,
+  customSpectrumKey,
+  setCustomSpectrumKey,
   ...props
 }) => {
   const { setFieldValue } = useFormikContext();
@@ -246,6 +257,9 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
                       setMyInputObj(value);
                       setFieldValue("predefinedSpectrum", value.spectralValue);
                     }
+                    setFieldValue("customSpectrum", "");
+                    // Clear customSpectrum file name
+                    setCustomSpectrumKey(Date.now());
                   }
                 }
                 onInputChange={(event, newInputString) =>
@@ -296,7 +310,49 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
             </FormControl>
           </Grid>
           <Grid item xs={4}>
-            <Button
+            <Input
+              // https://www.youtube.com/watch?v=EUIRvQbkf0Y
+              type="file"
+              name="customSpectrum"
+              // accept=".jpg, .jpeg, .png"  // for debugging
+              inputComponent="input"
+              inputProps={{
+                accept: ".fit, .fits, .txt, .dat",
+                key: customSpectrumKey,
+              }}
+              onChange={(event) => {
+                // setFieldValue("customSpectrum", event.target["files"][0])
+                // https://stackoverflow.com/a/54487081
+                const target = event.target as HTMLInputElement;
+                const file: File = (target.files as FileList)[0]; // avoids null typecheck
+                // Clear any custom spetrum
+                setFieldValue("customSpectrum", file);
+              }}
+              size="medium"
+              style={{
+                marginTop: 0,
+                marginBottom: 0,
+                marginRight: 0,
+                marginLeft: 0,
+                padding: 0,
+                fontSize: 18,
+              }}
+              sx={[
+                { width: "100%", height: "77.5%" },
+                // values.predefinedSpectrum !== "" && {
+                //   "&:disabled": { backgroundColor: "green" },
+                // },
+              ]}
+              disabled={values.predefinedSpectrum !== ""}
+              // TODO: theme file upload button while preserving filename display!
+            />
+            {/* <input style={{ display: "none" }} id="contained-button-file" type="file" />
+            <label htmlFor="contained-button-file">
+              <Button variant="contained" color="primary" component="span">
+                Upload
+              </Button>
+            </label> */}
+            {/* <Button
               size="large"
               variant="contained"
               style={{
@@ -311,7 +367,7 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
               disabled={values.predefinedSpectrum !== ""}
             >
               Upload Spectrum
-            </Button>
+            </Button> */}
           </Grid>
         </Grid>
       </FormGroup>
@@ -1385,6 +1441,9 @@ const SourceForm: React.FC<SourceFormProps> = ({
     setNumSourceTypeChanged(numSourceTypeChanged + 1);
   };
 
+  // To clear custom spectrum file name (<https://stackoverflow.com/a/55495449>)
+  const [customSpectrumKey, setCustomSpectrumKey] = React.useState(0);
+
   return (
     <div>
       <Typography variant="h5">Specify the source properties below.</Typography>
@@ -1414,6 +1473,8 @@ const SourceForm: React.FC<SourceFormProps> = ({
         onSubmit={
           async (data, { setSubmitting }) => {
             setSubmitting(true);
+
+            console.log("customSpectrum", data.customSpectrum);
 
             // Make async call
             await axios
@@ -1458,6 +1519,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
               label="Source Type"
               incrNumSourceTypeChanged={incrNumSourceTypeChanged}
               handleChange={handleChange}
+              setCustomSpectrumKey={setCustomSpectrumKey}
             />
             <br />
             <SpectrumFields
@@ -1465,6 +1527,8 @@ const SourceForm: React.FC<SourceFormProps> = ({
               values={values}
               handleChange={handleChange}
               numSourceTypeChanged={numSourceTypeChanged}
+              customSpectrumKey={customSpectrumKey}
+              setCustomSpectrumKey={setCustomSpectrumKey}
             />
             <br />
             <PhysicalParametersGroup
@@ -1486,7 +1550,8 @@ const SourceForm: React.FC<SourceFormProps> = ({
             {
               // Do manual validation here because of some weird circular dependency issue
               // with Yup & the "when" function...
-              values.customSpectrum === "" &&
+              (values.customSpectrum === "" ||
+                typeof values.customSpectrum === "undefined") &&
                 values.predefinedSpectrum === "" &&
                 (() => {
                   isValid = false;
