@@ -111,7 +111,7 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
         useResizeHandler={true}
         config={{
           displaylogo: false,
-          modeBarButtonsToRemove: ["zoomIn2d", "zoomOut2d"],
+          // modeBarButtonsToRemove: ["zoomIn2d", "zoomOut2d"],
           toImageButtonOptions: { filename: "response_and_spectrum" },
           // Allow users to edit chart
           showEditInChartStudio: true,
@@ -189,7 +189,7 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
         useResizeHandler={true}
         config={{
           displaylogo: false,
-          modeBarButtonsToRemove: ["zoomIn2d", "zoomOut2d"],
+          // modeBarButtonsToRemove: ["zoomIn2d", "zoomOut2d"],
           toImageButtonOptions: { filename: "response_and_spectrum" },
           // Allow users to edit chart
           showEditInChartStudio: true,

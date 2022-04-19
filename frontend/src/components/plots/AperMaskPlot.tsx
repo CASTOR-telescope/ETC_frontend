@@ -8,7 +8,6 @@ type AperMaskPlotProps = {
 const AperMaskPlot: React.FC<AperMaskPlotProps> = ({ numPhotometrySubmit }) => {
   // Re-render plot (more robust this way because it persists across refreshes, unlike
   // numTelescopeSaved > 0)
-  const data = [];
   if (sessionStorage.getItem("photometryParams") !== null) {
     // Update to proper sessionStorage key after
     let photometryParams = JSON.parse(`${sessionStorage.getItem("photometryParams")}`);
@@ -62,6 +61,7 @@ const AperMaskPlot: React.FC<AperMaskPlotProps> = ({ numPhotometrySubmit }) => {
             type: "linear",
             autorange: false,
             range: [extent[2], extent[3]],
+            scaleanchor: "x",
           },
           margin: { t: 40 }, // if no title
           // pad: { t: 0, b: 0, l: 0, r: 0 },
@@ -93,7 +93,7 @@ const AperMaskPlot: React.FC<AperMaskPlotProps> = ({ numPhotometrySubmit }) => {
         useResizeHandler={true}
         config={{
           displaylogo: false,
-          modeBarButtonsToRemove: ["zoomIn2d", "zoomOut2d"],
+          // modeBarButtonsToRemove: ["zoomIn2d", "zoomOut2d"],
           toImageButtonOptions: { filename: "source_weights" },
           // Allow users to edit chart
           showEditInChartStudio: true,
@@ -188,7 +188,7 @@ const AperMaskPlot: React.FC<AperMaskPlotProps> = ({ numPhotometrySubmit }) => {
         useResizeHandler={true}
         config={{
           displaylogo: false,
-          modeBarButtonsToRemove: ["zoomIn2d", "zoomOut2d"],
+          // modeBarButtonsToRemove: ["zoomIn2d", "zoomOut2d"],
           toImageButtonOptions: { filename: "source_weights" },
           // Allow users to edit chart
           showEditInChartStudio: true,
