@@ -27,7 +27,7 @@ const SourceWeightsPlot: React.FC<SourceWeightsPlotProps> = ({ numPhotometrySubm
             colorscale: "Electric",
             colorbar: {
               title: {
-                text: "Flux Relative to Source Center",
+                text: "Flux Relative to Source Center (incl. fractional pixels)",
                 side: "right",
                 font: { size: 14 },
               },
