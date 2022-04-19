@@ -88,6 +88,12 @@ const TabForms: React.FC<TabFormsProps> = ({
   const [isBackgroundSyncTelescope, setIsBackgroundSyncTelescope] = React.useState(true);
   const [isSourceSyncTelescope, setIsSourceSyncTelescope] = React.useState(true);
 
+  // // For tracking Telescope, Background, & Source dependencies on Photometry
+  const [isTelescopeSyncPhotometry, setIsTelescopeSyncPhotometry] = React.useState(true);
+  const [isBackgroundSyncPhotometry, setIsBackgroundSyncPhotometry] =
+    React.useState(true);
+  const [isSourceSyncPhotometry, setIsSourceSyncPhotometry] = React.useState(true);
+
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     // if (newValue !== value && !isSavedAndUnsubmitted) {
     if (newValue !== value && isChanged) {
@@ -113,6 +119,8 @@ const TabForms: React.FC<TabFormsProps> = ({
         minHeight: 0,
         display: "flex",
         flexDirection: "column",
+        // marginTop: "0.5em",  // doesn't look good
+        // marginBottom: "0em", // doesn't seem to change anything
       }}
     >
       <Box
@@ -177,6 +185,11 @@ const TabForms: React.FC<TabFormsProps> = ({
           // setIsTelescopeUpdated={setIsTelescopeUpdated}
           setIsBackgroundSyncTelescope={setIsBackgroundSyncTelescope}
           setIsSourceSyncTelescope={setIsSourceSyncTelescope}
+          numPhotometrySubmit={numPhotometrySubmit}
+          isTelescopeSyncPhotometry={isTelescopeSyncPhotometry}
+          setIsTelescopeSyncPhotometry={setIsTelescopeSyncPhotometry}
+          // incrNumPhotometrySubmit={incrNumPhotometrySubmit}
+          isChanged={isChanged}
         />
       </TabPanel>
       <TabPanel value={value} index={1}>
@@ -191,6 +204,9 @@ const TabForms: React.FC<TabFormsProps> = ({
           setErrorMessage={setErrorMessage}
           isBackgroundSyncTelescope={isBackgroundSyncTelescope}
           setIsBackgroundSyncTelescope={setIsBackgroundSyncTelescope}
+          numPhotometrySubmit={numPhotometrySubmit}
+          isBackgroundSyncPhotometry={isBackgroundSyncPhotometry}
+          setIsBackgroundSyncPhotometry={setIsBackgroundSyncPhotometry}
         />
       </TabPanel>
       <TabPanel value={value} index={2}>
@@ -206,6 +222,9 @@ const TabForms: React.FC<TabFormsProps> = ({
           isSourceSyncTelescope={isSourceSyncTelescope}
           setIsSourceSyncTelescope={setIsSourceSyncTelescope}
           incrNumTelescopeSaved={incrNumTelescopeSaved}
+          numPhotometrySubmit={numPhotometrySubmit}
+          isSourceSyncPhotometry={isSourceSyncPhotometry}
+          setIsSourceSyncPhotometry={setIsSourceSyncPhotometry}
         />
       </TabPanel>
       <TabPanel value={value} index={3}>
@@ -219,8 +238,11 @@ const TabForms: React.FC<TabFormsProps> = ({
           setIsError={setIsError}
           errorMessage={errorMessage}
           setErrorMessage={setErrorMessage}
-          incrNumPhotometrySubmit={incrNumPhotometrySubmit}
           numPhotometrySubmit={numPhotometrySubmit}
+          incrNumPhotometrySubmit={incrNumPhotometrySubmit}
+          setIsTelescopeSyncPhotometry={setIsTelescopeSyncPhotometry}
+          setIsBackgroundSyncPhotometry={setIsBackgroundSyncPhotometry}
+          setIsSourceSyncPhotometry={setIsSourceSyncPhotometry}
         />
       </TabPanel>
       {/* <TabPanel value={value} index={4}>

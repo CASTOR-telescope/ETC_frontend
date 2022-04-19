@@ -36,15 +36,15 @@ import axios from "axios";
 import { useEffect } from "react";
 
 import {
+  AlertIfFormSavedButPhotometryNotSubmitted,
   useGetIfFormChanged,
   CommonFormProps,
   AlertError,
   CommonTextField,
   SaveButton,
 } from "../CommonFormElements";
-import { API_URL } from "../../service/env";
+import { API_URL } from "../../env";
 import React from "react";
-import { fstat } from "fs";
 
 import { SourceType, SpectrumOptions } from "./SpectrumOptions";
 
@@ -142,6 +142,7 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
 
   // Holy smokes... Handling default values and the autocomplete clear button is such a
   // pain... Default value solution based on <https://stackoverflow.com/a/66424008>
+  // FIXME: Autocomplete clear still returns undefined, messing up validation
 
   // Object representing empty Autocomplete option (the option whose spectralValue === "")
   const EMPTY_OPTION = {
@@ -161,6 +162,10 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
 
   // Load previous value if available
   useEffect(() => {
+    console.log(
+      "values.predefinedSpectrum in useEffect: ",
+      typeof values.predefinedSpectrum
+    );
     for (let option of options) {
       if (values.predefinedSpectrum === option.spectralValue) {
         // console.log(option);
@@ -206,16 +211,24 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
               <Autocomplete
                 // PopperComponent={SpectrumAutocompletePopper}
                 fullWidth={true}
+                // defaultValue={(() => {
+                //   console.log("In defaultValue", typeof myInputObj.spectralValue);
+                //   return myInputObj;
+                // })()}
+                // defaultValue={EMPTY_OPTION}
                 value={myInputObj}
                 inputValue={displaySpectralValue}
                 onChange={(event, value: any) =>
                   // <https://stackoverflow.com/a/59217951>
                   {
+                    // FIXME: validation fails because of "undefined" value. Happens even without this being called
+                    console.log("value", value);
                     // <https://stackoverflow.com/a/69497782>
-                    if (value === null) {
+                    if (value === null || typeof value === "undefined") {
                       setMyInputObj(EMPTY_OPTION); // empty option
                       setFieldValue("predefinedSpectrum", "");
                     } else {
+                      console.log("in else", value);
                       setMyInputObj(value);
                       setFieldValue("predefinedSpectrum", value.spectralValue);
                     }
@@ -226,7 +239,11 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
                 }
                 options={options.sort((a, b) => a.sortName.localeCompare(b.sortName))}
                 groupBy={(option) => option.groupName}
-                getOptionLabel={(option) => option.displayName}
+                // getOptionLabel={(option) => option.displayName}
+                getOptionLabel={(option) => {
+                  console.log("getOptionLabel", option);
+                  return typeof option.displayName === "string" ? option.displayName : "";
+                }}
                 getOptionDisabled={(option) => !option.isAllowed}
                 isOptionEqualToValue={(option, value) =>
                   // <https://stackoverflow.com/a/65347275>
@@ -244,7 +261,11 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
                       {...params}
                       name="predefinedSpectrum"
                       label="Predefined Spectra"
-                      onChange={handleChange}
+                      // onChange={handleChange}
+                      onChange={(event) => {
+                        console.log("event", event);
+                        return handleChange;
+                      }}
                       required={true}
                       fullWidth={true}
                       InputLabelProps={{ shrink: true }} // keep label on top
@@ -342,7 +363,99 @@ const PhysicalParametersGroup: React.FC<PhysicalParametersGroupProps> = ({
                     textAlign: "center",
                   }}
                 >
-                  (POINT SOURCE PHYSICAL PARAMETERS COMING SOON!)
+                  <RadioGroup
+                    name={field.name}
+                    value={values.physicalParameters.point.useAngleOrRadius}
+                    // Need to set onChange manually in this case
+                    // See <https://levelup.gitconnected.com/create-a-controlled-radio-group-in-react-formik-material-ui-and-typescript-7ed314081a0e>
+                    onChange={(event) => {
+                      setFieldValue(
+                        "physicalParameters.point.useAngleOrRadius",
+                        event.currentTarget.value
+                      );
+                    }}
+                    sx={{ marginBottom: 2 }}
+                  >
+                    <FormControlLabel
+                      value="angle"
+                      control={<Radio />}
+                      label="Specify the point source's angular diameter"
+                    />
+                    <FormControlLabel
+                      value="radius"
+                      control={<Radio />}
+                      label="Specify the point source's physical radius and distance"
+                    />
+                  </RadioGroup>
+                  {
+                    (() => {
+                      switch (values["physicalParameters"]["point"]["useAngleOrRadius"]) {
+                        case "angle":
+                          return (
+                            <FormHelperText
+                              sx={{
+                                fontSize: "medium",
+                                fontWeight: "normal",
+                                marginBottom: 2,
+                                textAlign: "center",
+                              }}
+                            >
+                              <FormGroup>
+                                <CommonTextField
+                                  name={`physicalParameters.point.angle`}
+                                  value={values.physicalParameters.point.angle}
+                                  placeholder="Example: 0.15"
+                                  label="Angular Diameter (arcsec)"
+                                />
+                              </FormGroup>
+                            </FormHelperText>
+                          );
+                        case "radius":
+                          return (
+                            <FormHelperText
+                              sx={{
+                                fontSize: "medium",
+                                fontWeight: "normal",
+                                marginBottom: 2,
+                                textAlign: "center",
+                              }}
+                            >
+                              RADIUS AND DIST
+                            </FormHelperText>
+                          );
+                        // case NormMethods.LuminosityDist:
+                        //   return (
+                        //     <FormGroup>
+                        //       <CommonTextField
+                        //         name={`normParams.${NormMethods.LuminosityDist}.luminosity`}
+                        //         value={`normParams.${NormMethods.LuminosityDist}.luminosity`}
+                        //         placeholder="Example: 1.4e10"
+                        //         label="Bolometric Luminosity (solar luminosities)"
+                        //       />
+                        //       <CommonTextField
+                        //         name={`normParams.${NormMethods.LuminosityDist}.dist`}
+                        //         value={`normParams.${NormMethods.LuminosityDist}.dist`}
+                        //         placeholder=""
+                        //         label="Distance to Source (kpc)"
+                        //       />
+                        //     </FormGroup>
+                        //   );
+                        default:
+                          return (
+                            <FormHelperText
+                              sx={{
+                                fontSize: "medium",
+                                fontWeight: "normal",
+                                marginBottom: 2,
+                                textAlign: "center",
+                              }}
+                            >
+                              Something went wrong...
+                            </FormHelperText>
+                          );
+                      }
+                    })() // calling anonymous arrow function to render it
+                  }
                 </Typography>
               );
             case SourceType.Extended:
@@ -697,11 +810,11 @@ const AlertIfTelescopeParamsChanged: React.FC<AlertIfTelescopeParamsChangedProps
           marginBottom: 2,
         }}
       >
-        <Alert severity="info" style={{ width: "50%" }}>
+        <Alert severity="info" style={{ width: "75%" }}>
           <AlertTitle>Info</AlertTitle>
           <Typography>
-            The telescope parameters have been updated and the source AB magnitudes in
-            each passband may be incorrect. Please save the source parameters again.
+            The Telescope parameters have been updated and the source AB magnitudes in
+            each passband may be incorrect. Please save the Source parameters again.
           </Typography>
         </Alert>
       </Box>
@@ -720,29 +833,22 @@ const sourceValidationSchema = Yup.object({
     .required("Redshift is a required field")
     .typeError("Redshift must be a non-negative number")
     .min(0, "Redshift must be a non-negative number"),
-  customSkyBackground: Yup.object().when("useDefaultSkyBackground", {
-    is: false,
-    then: Yup.object({
-      uv: Yup.number()
-        .required("Sky background is a required field")
-        .typeError("Sky background must be a number"),
-      u: Yup.number()
-        .required("Sky background is a required field")
-        .typeError("Sky background must be a number"),
-      g: Yup.number()
-        .required("Sky background is a required field")
-        .typeError("Sky background must be a number"),
-    }),
-    otherwise: Yup.object({
-      uv: Yup.number().notRequired().typeError("Sky background must be a number"),
-      u: Yup.number().notRequired().typeError("Sky background must be a number"),
-      g: Yup.number().notRequired().typeError("Sky background must be a number"),
-    }),
-  }),
   // FIXME: `when()` does not seem to work at all...
-  predefinedSpectrum: Yup.string()
-    .required("A predefined spectrum is required")
-    .min(0, "A predefined spectrum is required"),
+  // FIXME: when validating predefinedSpectrum, validation fails on first Save because of TextField??
+  predefinedSpectrum: Yup.string().test(
+    "predefinedSpectrumTest",
+    "A predefined spectrum is required",
+    (value: any) => {
+      console.log("predefinedSpectrum value", value);
+      // return (
+      //   (typeof value === "string" && value.length > 0) || typeof value === "undefined"
+      // );
+      return typeof value === "string" && value.length > 0;
+    }
+  ),
+  // predefinedSpectrum: Yup.string()
+  // .required("A predefined spectrum is required")
+  // .min(1, "A predefined spectrum is required"),
   // predefinedSpectrum: Yup.string().when("customSpectrum", {
   //   is: "",
   //   then: Yup.string().required("A predefined spectrum is required").min(0),
@@ -808,24 +914,24 @@ const sourceValidationSchema = Yup.object({
           otherwise: (sourceValidationSchema) => sourceValidationSchema.notRequired(),
         }),
     }),
-
-    normParams: Yup.object({
-      // passbandMag: {},
-      // passbandFlam: {},
-      luminosityDist: Yup.object({
-        luminosity: Yup.number()
-          .typeError("Luminosity must be a number > 0")
-          .positive("Luminosity must be a number > 0"),
-        // .when()...
-        dist: Yup.number()
-          .typeError("Distance must be a number > 0")
-          .positive("Distance must be a number > 0"),
-        // .when()...
-      }),
-    }),
-
-    isNormAfterSpectralLines: Yup.boolean(),
   }),
+
+  normParams: Yup.object({
+    // passbandMag: {},
+    // passbandFlam: {},
+    luminosityDist: Yup.object({
+      luminosity: Yup.number()
+        .typeError("Luminosity must be a number > 0")
+        .positive("Luminosity must be a number > 0"),
+      // .when()...
+      dist: Yup.number()
+        .typeError("Distance must be a number > 0")
+        .positive("Distance must be a number > 0"),
+      // .when()...
+    }),
+  }),
+
+  isNormAfterSpectralLines: Yup.boolean().required(),
 });
 
 type SourceFormProps = {
@@ -833,6 +939,9 @@ type SourceFormProps = {
   isSourceSyncTelescope: boolean;
   setIsSourceSyncTelescope: (value: boolean) => void;
   incrNumTelescopeSaved: () => void;
+  numPhotometrySubmit: number;
+  isSourceSyncPhotometry: boolean;
+  setIsSourceSyncPhotometry: (value: boolean) => void;
 } & CommonFormProps;
 
 const SourceForm: React.FC<SourceFormProps> = ({
@@ -847,6 +956,9 @@ const SourceForm: React.FC<SourceFormProps> = ({
   isSourceSyncTelescope,
   setIsSourceSyncTelescope,
   incrNumTelescopeSaved,
+  numPhotometrySubmit,
+  isSourceSyncPhotometry,
+  setIsSourceSyncPhotometry,
 }) => {
   // Save user form inputs between tab switches
   const FORM_SESSION = "sourceForm"; // key for sessionStorage (user inputs)
@@ -868,7 +980,8 @@ const SourceForm: React.FC<SourceFormProps> = ({
         },
       ],
       physicalParameters: {
-        point: {},
+        point: {}, // empty, but must have the "point" key
+        // point: { angle: "", radius: "", dist: "", useAngleOrRadius: "angle" },
         extended: {},
         galaxy: { angleA: "", angleB: "", sersic: "", rEff: "", e: "", angle: "0" },
       },
@@ -894,6 +1007,10 @@ const SourceForm: React.FC<SourceFormProps> = ({
   return (
     <div>
       <Typography variant="h5">Specify the source properties below.</Typography>
+      <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+        Form validation is still in development for this tab. Please ensure all inputs are
+        valid prior to saving.
+      </Typography>
       <Typography variant="body1" style={{ marginBottom: 16 }}>
         The properties below should describe the <i>intrinsic</i> properties of the
         source. Also, this tab is very limited in functionality at the moment. For more
@@ -908,6 +1025,10 @@ const SourceForm: React.FC<SourceFormProps> = ({
         </Link>{" "}
         package instead.
       </Typography>
+      <AlertIfFormSavedButPhotometryNotSubmitted
+        isFormSyncPhotometry={isSourceSyncPhotometry}
+        numPhotometrySubmit={numPhotometrySubmit}
+      />
       <Formik
         initialValues={myInitialValues}
         onSubmit={
@@ -915,16 +1036,8 @@ const SourceForm: React.FC<SourceFormProps> = ({
             setSubmitting(true);
             console.log(data);
 
-            // // ! Move to async call after
-            // setIsSavedAndUnsubmitted(true);
-            // setPrevFormValues(data);
-            // setIsChanged(false);
-            // sessionStorage.setItem(FORM_SESSION, JSON.stringify(data));
-            // setIsSourceSyncTelescope(true);
-            // setSubmitting(false);
-
             // Make async call
-            const response = await axios
+            await axios
               .put(API_URL + "source", data)
               .then((response) => response.data)
               .then((response) =>
@@ -938,6 +1051,9 @@ const SourceForm: React.FC<SourceFormProps> = ({
                 sessionStorage.setItem(FORM_SESSION, JSON.stringify(data));
                 setIsSourceSyncTelescope(true);
                 incrNumTelescopeSaved();
+                if (sessionStorage.getItem("photometryForm") !== null) {
+                  setIsSourceSyncPhotometry(false);
+                }
               })
               .catch((error) => {
                 console.log(error);
@@ -979,12 +1095,16 @@ const SourceForm: React.FC<SourceFormProps> = ({
               handleChange={handleChange}
             />
             <br />
-            <PhysicalParametersGroup
-              name="physicalParameters" // REVIEW: make sure this name is correct when adding feature
-              values={values}
-              handleChange={handleChange}
-            />
-            <br />
+            {values.sourceType !== SourceType.Point && (
+              <div>
+                <PhysicalParametersGroup
+                  name="physicalParameters"
+                  values={values}
+                  handleChange={handleChange}
+                />
+                <br />
+              </div>
+            )}
             <SpectralLinesGroup
               name="spectralLines" // REVIEW: make sure this name is correct when adding feature
               values={values}
@@ -997,7 +1117,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
             />
             <br />
             <SaveButton isSubmitting={isSubmitting} isValid={isValid} />
-            {/* <pre>{JSON.stringify(values, null, 2)}</pre> */}
+            <pre>{JSON.stringify(values, null, 2)}</pre>
             <AlertError
               isError={isError}
               setIsError={setIsError}

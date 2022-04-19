@@ -11,9 +11,8 @@ import { Allotment } from "allotment";
 import "allotment/dist/style.css";
 // import "./components/allotment.css";
 
-import ResponsivePlot from "./components/ResponsivePlot";
 import ResponseCurveSpectrumPlot from "./components/plots/ResponseCurveSpectrumPlot";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import SourceWeightsPlot from "./components/plots/SourceWeightsPlot";
 import AperMaskPlot from "./components/plots/AperMaskPlot";
 // import PanePlots from "./components/PanePlots";
@@ -24,7 +23,6 @@ function App() {
   // const theme = useTheme();
 
   // console.log(window.location);
-  // console.log("api_url", API_URL);
 
   // To update the ResponseCurveSpectrumPlot once new Telescope parameters are returned
   // TODO: rename this to reflect source + telescope dependence
@@ -33,7 +31,8 @@ function App() {
     setNumTelescopeSaved(numTelescopeSaved + 1);
   };
 
-  // To update image plots on each new Photometry submission
+  // To update image plots on each new Photometry submission and to track whether a
+  // Photometry request has ever been submitted
   const [numPhotometrySubmit, setNumPhotometrySubmit] = useState(0);
   const incrNumPhotometrySubmit = () => {
     setNumPhotometrySubmit(numPhotometrySubmit + 1);

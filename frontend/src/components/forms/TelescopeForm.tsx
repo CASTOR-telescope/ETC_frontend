@@ -13,13 +13,14 @@ import axios from "axios";
 import { useEffect } from "react";
 
 import {
+  AlertIfFormSavedButPhotometryNotSubmitted,
   CommonTextFieldWithTracker,
   CommonFormProps,
   AlertError,
   CommonTextField,
   SaveButton,
 } from "../CommonFormElements";
-import { API_URL } from "../../service/env";
+import { API_URL } from "../../env";
 
 const telescopeValidationSchema = Yup.object({
   fwhm: Yup.number()
@@ -77,6 +78,11 @@ type TelescopeFormProps = {
   // setIsTelescopeUpdated: (value: boolean) => void;
   setIsBackgroundSyncTelescope: (value: boolean) => void;
   setIsSourceSyncTelescope: (value: boolean) => void;
+  numPhotometrySubmit: number;
+  isTelescopeSyncPhotometry: boolean;
+  setIsTelescopeSyncPhotometry: (value: boolean) => void;
+  // incrNumPhotometrySubmit: () => void;
+  isChanged: boolean;
 } & CommonFormProps;
 
 /**
@@ -97,6 +103,11 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
   // setIsTelescopeUpdated,
   setIsBackgroundSyncTelescope,
   setIsSourceSyncTelescope,
+  numPhotometrySubmit,
+  isTelescopeSyncPhotometry,
+  setIsTelescopeSyncPhotometry,
+  // incrNumPhotometrySubmit,
+  isChanged,
 }) => {
   // Save user form inputs between tab switches
   const FORM_SESSION = "telescopeForm"; // key for sessionStorage (user inputs)
@@ -137,6 +148,10 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
         </Link>{" "}
         package instead.
       </Typography>
+      <AlertIfFormSavedButPhotometryNotSubmitted
+        isFormSyncPhotometry={isTelescopeSyncPhotometry}
+        numPhotometrySubmit={numPhotometrySubmit}
+      />
       <Formik
         initialValues={myInitialValues}
         onSubmit={
@@ -144,7 +159,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
             setSubmitting(true);
 
             // Make async call
-            const response = await axios
+            await axios
               .put(API_URL + "telescope", data)
               .then((response) => response.data)
               .then((response) =>
@@ -165,6 +180,45 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                   setIsBackgroundSyncTelescope(false);
                 }
                 setIsSourceSyncTelescope(false);
+                console.log("isChanged", isChanged);
+                console.log("isTelescopeSyncPhotometry", isTelescopeSyncPhotometry);
+                if (sessionStorage.getItem("photometryForm") !== null) {
+                  setIsTelescopeSyncPhotometry(false);
+                }
+
+                // // Resubmit Photometry form to update images and calculations (doesn't
+                // // work in current state)
+                // if (sessionStorage.getItem("photometryForm") !== null) {
+                //   axios
+                //     .put(
+                //       API_URL + "photometry",
+                //       JSON.parse(`${sessionStorage.getItem("photometryForm")}`)
+                //     )
+                //     .then((phot_response) => phot_response.data)
+                //     .then((phot_response) =>
+                //       sessionStorage.setItem(
+                //         "photometryParams",
+                //         JSON.stringify(phot_response)
+                //       )
+                //     );
+                //   incrNumPhotometrySubmit();
+
+                //   // const _ = async () => {
+                //   //   await axios
+                //   //     .put(
+                //   //       API_URL + "photometry",
+                //   //       JSON.parse(`${sessionStorage.getItem("photometryForm")}`)
+                //   //     )
+                //   //     .then((phot_response) => phot_response.data)
+                //   //     .then((phot_response) => {
+                //   //       sessionStorage.setItem(
+                //   //         "photometryParams",
+                //   //         JSON.stringify(phot_response)
+                //   //       );
+                //   //       incrNumPhotometrySubmit();
+                //   //     });
+                //   // };
+                // }
               })
               .catch((error) => {
                 console.log(error);
@@ -172,6 +226,39 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                 setErrorMessage(error.message);
               })
               .finally(() => setSubmitting(false));
+
+            // // Resubmit Photometry form to update images and calculations (doesn't work)
+            // if (sessionStorage.getItem("photometryForm") !== null) {
+            //   // axios
+            //   //   .put(
+            //   //     API_URL + "photometry",
+            //   //     JSON.parse(`${sessionStorage.getItem("photometryForm")}`)
+            //   //   )
+            //   //   .then((phot_response) => phot_response.data)
+            //   //   .then((phot_response) =>
+            //   //     sessionStorage.setItem(
+            //   //       "photometryParams",
+            //   //       JSON.stringify(phot_response)
+            //   //     )
+            //   //   );
+            //   // incrNumPhotometrySubmit();
+
+            //   const _ = async () => {
+            //     await axios
+            //       .put(
+            //         API_URL + "photometry",
+            //         JSON.parse(`${sessionStorage.getItem("photometryForm")}`)
+            //       )
+            //       .then((phot_response) => phot_response.data)
+            //       .then((phot_response) => {
+            //         sessionStorage.setItem(
+            //           "photometryParams",
+            //           JSON.stringify(phot_response)
+            //         );
+            //         incrNumPhotometrySubmit();
+            //       });
+            //   };
+            // }
           } // end async function
         } // end onSubmit
         validateOnChange={true}

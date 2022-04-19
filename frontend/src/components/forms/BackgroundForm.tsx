@@ -31,13 +31,14 @@ import axios from "axios";
 import { useEffect } from "react";
 
 import {
+  AlertIfFormSavedButPhotometryNotSubmitted,
   useGetIfFormChanged,
   CommonFormProps,
   AlertError,
   CommonTextField,
   SaveButton,
 } from "../CommonFormElements";
-import { API_URL } from "../../service/env";
+import { API_URL } from "../../env";
 import React from "react";
 
 type SkyBackgroundRadioGroupProps = {
@@ -282,11 +283,11 @@ const AlertIfTelescopeParamsChanged: React.FC<AlertIfTelescopeParamsChangedProps
             marginBottom: 2,
           }}
         >
-          <Alert severity="info" style={{ width: "50%" }}>
+          <Alert severity="info" style={{ width: "75%" }}>
             <AlertTitle>Info</AlertTitle>
             <Typography>
-              The telescope parameters have been updated and the sky background magnitudes
-              in each passband may be incorrect. Please save the background parameters
+              The Telescope parameters have been updated and the sky background magnitudes
+              in each passband may be incorrect. Please save the Background parameters
               again.
             </Typography>
           </Alert>
@@ -353,6 +354,9 @@ type BackgroundFormProps = {
   // isTelescopeUpdated: boolean;
   isBackgroundSyncTelescope: boolean;
   setIsBackgroundSyncTelescope: (value: boolean) => void;
+  numPhotometrySubmit: number;
+  isBackgroundSyncPhotometry: boolean;
+  setIsBackgroundSyncPhotometry: (value: boolean) => void;
 } & CommonFormProps;
 
 const BackgroundForm: React.FC<BackgroundFormProps> = ({
@@ -366,6 +370,9 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
   setErrorMessage,
   isBackgroundSyncTelescope,
   setIsBackgroundSyncTelescope,
+  numPhotometrySubmit,
+  isBackgroundSyncPhotometry,
+  setIsBackgroundSyncPhotometry,
 }) => {
   // Save user form inputs between tab switches
   const FORM_SESSION = "backgroundForm"; // key for sessionStorage (user inputs)
@@ -410,6 +417,10 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
         </Link>{" "}
         package instead.
       </Typography>
+      <AlertIfFormSavedButPhotometryNotSubmitted
+        isFormSyncPhotometry={isBackgroundSyncPhotometry}
+        numPhotometrySubmit={numPhotometrySubmit}
+      />
       <Formik
         initialValues={myInitialValues}
         onSubmit={
@@ -430,6 +441,9 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
                 setIsChanged(false);
                 sessionStorage.setItem(FORM_SESSION, JSON.stringify(data));
                 setIsBackgroundSyncTelescope(true);
+                if (sessionStorage.getItem("photometryForm") !== null) {
+                  setIsBackgroundSyncPhotometry(false);
+                }
               })
               .catch((error) => {
                 console.log(error);

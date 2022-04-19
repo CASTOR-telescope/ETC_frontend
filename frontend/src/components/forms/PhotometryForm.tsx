@@ -36,7 +36,7 @@ import {
 import LoadingButton from "@mui/lab/LoadingButton";
 import * as Yup from "yup";
 import axios from "axios";
-import { API_URL } from "../../service/env";
+import { API_URL } from "../../env";
 import { useEffect, useState } from "react";
 import { themeYellowColor } from "../DarkModeTheme";
 import { SourceType } from "./SpectrumOptions";
@@ -81,7 +81,7 @@ const AlertIfSavedButNotSubmitted: React.FC<AlertIfSavedButNotSubmittedProps> = 
           marginBottom: 2,
         }}
       >
-        <Alert severity="info" style={{ width: "50%" }}>
+        <Alert severity="info" style={{ width: "75%" }}>
           <AlertTitle>Info</AlertTitle>
           <Typography>
             Some parameters are saved but not submitted. The photometry calculations and
@@ -558,16 +558,6 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
   );
 };
 
-// // FIXME: if statement does not update in real time.
-// const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
-//   numPhotometrySubmit,
-// }) => {
-//   return sessionStorage.getItem("photometryParams") !== null &&
-//     sessionStorage.getItem("photometryForm") !== null ? (
-//     <ResultsPaper numPhotometrySubmit={numPhotometrySubmit} />
-//   ) : null;
-// };
-
 const photometryValidationSchema = Yup.object({});
 
 type PhotometryFormProps = {
@@ -575,6 +565,9 @@ type PhotometryFormProps = {
   setIsSavedAndUnsubmitted: (value: boolean) => void;
   incrNumPhotometrySubmit: () => void;
   numPhotometrySubmit: number;
+  setIsTelescopeSyncPhotometry: (value: boolean) => void;
+  setIsBackgroundSyncPhotometry: (value: boolean) => void;
+  setIsSourceSyncPhotometry: (value: boolean) => void;
 } & CommonFormProps;
 
 const PhotometryForm: React.FC<PhotometryFormProps> = ({
@@ -589,6 +582,9 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
   errorMessage,
   setErrorMessage,
   numPhotometrySubmit,
+  setIsTelescopeSyncPhotometry,
+  setIsBackgroundSyncPhotometry,
+  setIsSourceSyncPhotometry,
 }) => {
   // Save user form inputs between tab switches
   const FORM_SESSION = "photometryForm"; // key for sessionStorage (user inputs)
@@ -658,7 +654,7 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
           // setIsSavedAndUnsubmitted(false);
 
           // Make async call
-          const response = await axios
+          await axios
             .put(API_URL + "photometry", data)
             .then((response) => response.data)
             .then((response) => {
@@ -673,6 +669,9 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
               setIsChanged(false);
               incrNumPhotometrySubmit();
               setSubmitting(false);
+              setIsTelescopeSyncPhotometry(true);
+              setIsBackgroundSyncPhotometry(true);
+              setIsSourceSyncPhotometry(true);
             })
             .catch((error) => {
               console.log(error);

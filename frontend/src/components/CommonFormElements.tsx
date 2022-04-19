@@ -1,5 +1,5 @@
 import LoadingButton from "@mui/lab/LoadingButton";
-import { Alert, AlertTitle, Snackbar, TextField } from "@mui/material";
+import { Alert, AlertTitle, Box, Snackbar, TextField, Typography } from "@mui/material";
 import { Field, FieldAttributes, useField, useFormikContext } from "formik";
 import { isEqual } from "lodash";
 import React, { useEffect } from "react";
@@ -51,10 +51,44 @@ export const AlertError: React.FC<{
         }}
       >
         <AlertTitle>Error</AlertTitle>
-        {errorMessage}
+        {errorMessage} <br />
+        Please check the session logs for more details
       </Alert>
     </Snackbar>
   );
+};
+
+export const AlertIfFormSavedButPhotometryNotSubmitted: React.FC<{
+  isFormSyncPhotometry: boolean;
+  numPhotometrySubmit: number;
+}> = ({ isFormSyncPhotometry, numPhotometrySubmit }) => {
+  if (!isFormSyncPhotometry && numPhotometrySubmit > 0) {
+    return (
+      <Box
+        sx={{
+          backgroundColor: "transparent",
+          display: "flex",
+          justifyContent: "center",
+          width: "100%",
+          marginBottom: 2,
+        }}
+      >
+        <Alert severity="info" style={{ width: "75%" }}>
+          <AlertTitle>Info</AlertTitle>
+          <Typography>
+            Parameters have been updated but a new Photometry request has not been
+            submitted. The photometry calculations and the simulated images may not
+            correspond to the parameters shown.
+          </Typography>
+          <Typography>
+            Submit a new Photometry request to update the images and results.
+          </Typography>
+        </Alert>
+      </Box>
+    );
+  } else {
+    return <div />;
+  }
 };
 
 export const useGetIfFormChanged = (
@@ -63,30 +97,13 @@ export const useGetIfFormChanged = (
 ) => {
   const { values } = useFormikContext();
 
-  // const compareValues = useCallback(() => {
-  //   if (isEqual(values, prevFormValues)) {
-  //     setIsChanged(false);
-  //     console.log("unchanged values: ", values);
-  //     console.log("prevFormValues values: ", prevFormValues);
-  //   } else {
-  //     setIsChanged(true);
-  //     console.log("changed values: ", values);
-  //     console.log("prevFormValues values: ", prevFormValues);
-  //   }
-  // }, [values]);
-
   useEffect(() => {
     // compareValues();
     if (isEqual(values, prevFormValues)) {
       setIsChanged(false);
-      // console.log("unchanged values: ", values);
-      // console.log("prevFormValues values: ", prevFormValues);
     } else {
       setIsChanged(true);
-      // console.log("changed values: ", values);
-      // console.log("prevFormValues values: ", prevFormValues);
     }
-    console.log("in useGetIfFormChanged", values);
   }, [values]);
 };
 
@@ -218,7 +235,7 @@ export const SaveButton: React.FC<{ isSubmitting: boolean; isValid: boolean }> =
   isSubmitting,
   isValid,
 }) => {
-  // console.log("isValid?", isValid);
+  console.log("isValid?", isValid);
   return (
     <LoadingButton
       type="submit"
