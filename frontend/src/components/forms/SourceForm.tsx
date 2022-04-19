@@ -23,7 +23,6 @@ import {
   InputLabel,
   Link,
   MenuItem,
-  Popper,
   Radio,
   RadioGroup,
   Select,
@@ -52,6 +51,8 @@ type SourceSelectTypeFieldProps = {
   label: string;
   prevFormValues: Object;
   setIsChanged: (value: boolean) => void;
+  handleChange: (event: React.ChangeEvent<{}>) => void;
+  incrNumSourceTypeChanged: () => void;
   required?: boolean;
 } & FieldAttributes<{}>;
 
@@ -59,10 +60,13 @@ const SourceSelectTypeField: React.FC<SourceSelectTypeFieldProps> = ({
   label,
   prevFormValues,
   setIsChanged,
+  handleChange,
+  incrNumSourceTypeChanged,
   required = true,
   ...props
 }) => {
   const [field, meta] = useField<{}>(props);
+  const { onChange, ...fieldNoOnChange } = field;
   const errorText = meta.error || meta.touched ? meta.error : "";
 
   useGetIfFormChanged(setIsChanged, prevFormValues);
@@ -79,7 +83,11 @@ const SourceSelectTypeField: React.FC<SourceSelectTypeFieldProps> = ({
         label={label}
         variant="outlined"
         style={{ minWidth: "7rem" }}
-        {...field}
+        onChange={(e: React.ChangeEvent<any>) => {
+          incrNumSourceTypeChanged(); // To let React know that source type has changed
+          return handleChange(e);
+        }}
+        {...fieldNoOnChange}
       >
         <MenuItem value={SourceType.Point}>Point Source</MenuItem>
         <MenuItem value={SourceType.Extended}>Extended Source</MenuItem>
@@ -92,11 +100,13 @@ const SourceSelectTypeField: React.FC<SourceSelectTypeFieldProps> = ({
 type SpectrumFieldsProps = {
   values: { [value: string]: any }; // any object props
   handleChange: (event: React.ChangeEvent<{}>) => void;
+  numSourceTypeChanged: number;
 } & FieldAttributes<{}>;
 
 const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
   values,
   handleChange,
+  numSourceTypeChanged,
   ...props
 }) => {
   const { setFieldValue } = useFormikContext();
@@ -115,8 +125,6 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
   //     />
   //   );
   // };
-
-  // TODO: clear Autocomplete field when values.sourceType changes
 
   const options = SpectrumOptions.map((option) => {
     const isAllowed =
@@ -161,11 +169,11 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
   const [myInputObj, setMyInputObj] = React.useState(EMPTY_OPTION);
 
   // Load previous value if available
-  useEffect(() => {
-    console.log(
-      "values.predefinedSpectrum in useEffect: ",
-      typeof values.predefinedSpectrum
-    );
+  React.useEffect(() => {
+    // console.log(
+    //   "values.predefinedSpectrum in useEffect: ",
+    //   typeof values.predefinedSpectrum
+    // );
     for (let option of options) {
       if (values.predefinedSpectrum === option.spectralValue) {
         // console.log(option);
@@ -178,6 +186,12 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
       // }
     }
   }, []);
+
+  // To clear predefined spectra field when changing source types
+  React.useEffect(() => {
+    setMyInputObj(EMPTY_OPTION);
+    setFieldValue("predefinedSpectrum", "");
+  }, [numSourceTypeChanged]);
 
   // TODO: add upload spectrum button functionality
 
@@ -222,13 +236,13 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
                   // <https://stackoverflow.com/a/59217951>
                   {
                     // FIXME: validation fails because of "undefined" value. Happens even without this being called
-                    console.log("value", value);
+                    // console.log("value", value);
                     // <https://stackoverflow.com/a/69497782>
                     if (value === null || typeof value === "undefined") {
                       setMyInputObj(EMPTY_OPTION); // empty option
                       setFieldValue("predefinedSpectrum", "");
                     } else {
-                      console.log("in else", value);
+                      // console.log("in else", value);
                       setMyInputObj(value);
                       setFieldValue("predefinedSpectrum", value.spectralValue);
                     }
@@ -241,7 +255,7 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
                 groupBy={(option) => option.groupName}
                 // getOptionLabel={(option) => option.displayName}
                 getOptionLabel={(option) => {
-                  console.log("getOptionLabel", option);
+                  // console.log("getOptionLabel", option);
                   return typeof option.displayName === "string" ? option.displayName : "";
                 }}
                 getOptionDisabled={(option) => !option.isAllowed}
@@ -263,7 +277,7 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
                       label="Predefined Spectra"
                       // onChange={handleChange}
                       onChange={(event) => {
-                        console.log("event", event);
+                        // console.log("event", event);
                         return handleChange;
                       }}
                       required={true}
@@ -301,19 +315,158 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
           </Grid>
         </Grid>
       </FormGroup>
-      {(values.predefinedSpectrum === "blackbody" ||
-        values.predefinedSpectrum === "power-law") && (
-        <Typography
-          sx={{
-            fontSize: "large",
-            fontWeight: "normal",
-            marginBottom: 2,
-            textAlign: "center",
-          }}
-        >
-          (Configuration options coming later...)
-        </Typography>
-      )}
+      {
+        (() => {
+          switch (values["predefinedSpectrum"]) {
+            case "blackbody":
+              return (
+                <FormGroup>
+                  <FormHelperText
+                    sx={{
+                      fontSize: "medium",
+                      fontWeight: "normal",
+                      marginBottom: 2,
+                      textAlign: "center",
+                    }}
+                  >
+                    Generate a blackbody spectrum of a given temperature and normalize its
+                    spectral radiance to match an object of the specified radius and
+                    distance. Note that renormalization of this spectrum can be done
+                    below.
+                  </FormHelperText>
+                  <Grid container spacing={2} columns={12}>
+                    <Grid item xs={4}>
+                      <CommonTextField
+                        name="predefinedSpectrumParameters.blackbody.temp"
+                        value={values.predefinedSpectrumParameters.blackbody.temp}
+                        placeholder={"Example: 5500"}
+                        label="Blackbody Temperature (K)"
+                        required={true}
+                      />
+                    </Grid>
+                    <Grid item xs={4}>
+                      <CommonTextField
+                        name="predefinedSpectrumParameters.blackbody.radius"
+                        value={values.predefinedSpectrumParameters.blackbody.radius}
+                        placeholder={"Example: 1"}
+                        label="Radius (solar radii)"
+                        required={true}
+                      />
+                    </Grid>
+                    <Grid item xs={4}>
+                      <CommonTextField
+                        name="predefinedSpectrumParameters.blackbody.dist"
+                        value={values.predefinedSpectrumParameters.blackbody.dist}
+                        placeholder={"Example: 1"}
+                        label="Distance (kpc)"
+                        required={true}
+                      />
+                    </Grid>
+                  </Grid>
+                </FormGroup>
+              );
+            case "power-law":
+              return (
+                <FormGroup>
+                  <FormHelperText
+                    sx={{
+                      fontSize: "medium",
+                      fontWeight: "normal",
+                      marginBottom: 2,
+                      textAlign: "center",
+                    }}
+                  >
+                    Generate a power-law spectrum with a specified exponent. The power-law
+                    spectrum will have a flux density of 1 at the reference wavelength.
+                  </FormHelperText>
+                  <Grid
+                    container
+                    spacing={2}
+                    columns={12}
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <Grid item xs={5}>
+                      <CommonTextField
+                        name="predefinedSpectrumParameters.powerLaw.refWavelength"
+                        value={values.predefinedSpectrumParameters.powerLaw.refWavelength}
+                        placeholder={"Example: 3500"}
+                        label="Reference Wavelength (angstrom)"
+                        required={true}
+                      />
+                    </Grid>
+                    <Grid item xs={5}>
+                      <CommonTextField
+                        name="predefinedSpectrumParameters.powerLaw.exponent"
+                        value={values.predefinedSpectrumParameters.powerLaw.exponent}
+                        placeholder={"Example: 2"}
+                        label="Exponent"
+                        required={true}
+                      />
+                    </Grid>
+                  </Grid>
+                </FormGroup>
+              );
+            case "uniform":
+              return (
+                <FormGroup>
+                  <FormHelperText
+                    sx={{
+                      fontSize: "medium",
+                      fontWeight: "normal",
+                      marginBottom: 2,
+                      textAlign: "center",
+                    }}
+                  >
+                    Generate a uniform (flat) spectrum in the chosen unit. The displayed
+                    spectrum will always be in units of erg/s/cm²/Å. Note that a flat
+                    spectrum in units of either AB magnitude or erg/s/cm²/Hz will not be
+                    flat in erg/s/cm²/Å.
+                  </FormHelperText>
+                  <Grid
+                    container
+                    spacing={2}
+                    columns={12}
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <Grid item xs={5}>
+                      <CommonTextField
+                        name="predefinedSpectrumParameters.uniform.spectrumValue"
+                        value={values.predefinedSpectrumParameters.uniform.spectrumValue}
+                        placeholder={"Example: 1e-19"}
+                        label="Value in the Specified Unit"
+                        required={true}
+                      />
+                    </Grid>
+                    <Grid item xs={2} style={{ marginTop: -15 }}>
+                      <FormControl>
+                        <InputLabel required={true}>Unit</InputLabel>
+                        <Field
+                          name="predefinedSpectrumParameters.uniform.unit"
+                          type="select"
+                          as={Select}
+                          error={!!errorText}
+                          required={true}
+                          label="Unit"
+                          variant="standard"
+                          style={{ minWidth: "9.5rem" }}
+                        >
+                          <MenuItem value={"flam"}>erg/s/cm²/Å</MenuItem>
+                          <MenuItem value={"fnu"}>erg/s/cm²/Hz</MenuItem>
+                          <MenuItem value={"ABmag"}>AB Magnitude</MenuItem>
+                          <MenuItem value={"STmag"}>ST Magnitude</MenuItem>
+                        </Field>
+                      </FormControl>
+                    </Grid>
+                  </Grid>
+                </FormGroup>
+              );
+            default:
+              return <div />;
+          }
+        })() // calling anonymous arrow function to render it
+      }
     </FormControl>
   );
 };
@@ -333,192 +486,239 @@ const PhysicalParametersGroup: React.FC<PhysicalParametersGroupProps> = ({
   const isError = meta.error ? true : false;
   // const errorText = meta.error || meta.touched ? meta.error : "";
 
-  // TODO: add button to auto-calculate eccentricity for galaxies based on semimajor and semiminor axes
-  return (
-    <FormControl component="fieldset" variant="standard">
-      <FormLabel component="legend" required={true} sx={{ fontSize: 18 }} filled={true}>
-        Physical Parameters
-      </FormLabel>
-      <FormHelperText
-        sx={{
-          fontSize: "medium",
-          fontWeight: "normal",
-          marginBottom: 2,
-          textAlign: "center",
-          width: "25vw",
-        }}
-      >
-        Specify the source's physical properties.
-      </FormHelperText>
-      {
-        (() => {
-          switch (values["sourceType"]) {
-            case SourceType.Point:
-              return (
-                <Typography
-                  sx={{
-                    fontSize: "large",
-                    fontWeight: "normal",
-                    marginBottom: 2,
-                    textAlign: "center",
-                  }}
-                >
-                  <RadioGroup
-                    name={field.name}
-                    value={values.physicalParameters.point.useAngleOrRadius}
-                    // Need to set onChange manually in this case
-                    // See <https://levelup.gitconnected.com/create-a-controlled-radio-group-in-react-formik-material-ui-and-typescript-7ed314081a0e>
-                    onChange={(event) => {
-                      setFieldValue(
-                        "physicalParameters.point.useAngleOrRadius",
-                        event.currentTarget.value
-                      );
-                    }}
-                    sx={{ marginBottom: 2 }}
-                  >
-                    <FormControlLabel
-                      value="angle"
-                      control={<Radio />}
-                      label="Specify the point source's angular diameter"
-                    />
-                    <FormControlLabel
-                      value="radius"
-                      control={<Radio />}
-                      label="Specify the point source's physical radius and distance"
-                    />
-                  </RadioGroup>
-                  {
-                    (() => {
-                      switch (values["physicalParameters"]["point"]["useAngleOrRadius"]) {
-                        case "angle":
-                          return (
-                            <FormHelperText
-                              sx={{
-                                fontSize: "medium",
-                                fontWeight: "normal",
-                                marginBottom: 2,
-                                textAlign: "center",
-                              }}
-                            >
-                              <FormGroup>
-                                <CommonTextField
-                                  name={`physicalParameters.point.angle`}
-                                  value={values.physicalParameters.point.angle}
-                                  placeholder="Example: 0.15"
-                                  label="Angular Diameter (arcsec)"
-                                />
-                              </FormGroup>
-                            </FormHelperText>
+  const WIDTH = "40vw";
+
+  if (values.sourceType !== SourceType.Point) {
+    return (
+      <div>
+        <FormControl component="fieldset" variant="standard">
+          <FormLabel
+            component="legend"
+            required={true}
+            sx={{ fontSize: 18 }}
+            filled={true}
+          >
+            Physical Parameters
+          </FormLabel>
+          <FormHelperText
+            sx={{
+              fontSize: "medium",
+              fontWeight: "normal",
+              marginBottom: 2,
+              textAlign: "center",
+              width: WIDTH,
+            }}
+          >
+            Specify the source's physical properties.
+          </FormHelperText>
+          {
+            (() => {
+              switch (values["sourceType"]) {
+                case SourceType.Point:
+                  return (
+                    <FormHelperText
+                      sx={{
+                        fontSize: "medium",
+                        fontWeight: "normal",
+                        marginBottom: 2,
+                        textAlign: "center",
+                      }}
+                    >
+                      Something went wrong. You should not be seeing the point source
+                      physical parameters...
+                    </FormHelperText>
+                  );
+                case SourceType.Extended:
+                  return (
+                    <FormGroup>
+                      <CommonTextField
+                        name="physicalParameters.extended.angleA"
+                        value={values.physicalParameters.extended.angleA}
+                        placeholder=""
+                        label="Semimajor Axis Angular Size (arcsec)"
+                      />
+                      <CommonTextField
+                        name="physicalParameters.extended.angleB"
+                        value={values.physicalParameters.extended.angleB}
+                        placeholder=""
+                        label="Semiminor Axis Angular Size (arcsec)"
+                      />
+                      <CommonTextField
+                        name="physicalParameters.extended.rotation"
+                        value={values.physicalParameters.extended.rotation}
+                        placeholder={"Default: 0"}
+                        label="CCW Rotation from x-Axis (deg)"
+                      />
+                      <RadioGroup
+                        name={field.name}
+                        value={values.physicalParameters.extended.profile}
+                        // Need to set onChange manually in this case
+                        // See <https://levelup.gitconnected.com/create-a-controlled-radio-group-in-react-formik-material-ui-and-typescript-7ed314081a0e>
+                        onChange={(event) => {
+                          setFieldValue(
+                            "physicalParameters.extended.profile",
+                            event.currentTarget.value
                           );
-                        case "radius":
-                          return (
-                            <FormHelperText
-                              sx={{
-                                fontSize: "medium",
-                                fontWeight: "normal",
-                                marginBottom: 2,
-                                textAlign: "center",
-                              }}
-                            >
-                              RADIUS AND DIST
-                            </FormHelperText>
-                          );
-                        // case NormMethods.LuminosityDist:
-                        //   return (
-                        //     <FormGroup>
-                        //       <CommonTextField
-                        //         name={`normParams.${NormMethods.LuminosityDist}.luminosity`}
-                        //         value={`normParams.${NormMethods.LuminosityDist}.luminosity`}
-                        //         placeholder="Example: 1.4e10"
-                        //         label="Bolometric Luminosity (solar luminosities)"
-                        //       />
-                        //       <CommonTextField
-                        //         name={`normParams.${NormMethods.LuminosityDist}.dist`}
-                        //         value={`normParams.${NormMethods.LuminosityDist}.dist`}
-                        //         placeholder=""
-                        //         label="Distance to Source (kpc)"
-                        //       />
-                        //     </FormGroup>
-                        //   );
-                        default:
-                          return (
-                            <FormHelperText
-                              sx={{
-                                fontSize: "medium",
-                                fontWeight: "normal",
-                                marginBottom: 2,
-                                textAlign: "center",
-                              }}
-                            >
-                              Something went wrong...
-                            </FormHelperText>
-                          );
+                        }}
+                        sx={{ marginBottom: 2 }}
+                      >
+                        <FormControlLabel
+                          value="uniform"
+                          control={<Radio />}
+                          label="Uniform surface brightness within source boundaries"
+                        />
+                        <FormControlLabel
+                          value="exponential"
+                          control={<Radio />}
+                          label="Exponentially-decaying surface brightness"
+                        />
+                      </RadioGroup>
+                      {
+                        (() => {
+                          switch (values["physicalParameters"]["extended"]["profile"]) {
+                            case "uniform":
+                              return (
+                                <FormHelperText
+                                  sx={{
+                                    fontSize: "medium",
+                                    fontWeight: "normal",
+                                    marginTop: -2,
+                                    marginBottom: 2,
+                                    textAlign: "center",
+                                    width: WIDTH,
+                                  }}
+                                >
+                                  The uniform surface brightness will be calculated from
+                                  the selected spectrum (including any spectral lines and
+                                  renormalizations) and the source's physical dimensions
+                                  (i.e., semimajor and semiminor axes).
+                                </FormHelperText>
+                              );
+                            case "exponential":
+                              return (
+                                <div>
+                                  <FormHelperText
+                                    sx={{
+                                      fontSize: "medium",
+                                      fontWeight: "normal",
+                                      marginTop: -2,
+                                      marginBottom: 2,
+                                      textAlign: "center",
+                                      width: WIDTH,
+                                    }}
+                                  >
+                                    This option means that the surface brightness at the
+                                    elliptical level curve defined by the scale lengths
+                                    below will be a factor of <i>e</i>&nbsp; less than the
+                                    surface brightness at the center of the source. The
+                                    surface brightness at the center of the source is
+                                    calculated from the selected spectrum (including any
+                                    spectral lines and renormalizations) and the source's
+                                    physical dimensions (i.e., semimajor and semiminor
+                                    axes).
+                                  </FormHelperText>
+                                  <FormGroup>
+                                    <CommonTextField
+                                      name={`physicalParameters.extended.exponentialScaleLengthA`}
+                                      value={
+                                        values.physicalParameters.extended
+                                          .exponentialScaleLengthA
+                                      }
+                                      placeholder="Example: 2.0"
+                                      label="Scale Length Along Semimajor Axis (arcsec)"
+                                    />
+                                    <CommonTextField
+                                      name={`physicalParameters.extended.exponentialScaleLengthB`}
+                                      value={
+                                        values.physicalParameters.extended
+                                          .exponentialScaleLengthB
+                                      }
+                                      placeholder="Example: 2.0"
+                                      label="Scale Length Along Semiminor Axis (arcsec)"
+                                    />
+                                  </FormGroup>
+                                </div>
+                              );
+                            default:
+                              return (
+                                <FormHelperText
+                                  sx={{
+                                    fontSize: "medium",
+                                    fontWeight: "normal",
+                                    marginBottom: 2,
+                                    textAlign: "center",
+                                  }}
+                                >
+                                  Something went wrong...
+                                </FormHelperText>
+                              );
+                          }
+                        })() // calling anonymous arrow function to render it
                       }
-                    })() // calling anonymous arrow function to render it
-                  }
-                </Typography>
-              );
-            case SourceType.Extended:
-              return (
-                <Typography
-                  sx={{
-                    fontSize: "large",
-                    fontWeight: "normal",
-                    marginBottom: 2,
-                    textAlign: "center",
-                  }}
-                >
-                  (EXTENDED SOURCE PHYSICAL PARAMETERS COMING SOON!)
-                </Typography>
-              );
-            case SourceType.Galaxy:
-              return (
-                <FormGroup>
-                  <CommonTextField
-                    name="physicalParameters.galaxy.angleA"
-                    value={values.physicalParameters.galaxy.angleA}
-                    placeholder=""
-                    label="Semimajor Axis Angular Size (arcsec)"
-                  />
-                  <CommonTextField
-                    name="physicalParameters.galaxy.angleB"
-                    value={values.physicalParameters.galaxy.angleB}
-                    placeholder=""
-                    label="Semiminor Axis Angular Size (arcsec)"
-                  />
-                  <CommonTextField
-                    name="physicalParameters.galaxy.sersic"
-                    value={values.physicalParameters.galaxy.sersic}
-                    placeholder={"Common values: 1 (exponential), 4 (de Vaucouleurs)"}
-                    label="Sérsic Index"
-                  />
-                  <CommonTextField
-                    name="physicalParameters.galaxy.rEff"
-                    value={values.physicalParameters.galaxy.rEff}
-                    placeholder=""
-                    label="Effective Radius (arcsec)"
-                  />
-                  <CommonTextField
-                    name="physicalParameters.galaxy.e"
-                    value={values.physicalParameters.galaxy.e}
-                    placeholder=""
-                    label="Eccentricity"
-                  />
-                  <CommonTextField
-                    name="physicalParameters.galaxy.angle"
-                    value={values.physicalParameters.galaxy.angle}
-                    placeholder={"Default: 0"}
-                    label="CCW Angle from x-Axis (deg)"
-                  />
-                </FormGroup>
-              );
-            default:
-              return <Typography>Something went wrong...</Typography>;
+                    </FormGroup>
+                  );
+                case SourceType.Galaxy:
+                  return (
+                    <FormGroup>
+                      <FormHelperText
+                        sx={{
+                          fontSize: "medium",
+                          fontWeight: "normal",
+                          marginTop: -2,
+                          marginBottom: 2,
+                          textAlign: "center",
+                          width: WIDTH,
+                        }}
+                      >
+                        The surface brightness at the center of the source is calculated
+                        from the selected spectrum (including any spectral lines and
+                        renormalizations) and the source's physical dimensions (i.e.,
+                        semimajor and semiminor axes).
+                      </FormHelperText>
+                      <CommonTextField
+                        name="physicalParameters.galaxy.angleA"
+                        value={values.physicalParameters.galaxy.angleA}
+                        placeholder=""
+                        label="Semimajor Axis Angular Size (arcsec)"
+                      />
+                      <CommonTextField
+                        name="physicalParameters.galaxy.angleB"
+                        value={values.physicalParameters.galaxy.angleB}
+                        placeholder=""
+                        label="Semiminor Axis Angular Size (arcsec)"
+                      />
+                      <CommonTextField
+                        name="physicalParameters.galaxy.sersic"
+                        value={values.physicalParameters.galaxy.sersic}
+                        placeholder={"Common values: 1 (exponential), 4 (de Vaucouleurs)"}
+                        label="Sérsic Index"
+                      />
+                      <CommonTextField
+                        name="physicalParameters.galaxy.rEff"
+                        value={values.physicalParameters.galaxy.rEff}
+                        placeholder=""
+                        label="Effective Radius (arcsec)"
+                      />
+                      <CommonTextField
+                        name="physicalParameters.galaxy.rotation"
+                        value={values.physicalParameters.galaxy.rotation}
+                        placeholder={"Default: 0"}
+                        label="CCW Rotation from x-Axis (deg)"
+                      />
+                    </FormGroup>
+                  );
+                default:
+                  return <Typography>Something went wrong...</Typography>;
+              }
+            })() // calling anonymous arrow function to render it
           }
-        })() // calling anonymous arrow function to render it
-      }
-    </FormControl>
-  );
+        </FormControl>
+        <br />
+      </div>
+    );
+  } else {
+    return <div />;
+  }
 };
 
 type SpectralLinesGroupProps = {
@@ -534,115 +734,175 @@ const SpectralLinesGroup: React.FC<SpectralLinesGroupProps> = ({
   const { setFieldValue } = useFormikContext();
   const [field, meta] = useField<{}>(props);
   const isError = meta.error ? true : false;
-  // const errorText = meta.error || meta.touched ? meta.error : "";
-
-  return (
-    <FormControl component="fieldset" variant="standard" fullWidth={true}>
-      <FormLabel component="legend" required={false} sx={{ fontSize: 18 }} filled={true}>
-        Spectral Lines
-      </FormLabel>
-      <FormHelperText
-        sx={{
-          fontSize: "medium",
-          fontWeight: "normal",
-          marginBottom: 2,
-          textAlign: "center",
-        }}
-      >
-        (Emission and absorption lines coming soon!)
-      </FormHelperText>
-    </FormControl>
-  );
+  const errorText = meta.error || meta.touched ? meta.error : "";
 
   // return (
-  //   // <FieldArray name="geocoronalEmission">
-  //   <FieldArray {...field}>
-  //     {(arrayHelpers) => (
-  //       <div>
-  //         <Button
-  //           size="large"
-  //           variant="contained"
-  //           onClick={() =>
-  //             arrayHelpers.push({
-  //               flux: "Average",
-  //               wavelength: "2471",
-  //               linewidth: "0.023",
-  //               id: "" + Math.random(),
-  //             })
-  //           }
-  //           sx={{ marginBottom: 1 }}
-  //         >
-  //           Add Spectral Lines
-  //         </Button>
-  //         {values.geocoronalEmission.map((geoLine: any, index: number) => {
-  //           return (
-  //             <div
-  //               key={geoLine.id}
-  //               style={{
-  //                 display: "flex",
-  //                 justifyContent: "center",
-  //                 alignItems: "center",
-  //               }}
-  //             >
-  //               <Grid container justifyContent="center" alignItems="top">
-  //                 <Autocomplete
-  //                   // https://stackoverflow.com/a/59217951
-  //                   freeSolo
-  //                   sx={{ marginTop: 2, marginBottom: 0, width: "35%" }}
-  //                   onChange={(event, value) =>
-  //                     setFieldValue(`geocoronalEmission.${index}.flux`, value)
-  //                   }
-  //                   options={["High", "Average", "Low"].map((flux: string) => flux)}
-  //                   value={values.geocoronalEmission[index].flux}
-  //                   renderInput={(params) => (
-  //                     <Box style={{ minHeight: "1.5rem" }}>
-  //                       <TextField
-  //                         {...params}
-  //                         name={`geocoronalEmission.${index}.flux`}
-  //                         placeholder="Example: 1.5e-15"
-  //                         label="Flux (erg/s/cm² per sq. arcsec)"
-  //                         onChange={handleChange}
-  //                         required={true}
-  //                         helperText={
-  //                           isError
-  //                             ? "Flux must be one of the predetermined values or a number > 0." // manually copy error message from Yup validation
-  //                             : ""
-  //                         }
-  //                         error={isError}
-  //                       />
-  //                     </Box>
-  //                   )}
-  //                 />
-  //                 <Grid item>
-  //                   <Button
-  //                     style={{
-  //                       marginTop: "1rem",
-  //                       marginBottom: 0,
-  //                       marginRight: 0,
-  //                       marginLeft: 0,
-  //                       padding: 0,
-  //                       fontSize: 30,
-  //                     }}
-  //                     variant="outlined"
-  //                     size="large"
-  //                     onClick={() => arrayHelpers.remove(index)}
-  //                   >
-  //                     ×
-  //                   </Button>
-  //                 </Grid>
-  //               </Grid>
-  //             </div>
-  //           );
-  //         })}
-  //       </div>
-  //     )}
-  //   </FieldArray>
+  //   <FormControl component="fieldset" variant="standard" fullWidth={true}>
+  //     <FormLabel component="legend" required={false} sx={{ fontSize: 18 }} filled={true}>
+  //       Spectral Lines
+  //     </FormLabel>
+  //     <FormHelperText
+  //       sx={{
+  //         fontSize: "medium",
+  //         fontWeight: "normal",
+  //         marginBottom: 2,
+  //         textAlign: "center",
+  //       }}
+  //     >
+  //       (Emission and absorption lines coming soon!)
+  //     </FormHelperText>
+  //   </FormControl>
   // );
+
+  return (
+    <FieldArray {...field}>
+      {(arrayHelpers) => (
+        <FormControl
+          component="fieldset"
+          variant="standard"
+          fullWidth={true}
+          style={{
+            alignContent: "center",
+            justifyContent: "center",
+            display: "flex",
+            marginBottom: -12,
+          }}
+        >
+          <FormLabel component="legend" required={false} sx={{ fontSize: 18 }}>
+            Spectral Lines
+          </FormLabel>
+          <Grid container columns={12} alignItems="center" justifyContent="center">
+            <Grid item xs={3}>
+              <Button
+                size="large"
+                variant="contained"
+                onClick={() =>
+                  arrayHelpers.push({
+                    center: "",
+                    fwhm: "",
+                    shape: "gaussian",
+                    type: "emission",
+                    id: "" + Math.random(),
+                  })
+                }
+                sx={{
+                  marginTop: 1,
+                  marginBottom: 1,
+                  minWidth: "13rem",
+                  alignContent: "center",
+                  justifyContent: "center",
+                  display: "flex",
+                }}
+                fullWidth={true}
+              >
+                Add Spectral Line
+              </Button>
+            </Grid>
+          </Grid>
+          {values.spectralLines.map((spectralLine: any, index: number) => {
+            return (
+              <div
+                key={spectralLine.id}
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginBottom: -12,
+                }}
+              >
+                <Grid
+                  container
+                  spacing={1}
+                  columns={20}
+                  justifyContent="center"
+                  alignItems="top"
+                >
+                  <Grid item xs={5} sx={{ marginTop: 2, marginBottom: 0 }}>
+                    <CommonTextField
+                      name={`spectralLines.${index}.center`}
+                      value={`spectralLines.${index}.center`}
+                      placeholder={"Example: 4861"}
+                      label="Central Wavelength (Å)"
+                      required={true}
+                    />
+                  </Grid>
+                  <Grid item xs={5} sx={{ marginTop: 2, marginBottom: 0 }}>
+                    <CommonTextField
+                      name={`spectralLines.${index}.fwhm`}
+                      value={`spectralLines.${index}.fwhm`}
+                      placeholder={"Example: 4"}
+                      label="FWHM (Å)"
+                      // label="Full-Width at Half-Maximum (Å)"
+                      required={true}
+                    />
+                  </Grid>
+                  <Grid item xs={4} sx={{ marginTop: 2, marginBottom: 0 }}>
+                    <FormControl fullWidth={true}>
+                      <InputLabel required={true}>Spectral Line Type</InputLabel>
+                      <Field
+                        name={`spectralLines.${index}.type`}
+                        type="select"
+                        as={Select}
+                        error={!!errorText}
+                        required={true}
+                        label="Spectral Line Type"
+                        variant="outlined"
+                        // sx={{ minWidth: "10rem" }}
+                      >
+                        <MenuItem value="emission">Emission</MenuItem>
+                        <MenuItem value="absorption">Absorption</MenuItem>
+                      </Field>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={4} sx={{ marginTop: 2, marginBottom: 0 }}>
+                    <FormControl fullWidth={true}>
+                      <InputLabel required={true}>Spectral Line Shape</InputLabel>
+                      <Field
+                        name={`spectralLines.${index}.shape`}
+                        type="select"
+                        as={Select}
+                        error={!!errorText}
+                        required={true}
+                        label="Spectral Line Shape"
+                        variant="outlined"
+                        // sx={{ minWidth: "10rem" }}
+                      >
+                        <MenuItem value="gaussian">Gaussian</MenuItem>
+                        <MenuItem value="lorentzian">Lorentzian</MenuItem>
+                      </Field>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={2}>
+                    <Button
+                      style={{
+                        marginTop: "1rem",
+                        marginBottom: 0,
+                        marginRight: 0,
+                        marginLeft: 0,
+                        padding: 0,
+                        fontSize: 31,
+                      }}
+                      variant="outlined"
+                      size="large"
+                      fullWidth={true}
+                      onClick={() => arrayHelpers.remove(index)}
+                    >
+                      ×
+                    </Button>
+                  </Grid>
+                </Grid>
+              </div>
+            );
+          })}
+        </FormControl>
+      )}
+    </FieldArray>
+  );
 };
 
 enum NormMethods {
   PassbandMag = "passbandMag",
-  PassbandFlam = "passbandFlam",
+  TotalMag = "totalMag",
   LuminosityDist = "luminosityDist",
   None = "",
 }
@@ -656,12 +916,13 @@ const NormMethodGroup: React.FC<NormMethodGroupProps> = ({
   ...props // any object props
 }) => {
   const { setFieldValue } = useFormikContext();
-  const [field] = useField<{}>(props);
+  const [field, meta] = useField<{}>(props);
+  const errorText = meta.error || meta.touched ? meta.error : "";
 
   return (
     <FormControl component="fieldset" variant="standard" fullWidth={true}>
       <FormLabel component="legend" required={true} sx={{ fontSize: 18 }} filled={true}>
-        Normalization
+        Renormalization
       </FormLabel>
       <FormHelperText
         sx={{
@@ -686,12 +947,12 @@ const NormMethodGroup: React.FC<NormMethodGroupProps> = ({
         <FormControlLabel
           value={NormMethods.PassbandMag}
           control={<Radio />}
-          label="AB Magnitude in a passband"
+          label="AB magnitude in a passband"
         />
         <FormControlLabel
-          value={NormMethods.PassbandFlam}
+          value={NormMethods.TotalMag}
           control={<Radio />}
-          label="Average flux density (erg/s/cm²/A) in a passband"
+          label="Total (bolometric) AB magnitude"
         />
         <FormControlLabel
           value={NormMethods.LuminosityDist}
@@ -709,46 +970,89 @@ const NormMethodGroup: React.FC<NormMethodGroupProps> = ({
           switch (values["normMethod"]) {
             case NormMethods.PassbandMag:
               return (
-                <FormHelperText
-                  sx={{
-                    fontSize: "medium",
-                    fontWeight: "normal",
-                    marginBottom: 2,
-                    textAlign: "center",
-                  }}
+                <Grid
+                  container
+                  spacing={2}
+                  columns={12}
+                  alignItems="center"
+                  justifyContent="center"
                 >
-                  (PASSBAND MAGNITUDE NORMALIZATION COMING SOON!)
-                </FormHelperText>
+                  <Grid item xs={6}>
+                    <CommonTextField
+                      name={`normParams.${NormMethods.PassbandMag}.abMag`}
+                      value={`normParams.${NormMethods.PassbandMag}.abMag`}
+                      placeholder={"Example: 24.5"}
+                      label="Passband AB Magnitude"
+                      required={true}
+                    />
+                  </Grid>
+                  <Grid item xs={1} style={{ marginTop: -15 }}>
+                    <FormControl>
+                      <InputLabel required={true}>Passband</InputLabel>
+                      <Field
+                        name={`normParams.${NormMethods.PassbandMag}.passband`}
+                        type="select"
+                        as={Select}
+                        error={!!errorText}
+                        required={true}
+                        label="Passband"
+                        variant="standard"
+                        style={{ minWidth: "7rem" }}
+                      >
+                        <MenuItem value={"uv"}>UV-Band</MenuItem>
+                        <MenuItem value={"u"}>u-Band</MenuItem>
+                        <MenuItem value={"g"}>g-Band</MenuItem>
+                      </Field>
+                    </FormControl>
+                  </Grid>
+                </Grid>
               );
-            case NormMethods.PassbandFlam:
+            case NormMethods.TotalMag:
               return (
-                <FormHelperText
-                  sx={{
-                    fontSize: "medium",
-                    fontWeight: "normal",
-                    marginBottom: 2,
-                    textAlign: "center",
-                  }}
+                <Grid
+                  container
+                  spacing={2}
+                  columns={12}
+                  alignItems="center"
+                  justifyContent="center"
                 >
-                  (PASSBAND FLUX NORMALIZATION COMING SOON!)
-                </FormHelperText>
+                  <Grid item xs={6}>
+                    <CommonTextField
+                      name={`normParams.${NormMethods.TotalMag}`}
+                      value={`normParams.${NormMethods.TotalMag}`}
+                      placeholder={"Example: 23.14"}
+                      label="Bolometric AB Magnitude"
+                      required={true}
+                    />
+                  </Grid>
+                </Grid>
               );
             case NormMethods.LuminosityDist:
               return (
-                <FormGroup>
-                  <CommonTextField
-                    name={`normParams.${NormMethods.LuminosityDist}.luminosity`}
-                    value={`normParams.${NormMethods.LuminosityDist}.luminosity`}
-                    placeholder="Example: 1.4e10"
-                    label="Bolometric Luminosity (solar luminosities)"
-                  />
-                  <CommonTextField
-                    name={`normParams.${NormMethods.LuminosityDist}.dist`}
-                    value={`normParams.${NormMethods.LuminosityDist}.dist`}
-                    placeholder=""
-                    label="Distance to Source (kpc)"
-                  />
-                </FormGroup>
+                <Grid
+                  container
+                  spacing={2}
+                  columns={12}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Grid item xs={6}>
+                    <CommonTextField
+                      name={`normParams.${NormMethods.LuminosityDist}.luminosity`}
+                      value={`normParams.${NormMethods.LuminosityDist}.luminosity`}
+                      placeholder="Example: 1.4e10"
+                      label="Bolometric Luminosity (solar luminosities)"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <CommonTextField
+                      name={`normParams.${NormMethods.LuminosityDist}.dist`}
+                      value={`normParams.${NormMethods.LuminosityDist}.dist`}
+                      placeholder=""
+                      label="Distance to Source (kpc)"
+                    />
+                  </Grid>
+                </Grid>
               );
             default:
               // No normalization (i.e., NormMethods.None)
@@ -828,24 +1132,27 @@ const sourceValidationSchema = Yup.object({
   sourceType: Yup.string()
     .required("A source type is required")
     .oneOf(Object.values(SourceType)),
-  // .oneOf(["point", "extended", "galaxy"]),
+
   redshift: Yup.number()
     .required("Redshift is a required field")
     .typeError("Redshift must be a non-negative number")
     .min(0, "Redshift must be a non-negative number"),
+
   // FIXME: `when()` does not seem to work at all...
   // FIXME: when validating predefinedSpectrum, validation fails on first Save because of TextField??
-  predefinedSpectrum: Yup.string().test(
-    "predefinedSpectrumTest",
-    "A predefined spectrum is required",
-    (value: any) => {
-      console.log("predefinedSpectrum value", value);
-      // return (
-      //   (typeof value === "string" && value.length > 0) || typeof value === "undefined"
-      // );
-      return typeof value === "string" && value.length > 0;
-    }
-  ),
+  // No? See "isValid is false although all fields are valid (STILL OPEN!)": <https://github.com/jaredpalmer/formik/issues/1116>
+
+  // predefinedSpectrum: Yup.string().test(
+  //   "predefinedSpectrumTest",
+  //   "A predefined spectrum is required",
+  //   (value: any) => {
+  //     console.log("predefinedSpectrum value", value);
+  //     // return (
+  //     //   (typeof value === "string" && value.length > 0) || typeof value === "undefined"
+  //     // );
+  //     return typeof value === "string" && value.length > 0;
+  //   }
+  // ),
   // predefinedSpectrum: Yup.string()
   // .required("A predefined spectrum is required")
   // .min(1, "A predefined spectrum is required"),
@@ -854,20 +1161,70 @@ const sourceValidationSchema = Yup.object({
   //   then: Yup.string().required("A predefined spectrum is required").min(0),
   //   otherwise: Yup.string().notRequired(),
   // }), // spectrum options. N.B. different validation per source
-  customSpectrum: Yup.string().when("predefinedSpectrum", {
+
+  // NOTE: cannot have both predefinedSpectrum and customSpectrum validation at the same
+  // time because of some circular dependency issue according to Yup...
+
+  predefinedSpectrum: Yup.string().when("customSpectrum", {
     is: "",
     then: Yup.string()
-      .required("Custom spectrum required when no predefined spectrum is selected")
-      .min(1, "Custom spectrum must be at least 1 character"),
+      .required("Predefined spectrum required when no custom spectrum is provided")
+      .min(1, "Predefined spectrum must be at least 1 character"),
     otherwise: Yup.string().notRequired(),
   }),
 
-  // spectralLines:
+  // customSpectrum: Yup.string().when("predefinedSpectrum", {
+  //   is: "",
+  //   then: Yup.string()
+  //     .required("Custom spectrum required when no predefined spectrum is selected")
+  //     .min(1, "Custom spectrum must be at least 1 character"),
+  //   otherwise: Yup.string().notRequired(),
+  // }),
+
+  // TODO: when uniform spectrum unit is "flam" or "fnu", spectrumValue must be > 0.
+  predefinedSpectrumParameters: Yup.object({
+    blackbody: Yup.object({
+      temp: Yup.number()
+        .typeError("Temperature must be a number > 0")
+        .positive("Temperature must be a number > 0"),
+      radius: Yup.number()
+        .typeError("Radius must be a number > 0")
+        .positive("Radius must be a number > 0"),
+      dist: Yup.number()
+        .typeError("Distance must be a number > 0")
+        .positive("Distance must be a number > 0"),
+    }),
+    powerLaw: Yup.object({
+      refWavelength: Yup.number()
+        .typeError("Reference wavelength must be a number > 0")
+        .positive("Reference wavelength must be a number > 0"),
+      exponent: Yup.number().typeError("Exponent must be a number"),
+    }),
+    uniform: Yup.object({
+      spectrumValue: Yup.number().typeError("Spectrum value must be a number"),
+      unit: Yup.string().oneOf(["flam", "fnu", "ABmag", "STmag"]),
+    }),
+  }),
 
   // FIXME: Nested object validation with `when()` does not work. See <https://github.com/jquense/yup/issues/735>
   physicalParameters: Yup.object({
-    // point: {},
-    // extended: {},
+    point: Yup.object({}),
+    extended: Yup.object({
+      angleA: Yup.number()
+        .typeError("Semimajor axis must be a number > 0")
+        .positive("Semimajor axis must be a number > 0"),
+      angleB: Yup.number()
+        .typeError("Semiminor axis must be a number > 0")
+        .positive("Semiminor axis must be a number > 0"),
+      rotation: Yup.number().typeError("Rotation angle must be a number"),
+      profile: Yup.string().oneOf(["uniform", "exponential"]),
+      exponentialScaleLengthA: Yup.number()
+        .typeError("Scale length must be a number > 0")
+        .positive("Scale length must be a number > 0"),
+      exponentialScaleLengthB: Yup.number()
+        .typeError("Scale length must be a number > 0")
+        .positive("Scale length must be a number > 0"),
+    }),
     galaxy: Yup.object({
       angleA: Yup.number()
         .typeError("Semimajor axis must be a number > 0")
@@ -895,39 +1252,46 @@ const sourceValidationSchema = Yup.object({
           then: (sourceValidationSchema) => sourceValidationSchema.required(),
           otherwise: (sourceValidationSchema) => sourceValidationSchema.notRequired(),
         }),
-      e: Yup.number()
-        // .required("Eccentricity is a required field")
-        .typeError("Eccentricity must be a number between [0, 1]")
-        .min(0, "Eccentricity must be a number between [0, 1]")
-        .max(1, "Eccentricity must be a number between [0, 1]")
-        .when("sourceType", {
-          is: SourceType.Galaxy,
-          then: (sourceValidationSchema) => sourceValidationSchema.required(),
-          otherwise: (sourceValidationSchema) => sourceValidationSchema.notRequired(),
-        }),
-      angle: Yup.number()
-        // .required("Angle is a required field")
-        .typeError("Angle must be a number")
-        .when("sourceType", {
-          is: SourceType.Galaxy,
-          then: (sourceValidationSchema) => sourceValidationSchema.required(),
-          otherwise: (sourceValidationSchema) => sourceValidationSchema.notRequired(),
-        }),
+      rotation: Yup.number()
+        // .required("Rotation angle is a required field")
+        .typeError("Rotation angle must be a number"),
+      // .when("sourceType", {
+      //   is: SourceType.Galaxy,
+      //   then: (sourceValidationSchema) => sourceValidationSchema.required(),
+      //   otherwise: (sourceValidationSchema) => sourceValidationSchema.notRequired(),
+      // }),
     }),
   }),
 
+  spectralLines: Yup.array().of(
+    Yup.object({
+      center: Yup.number()
+        .typeError("Central wavelength must be a number > 0")
+        .positive("Central wavelength must be a number > 0"),
+      fwhm: Yup.number()
+        .typeError("FWHM must be a number > 0")
+        .positive("FWHM must be a number > 0"),
+      shape: Yup.string().oneOf(["gaussian", "lorentzian"]),
+      type: Yup.string().oneOf(["emission", "absorption"]),
+      id: Yup.number().required(),
+    })
+  ),
+
+  normMethod: Yup.string().oneOf(Object.values(NormMethods)),
+
   normParams: Yup.object({
-    // passbandMag: {},
-    // passbandFlam: {},
+    passbandMag: Yup.object({
+      abMag: Yup.number().typeError("Passband AB magnitude must be a number"),
+      passband: Yup.string().oneOf(["uv", "u", "g"]),
+    }),
+    totalMag: Yup.number().typeError("Bolometric AB magnitude must be a number"),
     luminosityDist: Yup.object({
       luminosity: Yup.number()
         .typeError("Luminosity must be a number > 0")
         .positive("Luminosity must be a number > 0"),
-      // .when()...
       dist: Yup.number()
         .typeError("Distance must be a number > 0")
         .positive("Distance must be a number > 0"),
-      // .when()...
     }),
   }),
 
@@ -969,27 +1333,38 @@ const SourceForm: React.FC<SourceFormProps> = ({
       sourceType: SourceType.Point, // point, extended, or galaxy
       redshift: "0",
       predefinedSpectrum: "", // spectrum options. N.B. different validation per source
+      predefinedSpectrumParameters: {
+        blackbody: { temp: "", radius: "1", dist: "1" },
+        powerLaw: { refWavelength: "", exponent: "" },
+        uniform: { spectrumValue: "", unit: "flam" },
+      },
       customSpectrum: "",
+      physicalParameters: {
+        point: {}, // empty, but must have the "point" key
+        extended: {
+          angleA: "",
+          angleB: "",
+          rotation: "0",
+          profile: "uniform",
+          exponentialScaleLengthA: "",
+          exponentialScaleLengthB: "",
+        },
+        galaxy: { angleA: "", angleB: "", sersic: "", rEff: "", rotation: "0" },
+      },
       spectralLines: [
         {
-          flux: "",
-          wavelength: "",
-          linewidth: "",
+          center: "",
+          fwhm: "",
+          shape: "gaussian",
           type: "emission",
           id: "" + Math.random(),
         },
       ],
-      physicalParameters: {
-        point: {}, // empty, but must have the "point" key
-        // point: { angle: "", radius: "", dist: "", useAngleOrRadius: "angle" },
-        extended: {},
-        galaxy: { angleA: "", angleB: "", sersic: "", rEff: "", e: "", angle: "0" },
-      },
       normMethod: NormMethods.PassbandMag,
       normParams: {
         // Have to manually write out the `NormMethods` enum keys
-        passbandMag: {},
-        passbandFlam: {},
+        passbandMag: { abMag: "", passband: "uv" },
+        totalMag: "",
         luminosityDist: { luminosity: "", dist: "" },
         // No need if no normalization (i.e., normMethod === "")
       },
@@ -1004,6 +1379,12 @@ const SourceForm: React.FC<SourceFormProps> = ({
     setPrevFormValues(myInitialValues);
   }, []);
 
+  // To clear predefined spectra field when changing source types
+  const [numSourceTypeChanged, setNumSourceTypeChanged] = React.useState(0);
+  const incrNumSourceTypeChanged = () => {
+    setNumSourceTypeChanged(numSourceTypeChanged + 1);
+  };
+
   return (
     <div>
       <Typography variant="h5">Specify the source properties below.</Typography>
@@ -1013,8 +1394,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
       </Typography>
       <Typography variant="body1" style={{ marginBottom: 16 }}>
         The properties below should describe the <i>intrinsic</i> properties of the
-        source. Also, this tab is very limited in functionality at the moment. For more
-        advanced configurations, please use the Python{" "}
+        source. For more advanced configurations, please use the Python{" "}
         <Link
           href="https://github.com/CASTOR-telescope/ETC"
           // Open link in new tab
@@ -1034,7 +1414,6 @@ const SourceForm: React.FC<SourceFormProps> = ({
         onSubmit={
           async (data, { setSubmitting }) => {
             setSubmitting(true);
-            console.log(data);
 
             // Make async call
             await axios
@@ -1044,7 +1423,6 @@ const SourceForm: React.FC<SourceFormProps> = ({
                 sessionStorage.setItem(FORM_PARAMS, JSON.stringify(response))
               )
               .then(() => {
-                // TODO: remove console.log() when done testing
                 setIsSavedAndUnsubmitted(true);
                 setPrevFormValues(data);
                 setIsChanged(false);
@@ -1068,16 +1446,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
         validationSchema={sourceValidationSchema}
         validateOnMount={true}
       >
-        {({
-          values,
-          errors,
-          touched,
-          handleChange,
-          // handleBlur,
-          // handleSubmit,
-          isSubmitting,
-          isValid,
-        }) => (
+        {({ values, handleChange, isSubmitting, isValid }) => (
           <Form>
             <AlertIfTelescopeParamsChanged
               isSourceSyncTelescope={isSourceSyncTelescope}
@@ -1087,24 +1456,22 @@ const SourceForm: React.FC<SourceFormProps> = ({
               setIsChanged={setIsChanged}
               prevFormValues={prevFormValues}
               label="Source Type"
+              incrNumSourceTypeChanged={incrNumSourceTypeChanged}
+              handleChange={handleChange}
             />
             <br />
             <SpectrumFields
               name="spectrumFieldsThisNameIsNotActuallyUsed"
               values={values}
               handleChange={handleChange}
+              numSourceTypeChanged={numSourceTypeChanged}
             />
             <br />
-            {values.sourceType !== SourceType.Point && (
-              <div>
-                <PhysicalParametersGroup
-                  name="physicalParameters"
-                  values={values}
-                  handleChange={handleChange}
-                />
-                <br />
-              </div>
-            )}
+            <PhysicalParametersGroup
+              name="physicalParameters"
+              values={values}
+              handleChange={handleChange}
+            />
             <SpectralLinesGroup
               name="spectralLines" // REVIEW: make sure this name is correct when adding feature
               values={values}
@@ -1116,6 +1483,20 @@ const SourceForm: React.FC<SourceFormProps> = ({
               values={values}
             />
             <br />
+            {
+              // Do manual validation here because of some weird circular dependency issue
+              // with Yup & the "when" function...
+              values.customSpectrum === "" &&
+                values.predefinedSpectrum === "" &&
+                (() => {
+                  isValid = false;
+                  return (
+                    <Typography color="error" style={{ marginTop: 12 }}>
+                      Please choose or upload a source spectrum.
+                    </Typography>
+                  );
+                })() // calling anonymous arrow function to render it
+            }
             <SaveButton isSubmitting={isSubmitting} isValid={isValid} />
             <pre>{JSON.stringify(values, null, 2)}</pre>
             <AlertError
