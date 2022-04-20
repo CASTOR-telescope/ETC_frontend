@@ -61,6 +61,8 @@ else:
     logger = logging.getLogger("gunicorn.error")
     app.logger.handlers = logger.handlers
     app.logger.setLevel(logger.level)
+    logger.info("Flask believes the session ID is: " + session_id)
+    logger.info("Static URL path is set to: " + app.static_url_path)
 
 #
 # Configure file uploads

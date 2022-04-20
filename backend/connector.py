@@ -22,11 +22,14 @@ from photometry_route import put_photometry_json
 
 if __name__ != "__main__":
     # i.e., run via gunicorn. Ensure app in utils.py is configured for gunicorn.
+    logger.info("Assuming app is configured for gunicorn in Docker container.")
+
     @app.route(app.static_url_path)
+    @app.route(app.static_url_path + "/")
     def index():
         """
-        Serve the index.html file when client requests root (e.g.,
-        <http://localhost:5000>).
+        Serve the index.html file when client requests the static url (e.g.,
+        <http://localhost:5000/session/castor-etc/12345>).
         """
         logger.info(f"Serving index.html because client requested {app.static_url_path}")
         return app.send_static_file("index.html")

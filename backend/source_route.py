@@ -201,7 +201,7 @@ def put_source_json():
                 value=float(
                     predefined_spectrum_parameters[predefined_spectrum]["spectrumValue"]
                 ),
-                unit=predefined_spectrum_parameters[predefined_spectrum]["spectrumUnit"],
+                unit=predefined_spectrum_parameters[predefined_spectrum]["unit"],
             )
         elif predefined_spectrum == "elliptical" or predefined_spectrum == "spiral":
             SourceObj.use_galaxy_spectrum(gal_type=predefined_spectrum)
