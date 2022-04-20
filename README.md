@@ -79,3 +79,10 @@ For local development (inside conda environment):
 ```bash
 gunicorn -b 127.0.0.1:5000 connector:app
 ```
+
+## Roadmap
+
+1. Implement validation on all forms
+
+2. Figure out how to auto-update all other parameters upon submitting one form (e.g.,
+   after saving Telescope, Background + Source + Photometry should all resubmit)
