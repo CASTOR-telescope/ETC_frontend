@@ -16,6 +16,8 @@ const AperMaskPlot: React.FC<AperMaskPlotProps> = ({ numPhotometrySubmit }) => {
     let effNpix = photometryParams["effNpix"];
     // console.log("updating AperMaskPlot");
     let plotLengths = [aperMask.length, aperMask[0].length];
+    let px_scale_x = (extent[1] - extent[0]) / plotLengths[1];
+    let px_scale_y = (extent[3] - extent[2]) / plotLengths[0];
     return (
       <ResponsivePlot
         // React re-renders the plot when any state, prop, or parent component changes
@@ -32,10 +34,10 @@ const AperMaskPlot: React.FC<AperMaskPlotProps> = ({ numPhotometrySubmit }) => {
                 font: { size: 14 },
               },
             },
-            x0: extent[0],
-            dx: (extent[1] - extent[0]) / plotLengths[1],
-            y0: extent[2],
-            dy: (extent[3] - extent[2]) / plotLengths[0],
+            x0: extent[0] + 0.5 * px_scale_x,
+            dx: px_scale_x,
+            y0: extent[2] + 0.5 * px_scale_y,
+            dy: px_scale_y,
             transpose: false,
           },
         ]}
