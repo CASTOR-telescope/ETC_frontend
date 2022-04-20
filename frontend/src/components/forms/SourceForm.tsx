@@ -207,7 +207,6 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
     if (isInitialRender) {
       setIsInitialRender(false);
     } else {
-      console.log("numSourceTypeChanged in useEffect: ", numSourceTypeChanged);
       setMyInputObj(EMPTY_OPTION);
       setFieldValue("predefinedSpectrum", "");
     }
@@ -1623,7 +1622,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
                 })() // calling anonymous arrow function to render it
             }
             <SaveButton isSubmitting={isSubmitting} isValid={isValid} />
-            <pre>{JSON.stringify(values, null, 2)}</pre>
+            {/* <pre>{JSON.stringify(values, null, 2)}</pre> */}
             <AlertError
               isError={isError}
               setIsError={setIsError}
