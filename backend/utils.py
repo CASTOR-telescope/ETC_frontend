@@ -93,7 +93,7 @@ def save_file(file):
         logger.info(f"Saved file {bad_filename} to {secure_filepath}")
         return secure_filepath
     else:
-        logger.error("Bad filename!")
+        logger.error(f"{bad_filename} is not an allowed file!")
         return None
 
 

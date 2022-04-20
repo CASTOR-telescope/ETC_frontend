@@ -78,7 +78,9 @@ def put_source_json():
 
             try:
                 custom_spectrum = request_data["customSpectrum"]  # will be ""
-                logger.debug(f"custom_spectrum == ''? {custom_spectrum == ''}")
+                logger.debug(
+                    f"custom_spectrum != '' ? (should be false) {custom_spectrum != ''}"
+                )
             except KeyError:
                 custom_spectrum = request.files["customSpectrum"]
                 logger.debug("custom_spectrum file" + str(custom_spectrum))
@@ -173,7 +175,6 @@ def put_source_json():
                 logger.error("Could not save file!")
                 return bad_request("Could not save file!")
             SourceObj.use_custom_spectrum(secure_filepath, wavelength_unit=u.AA)
-            SourceObj.show_spectrum()
         elif predefined_spectrum == "blackbody":
             SourceObj.generate_bb(
                 T=float(predefined_spectrum_parameters[predefined_spectrum]["temp"])
