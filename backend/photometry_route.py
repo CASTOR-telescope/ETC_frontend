@@ -10,6 +10,7 @@ import re
 
 import astropy.units as u
 from castor_etc.photometry import Photometry
+from castor_etc.sources import PointSource
 from flask import jsonify, request
 
 from utils import DataHolder, app, bad_request, server_error, logger, log_traceback
@@ -25,6 +26,8 @@ def put_photometry_json():
 
     ...
 
+    TODO: docstring
+
     and return some attributes of the
     object (i.e., TelescopeObj.full_passband_curves, mirror_diameter, phot_zpts,
     passband_pivots, fwhm, px_scale, dark_current, read_noise, redleak_thresholds) of the
@@ -37,19 +40,16 @@ def put_photometry_json():
 
     Attributes (for `DataHolder` class)
     ----------
-      TelescopeObj :: `Telescope` object
-        The `Telescope` object created from the given kwargs.
+      PhotometryObj :: `Photometry` object
+        The `Photometry` object created from the given kwargs.
 
     Returns
     -------
       telescope_json :: Flask JSON response
         Some attributes (i.e., passband_limits, mirror_diameter, phot_zpts,
         passband_pivots, fwhm, px_scale, dark_current, read_noise, redleak_thresholds) of
-        the `Telescope` object as a JSON response.
+        the `Photometry` object as a JSON response.
     """
-    # TODO: redleak fraction
-
-    # Flask will raise exception 500 if any code raises an error
     try:
         #
         # Check inputs
@@ -58,26 +58,30 @@ def put_photometry_json():
             # Convert all inputs to floats
             request_data = request.get_json()
             logger.info("Photometry request_data: " + str(request_data))
-            extinction_coeffs = {
-                band: float(coeff)
-                for band, coeff in request_data["extinctionCoeffs"].items()
-            }
+            reddening = float(request_data["reddening"])
+            logger.debug("reddening: " + str(reddening))
             aper_shape = request_data["aperShape"].lower()
+            logger.debug("aper_shape: " + str(aper_shape))
             aper_params_input = request_data["aperParams"]  # dict of dicts
+            logger.debug("aper_params_input: " + str(aper_params_input))
             phot_input = request_data["photInput"]  # dict
+            logger.debug("phot_input: " + str(phot_input))
             #
             aper_params = dict.fromkeys(aper_params_input[aper_shape])
             for key, val in aper_params_input[aper_shape].items():
                 try:
+                    print("key", key, "val", val)
                     parsed_val = float(val)
-                    if key != "rotation":
+                    if key != "rotation" and key != "factor":
                         parsed_val *= u.arcsec
                 except Exception:
                     # Extract numbers from string (for center)
                     parsed_val = [
                         float(num) for num in re.findall(r"-?\d+\.?\d*", val)
-                    ] << u.arcsec
+                    ] * u.arcsec
                 aper_params[key] = parsed_val
+            logger.debug("aper_params: " + str(aper_params))
+
         except Exception as e:
             log_traceback(e)
             logger.error(
@@ -95,23 +99,69 @@ def put_photometry_json():
             PhotometryObj = Photometry(
                 DataHolder.TelescopeObj, DataHolder.SourceObj, DataHolder.BackgroundObj
             )
-        except Exception:
+        except Exception as e:
+            log_traceback(e)
+            logger.error(
+                "Server could not initialize the `Photometry` object from server-side "
+                + "stored data. Probably missing `Telescope`, `Source`, "
+                + "and/or `Background` object"
+            )
             return server_error(
-                "Server could not initialize the `Photometry` object "
-                + "from server-side stored data"
+                "Server could not initialize the `Photometry` object from server-side "
+                + "stored data. Probably missing `Telescope`, `Source`, "
+                + "and/or `Background` object"
             )
         #
-        # TODO: validation of all request data
+        # Specify aperture
         #
-        # For now, just return the attributes I know I will have set
-        PhotometryObj.use_elliptical_aperture(**aper_params)
-        if phot_input["val_type"] == "snr":
-            phot_results = PhotometryObj.calc_snr_or_t(snr=float(phot_input["val"]))
-        elif phot_input["val_type"] == "t":
-            phot_results = PhotometryObj.calc_snr_or_t(t=float(phot_input["val"]))
+        if aper_shape == "optimal":
+            if not isinstance(DataHolder.SourceObj, PointSource):
+                logger.error(
+                    "`Source` object is not a `PointSource` object and "
+                    + "cannot use an optimal aperture."
+                )
+                return bad_request(
+                    "`Source` object is not a `PointSource` object and "
+                    + "cannot use an optimal aperture."
+                )
+            PhotometryObj.use_optimal_aperture(**aper_params)
+        elif aper_shape == "elliptical":
+            PhotometryObj.use_elliptical_aperture(**aper_params)
+        elif aper_shape == "rectangular":
+            PhotometryObj.use_rectangular_aperture(**aper_params)
         else:
-            return bad_request("Couldn't read `photInput`")
+            logger.error(f"{aper_shape} is not a valid aperture shape.")
+            return bad_request(f"{aper_shape} is not a valid aperture shape.")
+        #
+        # Do photometry
+        #
+        if phot_input["val_type"] == "snr":
+            phot_results = PhotometryObj.calc_snr_or_t(
+                snr=float(phot_input["val"]), reddening=reddening
+            )
+        elif phot_input["val_type"] == "t":
+            phot_results = PhotometryObj.calc_snr_or_t(
+                t=float(phot_input["val"]), reddening=reddening
+            )
+        else:
+            logger.error(
+                f"The given photometry target value type, {phot_input['val_type']}, "
+                + "is not valid and must be either 'snr' or 't'."
+            )
+            return bad_request(
+                f"The given photometry target value type, {phot_input['val_type']}, "
+                + "is not valid and must be either 'snr' or 't'."
+            )
+        #
+        # Calculate redleak fractions
+        #
+        redleak_fracs = PhotometryObj.calc_redleak_frac()
         DataHolder.PhotometryObj = PhotometryObj
+        #
+        # Get encircled energy.
+        # Note that `None` will be set to `null` in the JSON response.
+        #
+        encircled_energy = PhotometryObj._encircled_energy  # `None` if not PointSource
         #
         # Convert 2D arrays to JSON, replace NaN with null, and only want the data array
         #
@@ -123,8 +173,8 @@ def put_photometry_json():
         return jsonify(
             photResults=phot_results,
             effNpix=PhotometryObj._eff_npix,
-            # aperMask=PhotometryObj._aper_mask.tolist(),
-            # sourceWeights=PhotometryObj.source_weights.tolist(),
+            encircledEnergy=encircled_energy,
+            redleakFracs=redleak_fracs,
             aperMask=aper_mask,
             sourceWeights=source_weights,
             aperExtent=PhotometryObj._aper_extent,  # already a list

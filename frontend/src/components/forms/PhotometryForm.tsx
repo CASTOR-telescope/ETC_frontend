@@ -1,6 +1,5 @@
 import {
   Formik,
-  Field,
   Form,
   useField,
   FieldAttributes,
@@ -29,16 +28,13 @@ import {
   FormControlLabel,
   Radio,
   RadioGroup,
-  Switch,
   Select,
-  makeStyles,
 } from "@mui/material";
 import LoadingButton from "@mui/lab/LoadingButton";
 import * as Yup from "yup";
 import axios from "axios";
 import { API_URL } from "../../env";
-import { useEffect, useState } from "react";
-import { themeYellowColor } from "../DarkModeTheme";
+import { themeYellowColor, themeDisabledButtonColor } from "../DarkModeTheme";
 import { SourceType } from "./SpectrumOptions";
 
 import {
@@ -46,13 +42,36 @@ import {
   CommonFormProps,
   CommonTextField,
   useGetIfFormChanged,
-  // CommonTextFieldWithTracker,
-  // CommonTextField
 } from "../CommonFormElements";
 import React from "react";
 
+const SubmitButton: React.FC<{ isSubmitting: boolean; isValid: boolean }> = ({
+  isSubmitting,
+  isValid,
+}) => {
+  return (
+    <LoadingButton
+      type="submit"
+      disabled={isSubmitting || !isValid}
+      // sx={{ color: themeSecondaryLightColor }}
+      size="large"
+      variant="contained"
+      style={{ width: "25%", fontSize: 24, margin: 16 }}
+      sx={[
+        { backgroundColor: themeYellowColor },
+        { "&:disabled": { backgroundColor: themeDisabledButtonColor } },
+      ]}
+      loading={isSubmitting}
+      loadingIndicator="Submitting..."
+    >
+      Submit
+    </LoadingButton>
+  );
+};
+
 type AlertIfSavedButNotSubmittedProps = {
   isSavedAndUnsubmitted: boolean;
+  numPhotometrySubmit: number;
 };
 
 /**
@@ -68,9 +87,10 @@ type AlertIfSavedButNotSubmittedProps = {
  */
 const AlertIfSavedButNotSubmitted: React.FC<AlertIfSavedButNotSubmittedProps> = ({
   isSavedAndUnsubmitted,
+  numPhotometrySubmit,
 }) => {
   // Alert user if any of the tabs have been saved, but not submitted
-  if (isSavedAndUnsubmitted) {
+  if (isSavedAndUnsubmitted && numPhotometrySubmit > 0) {
     return (
       <Box
         sx={{
@@ -117,7 +137,6 @@ const ApertureGroup: React.FC<ApertureGroupProps> = ({
   ...props // any object props
 }) => {
   const { setFieldValue } = useFormikContext();
-  const [field] = useField<{}>(props);
 
   useGetIfFormChanged(setIsChanged, prevFormValues);
 
@@ -135,6 +154,13 @@ const ApertureGroup: React.FC<ApertureGroupProps> = ({
         }}
       >
         Choose the type of aperture to use and specify and its properties.
+        <br />
+        The optimal aperture for a point source is a circle centered on the source with a
+        radius that maximizes the signal-to-noise ratio given any integration time. Note
+        that an elliptical aperture's semimajor axis is along the <i>x</i>-axis and its
+        semiminor axis is along the <i>y</i>-axis when the rotation angle is 0°.
+        Similarly, a rectangular aperture's width is along the <i>x</i>-axis and its
+        length is along the <i>y</i>-axis.
       </FormHelperText>
       <RadioGroup
         name={"aperShape"}
@@ -168,17 +194,12 @@ const ApertureGroup: React.FC<ApertureGroupProps> = ({
           switch (values["aperShape"]) {
             case Apertures.Optimal:
               return (
-                <FormHelperText
-                  sx={{
-                    fontSize: "medium",
-                    fontWeight: "normal",
-                    marginTop: -2,
-                    marginBottom: 2,
-                    textAlign: "center",
-                  }}
-                >
-                  (OPTIMAL APERTURE COMING SOON!)
-                </FormHelperText>
+                <CommonTextField
+                  name={`aperParams.${Apertures.Optimal}.factor`}
+                  value={`aperParams.${Apertures.Optimal}.factor`}
+                  placeholder="Default: 1.4"
+                  label="Radius (multiple of the telescope's half-FWHM)"
+                />
               );
             case Apertures.Elliptical:
               return (
@@ -199,7 +220,7 @@ const ApertureGroup: React.FC<ApertureGroupProps> = ({
                     name={`aperParams.${Apertures.Elliptical}.center`}
                     value={`aperParams.${Apertures.Elliptical}.center`}
                     placeholder="Default: [0, 0]"
-                    label="Center of Aperture Relative to the Source (arcsec)"
+                    label="(x, y) Center of Aperture Relative to the Source (arcsec)"
                   />
                   <CommonTextField
                     name={`aperParams.${Apertures.Elliptical}.rotation`}
@@ -211,6 +232,29 @@ const ApertureGroup: React.FC<ApertureGroupProps> = ({
               );
             case Apertures.Rectangular:
               return (
+                <FormGroup>
+                  <CommonTextField
+                    name={`aperParams.${Apertures.Rectangular}.width`}
+                    value={`aperParams.${Apertures.Rectangular}.width`}
+                    placeholder=""
+                    label="Full Width (arcsec)"
+                  />
+                  <CommonTextField
+                    name={`aperParams.${Apertures.Rectangular}.length`}
+                    value={`aperParams.${Apertures.Rectangular}.length`}
+                    placeholder=""
+                    label="Full Length (arcsec)"
+                  />
+                  <CommonTextField
+                    name={`aperParams.${Apertures.Rectangular}.center`}
+                    value={`aperParams.${Apertures.Rectangular}.center`}
+                    placeholder="Default: [0, 0]"
+                    label="(x, y) Center of Aperture Relative to the Source (arcsec)"
+                  />
+                </FormGroup>
+              );
+            default:
+              return (
                 <FormHelperText
                   sx={{
                     fontSize: "medium",
@@ -220,38 +264,38 @@ const ApertureGroup: React.FC<ApertureGroupProps> = ({
                     textAlign: "center",
                   }}
                 >
-                  (RECTANGULAR APERTURE COMING SOON!)
+                  SOMETHING WENT WRONG. YOU SHOULD NOT SEE THIS!
                 </FormHelperText>
               );
-            default:
-              // No normalization (i.e., NormMethods.None)
-              return <div />;
           }
         })() // calling anonymous arrow function to render it
       }
+      {isPointSource &&
+        (values.aperShape === Apertures.Elliptical ||
+          values.aperShape === Apertures.Rectangular) && (
+          <FormHelperText
+            sx={{
+              fontSize: "medium",
+              fontWeight: "normal",
+              marginBottom: 2,
+              textAlign: "center",
+            }}
+          >
+            Note that the point source's encircled energy within an elliptical or
+            rectangular aperture is calculated using a Monte Carlo integration and is not
+            an exact value.
+          </FormHelperText>
+        )}
     </FormControl>
   );
 };
 
-type ExtinctionCoeffGroupProps = {
+type ReddeningGroupProps = {
   values: { [value: string]: any }; // any object props
-  // prevFormValues: Object;
-  // setIsChanged: (value: boolean) => void;
 } & FieldAttributes<{}>;
 
-const ExtinctionCoeffGroup: React.FC<ExtinctionCoeffGroupProps> = ({
-  values,
-  // prevFormValues,
-  // setIsChanged,
-  ...props // any object props
-}) => {
-  // const { setFieldValue } = useFormikContext();
-  // const [field] = useField<{}>(props);
-
-  // useGetIfFormChanged(setIsChanged, prevFormValues);
-
+const ReddeningGroup: React.FC<ReddeningGroupProps> = ({ values }) => {
   return (
-    // <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
     <FormControl
       component="fieldset"
       variant="standard"
@@ -273,7 +317,7 @@ const ExtinctionCoeffGroup: React.FC<ExtinctionCoeffGroupProps> = ({
         }}
         filled={true}
       >
-        Extinction Coefficients
+        Reddening
       </FormLabel>
       <FormHelperText
         sx={{
@@ -283,47 +327,25 @@ const ExtinctionCoeffGroup: React.FC<ExtinctionCoeffGroupProps> = ({
           textAlign: "center",
         }}
       >
-        Specify the extinction coefficients in each telescope band.
+        Specify the <i>E(B-V)</i>&#8202; value for this telescope pointing.
       </FormHelperText>
-      <FormGroup>
-        <Grid container spacing={2} columns={12}>
-          <Grid item xs={4}>
-            <CommonTextField
-              name="extinctionCoeffs.uv"
-              value={values.extinctionCoeffs.uv}
-              placeholder={"Default: 0"}
-              label="UV-Band (AB mag)"
-              required={true}
-              // prevFormValues={prevFormValues}
-              // setIsChanged={setIsChanged}
-            />
-          </Grid>
-          <Grid item xs={4}>
-            <CommonTextField
-              name="extinctionCoeffs.u"
-              value={values.extinctionCoeffs.u}
-              placeholder={"Default: 0"}
-              label="u-Band (AB mag)"
-              required={true}
-            />
-          </Grid>
-          <Grid item xs={4}>
-            <CommonTextField
-              name="extinctionCoeffs.g"
-              value={values.extinctionCoeffs.g}
-              placeholder={"Default: 0"}
-              label="g-Band (AB mag)"
-              required={true}
-            />
-          </Grid>
-        </Grid>
-      </FormGroup>
+      <CommonTextField
+        name="reddening"
+        value={values.reddening}
+        placeholder={"Default: 0"}
+        label="E(B-V)"
+        required={true}
+      />
     </FormControl>
   );
 };
 
 /**
  * Displays the saved parameters
+ *
+ * TODO: make this
+ * Should at least have telescope passband limits, sky background AB magnitudes, and
+ * source AB magnitudes
  */
 const DisplayParams = () => {
   const DisplayTelescopeParams = () => {
@@ -393,6 +415,19 @@ const DisplayParams = () => {
   );
 };
 
+/**
+ * Returns - [base, exp]
+ */
+const numToSci = (num: number) => {
+  let [base, exp] = num
+    .toExponential()
+    .split("e")
+    .map((item) => parseFloat(item));
+  // return `${base}&#8239;×&#8239;10<sup>${exp}</sup>`;
+  return [base, exp];
+};
+
+// TODO: make this MUCH more maintainable (will also reduce duplicate code)!
 const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
   numPhotometrySubmit,
 }) => {
@@ -402,19 +437,71 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
   const tableCellFontSize = 17;
   const tableHeadFontSize = 18;
 
+  const divStyle = {
+    justifyContent: "center",
+    alignItems: "center",
+    display: "flex",
+  };
+
+  const paperSx = {
+    minWidth: 500,
+    width: "85%",
+  };
+
+  // const redleakFracs = { uv: [], u: [], g: [] };
+  // for (let band in photParams["redleakFracs"]) {
+  //   redleakFracs[band].push(numToSci(photParams["redleakFracs"][band]));
+  // }
+  const redleakFracUv = numToSci(photParams["redleakFracs"]["uv"]);
+  const redleakFracU = numToSci(photParams["redleakFracs"]["u"]);
+  const redleakFracG = numToSci(photParams["redleakFracs"]["g"]);
+
   return (
     <div id={`display-results-${numPhotometrySubmit}`}>
       <Typography variant="h5" color="secondary" style={{ marginBottom: 12 }}>
         Photometry Results
       </Typography>
-      <div
-        style={{
-          justifyContent: "center",
-          alignItems: "center",
-          display: "flex",
-        }}
-      >
-        <TableContainer component={Paper} sx={{ minWidth: 500, width: "85%" }}>
+      <Typography variant="body1" style={{ marginBottom: 16 }}>
+        A passband's red leak is its electron count rate (i.e., electrons per second)
+        caused by the portion of the source spectrum longward of the red leak threshold
+        (specified in the Telescope tab). The red leak fraction in a passband is the ratio
+        of that passband's red leak to the total passband response (in electrons per
+        second) induced by the entire spectrum.
+      </Typography>
+      {photParams["encircledEnergy"] !== null && (
+        <div style={divStyle}>
+          <Typography
+            component={Paper}
+            sx={{
+              fontSize: tableHeadFontSize,
+              marginBottom: 1,
+              padding: 1,
+              ...paperSx,
+            }}
+          >
+            <b>Point source encircled energy fraction:</b>{" "}
+            {(100 * photParams["encircledEnergy"]).toFixed(2)}%
+          </Typography>
+          <br />
+        </div>
+      )}
+      <div style={divStyle}>
+        <Typography
+          component={Paper}
+          sx={{
+            fontSize: tableHeadFontSize,
+            marginBottom: 1,
+            padding: 1,
+            ...paperSx,
+          }}
+        >
+          <b>Effective number of pixels in aperture:</b>{" "}
+          {photParams["effNpix"].toFixed(2)}
+        </Typography>
+        <br />
+      </div>
+      <div style={divStyle}>
+        <TableContainer component={Paper} sx={paperSx}>
           <Table
             sx={{ minWidth: 400, justifyContent: "center" }}
             aria-label="photometry-results-table"
@@ -423,6 +510,9 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
               <TableRow>
                 <TableCell sx={{ fontSize: tableHeadFontSize }} align="left">
                   Passband
+                </TableCell>
+                <TableCell sx={{ fontSize: tableHeadFontSize }} align="right">
+                  Red&nbsp;Leak&nbsp;Fraction
                 </TableCell>
                 <TableCell sx={{ fontSize: tableHeadFontSize }} align="right">
                   S/N&nbsp;Ratio
@@ -449,10 +539,14 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
                       UV
                     </TableCell>
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
+                      {redleakFracUv[0].toFixed(2)}&#8239;×&#8239;10
+                      <sup>{redleakFracUv[1]}</sup>
+                    </TableCell>
+                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
                       {photForm["photInput"].val}
                     </TableCell>
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                      {photParams["photResults"].uv}
+                      {photParams["photResults"].uv.toFixed(2)}
                     </TableCell>
                   </TableRow>
                   <TableRow
@@ -467,10 +561,14 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
                       u
                     </TableCell>
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
+                      {redleakFracU[0].toFixed(2)}&#8239;×&#8239;10
+                      <sup>{redleakFracU[1]}</sup>
+                    </TableCell>
+                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
                       {photForm["photInput"].val}
                     </TableCell>
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                      {photParams["photResults"].u}
+                      {photParams["photResults"].u.toFixed(2)}
                     </TableCell>
                   </TableRow>
                   <TableRow
@@ -485,10 +583,14 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
                       u
                     </TableCell>
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
+                      {redleakFracG[0].toFixed(2)}&#8239;×&#8239;10
+                      <sup>{redleakFracG[1]}</sup>
+                    </TableCell>
+                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
                       {photForm["photInput"].val}
                     </TableCell>
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                      {photParams["photResults"].g}
+                      {photParams["photResults"].g.toFixed(2)}
                     </TableCell>
                   </TableRow>
                 </TableBody>
@@ -507,7 +609,11 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
                       UV
                     </TableCell>
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                      {photParams["photResults"].uv}
+                      {redleakFracUv[0].toFixed(2)}&#8239;×&#8239;10
+                      <sup>{redleakFracUv[1]}</sup>
+                    </TableCell>
+                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
+                      {photParams["photResults"].uv.toFixed(2)}
                     </TableCell>
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
                       {photForm["photInput"].val}
@@ -525,7 +631,11 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
                       u
                     </TableCell>
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                      {photParams["photResults"].u}
+                      {redleakFracU[0].toFixed(2)}&#8239;×&#8239;10
+                      <sup>{redleakFracU[1]}</sup>
+                    </TableCell>
+                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
+                      {photParams["photResults"].u.toFixed(2)}
                     </TableCell>
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
                       {photForm["photInput"].val}
@@ -543,7 +653,11 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
                       g
                     </TableCell>
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                      {photParams["photResults"].g}
+                      {redleakFracG[0].toFixed(2)}&#8239;×&#8239;10
+                      <sup>{redleakFracG[1]}</sup>
+                    </TableCell>
+                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
+                      {photParams["photResults"].g.toFixed(2)}
                     </TableCell>
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
                       {photForm["photInput"].val}
@@ -558,7 +672,110 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
   );
 };
 
-const photometryValidationSchema = Yup.object({});
+const photometryValidationSchema = Yup.object({
+  aperShape: Yup.string().oneOf(Object.values(Apertures)),
+  reddening: Yup.number()
+    .required("Reddening is a required field")
+    .typeError("Reddening must be a non-negative number")
+    .min(0, "Reddening must be a non-negative number"),
+
+  // BUG: when() does not work with nested objects. Currently still an open issue in Yup
+  aperParams: Yup.object({
+    optimal: Yup.object().when("aperShape", {
+      is: Apertures.Optimal,
+      then: Yup.object({
+        factor: Yup.number()
+          .required("Radius is a required field")
+          .typeError("Radius must be a number > 0")
+          .positive("Radius must be a number > 0"),
+      }),
+      otherwise: Yup.object({
+        factor: Yup.number()
+          .typeError("Radius must be a number > 0")
+          .positive("Radius must be a number > 0"),
+      }),
+    }),
+    elliptical: Yup.object().when("aperShape", {
+      is: Apertures.Optimal,
+      then: Yup.object({
+        a: Yup.number()
+          .required("Semimajor axis is a required field")
+          .typeError("Semimajor axis must be a number > 0")
+          .positive("Semimajor axis must be a number > 0"),
+        b: Yup.number()
+          .required("Semiminor axis is a required field")
+          .typeError("Semiminor axis must be a number > 0")
+          .positive("Semiminor axis must be a number > 0"),
+        // TODO: validation for center. Tuple only available in beta version
+        // center: Yup.tuple([
+        //   Yup.number()
+        //     .required("Center is a required field")
+        //     .typeError("Center must be a pair of numbers"),
+        //   Yup.number()
+        //     .required("Center is a required field")
+        //     .typeError("Center must be a pair of numbers"),
+        // ]),
+        rotation: Yup.number()
+          .required("Rotation angle is a required field")
+          .typeError("Rotation angle must be a number"),
+      }),
+      otherwise: Yup.object({
+        a: Yup.number()
+          .notRequired()
+          .typeError("Semimajor axis must be a number > 0")
+          .positive("Semimajor axis must be a number > 0"),
+        b: Yup.number()
+          .notRequired()
+          .typeError("Semiminor axis must be a number > 0")
+          .positive("Semiminor axis must be a number > 0"),
+        // center: Yup.tuple([...]).notRequired(),
+        rotation: Yup.number().notRequired().typeError("Rotation angle must be a number"),
+      }),
+    }),
+    rectangular: Yup.object().when("aperShape", {
+      is: Apertures.Rectangular,
+      then: Yup.object({
+        width: Yup.number()
+          .required("Width is a required field")
+          .typeError("Width must be a number > 0")
+          .positive("Width must be a number > 0"),
+        length: Yup.number()
+          .required("Length is a required field")
+          .typeError("Length must be a number > 0")
+          .positive("Length must be a number > 0"),
+        // TODO: validation for center. Tuple only available in beta version
+        // center: Yup.tuple([
+        //   Yup.number()
+        //     .required("Center is a required field")
+        //     .typeError("Center must be a pair of numbers"),
+        //   Yup.number()
+        //     .required("Center is a required field")
+        //     .typeError("Center must be a pair of numbers"),
+        // ]),
+      }),
+      otherwise: Yup.object({
+        width: Yup.number()
+          .notRequired()
+          .typeError("Width must be a number > 0")
+          .positive("Width must be a number > 0"),
+        length: Yup.number()
+          .notRequired()
+          .typeError("Length must be a number > 0")
+          .positive("Length must be a number > 0"),
+        // center: Yup.tuple([...]).notRequired(),
+      }),
+    }),
+  }),
+  photInput: Yup.object({
+    val: Yup.number()
+      // .required("Target value is a required field") // BUG: fails validation on 1st refresh?
+      .typeError("Target value must be a number > 0")
+      .positive("Target value must be a number > 0"),
+    val_type: Yup.string()
+      .required()
+      .oneOf(Object.values(["snr", "t"])),
+  }),
+});
 
 type PhotometryFormProps = {
   isSavedAndUnsubmitted: boolean;
@@ -593,6 +810,7 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
   let myInitialValues: FormikValues;
   let isPointSource: boolean;
 
+  // TODO: think mroe carefully about how this form is initialized (e.g., previously point source but now no longer point source)
   if (sessionStorage.getItem(FORM_SESSION) === null) {
     let initialAperShape: string;
     if (
@@ -607,20 +825,37 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
     }
 
     myInitialValues = {
-      extinctionCoeffs: { uv: "0", u: "0", g: "0" }, // AB mags
+      reddening: "0", // E(B-V)
       aperShape: initialAperShape,
       aperParams: {
-        optimal: {},
+        optimal: { factor: "1.4" },
         elliptical: { a: "", b: "", center: "[0, 0]", rotation: "0" },
-        rectangular: {},
+        rectangular: { width: "", length: "", center: "[0, 0]" },
       },
       photInput: { val: "", val_type: "snr" },
     };
   } else {
     myInitialValues = JSON.parse(`${sessionStorage.getItem(FORM_SESSION)}`);
+    // Run check if optimal aperture allowed. I know this is duplicated code, can extract
+    // into function later
+    let initialAperShape: string;
+    if (
+      JSON.parse(`${sessionStorage.getItem("sourceForm")}`)["sourceType"] ===
+      SourceType.Point
+    ) {
+      initialAperShape = Apertures.Optimal;
+      isPointSource = true;
+    } else {
+      initialAperShape = Apertures.Elliptical;
+      isPointSource = false;
+    }
+    if (myInitialValues.aperShape === Apertures.Optimal && !isPointSource) {
+      myInitialValues.aperShape = initialAperShape;
+    }
   }
   // Only run this on mount
-  useEffect(() => {
+  React.useEffect(() => {
+    console.log("useEffect PhotometryForm myInitialValues: ", myInitialValues);
     setIsChanged(false);
     setPrevFormValues(myInitialValues);
   }, []);
@@ -629,10 +864,15 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
     <div>
       <Typography variant="h5">Make a photometry calculation below.</Typography>
       <Typography variant="body1" style={{ marginBottom: 16 }}>
+        <b>
+          Form validation is still in development for this tab. Please ensure all inputs
+          are valid prior to saving.
+        </b>
+        <br />
         Note that we do <b>not</b> support local concurrent ETC GUI sessions. If you have
         saved or submitted a request from another ETC instance,{" "}
-        <i>your photometry results will be incorrect </i>! (Some other limitations
-        here...) Please use the Python{" "}
+        <i>your photometry results will be incorrect </i>! For more flexibility, use the
+        Python{" "}
         <Link
           href="https://github.com/CASTOR-telescope/ETC"
           // Open link in new tab
@@ -641,7 +881,7 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
         >
           <code>castor_etc</code>
         </Link>{" "}
-        package instead.
+        package.
       </Typography>
       <Formik
         initialValues={myInitialValues}
@@ -701,11 +941,8 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
               setIsChanged={setIsChanged}
               isPointSource={isPointSource}
             />
-            {/* <br />
-            <ExtinctionCoeffGroup
-              name="extinctionCoeffGroupThisNameIsNotUsed"
-              values={values}
-            /> */}
+            <br />
+            <ReddeningGroup name="ReddeningGroupThisNameIsNotUsed" values={values} />
             <FormControl
               component="fieldset"
               variant="standard"
@@ -758,19 +995,16 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
                       type="select"
                       // size="large"
                       variant="outlined"
-                      style={{
-                        marginTop: 0,
-                        marginBottom: 0,
-                        marginRight: 0,
-                        marginLeft: 0,
-                        padding: 0,
-                        fontSize: 18,
-                      }}
+                      style={{ fontSize: 18 }}
                       onChange={(event: any) =>
                         setFieldValue("photInput.val_type", event.target.value)
                       }
                       value={values.photInput.val_type}
-                      sx={{ width: "100%", height: "77.5%" }}
+                      sx={{
+                        width: "100%",
+                        height: "3.55rem",
+                        // height: "77.5%"
+                      }}
                     >
                       <MenuItem value="snr">S/N Ratio</MenuItem>
                       <MenuItem value="t">Time (s)</MenuItem>
@@ -810,24 +1044,11 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
                 </Grid>
               </FormGroup>
             </FormControl>
-            <AlertIfSavedButNotSubmitted isSavedAndUnsubmitted={isSavedAndUnsubmitted} />
-            <LoadingButton
-              type="submit"
-              disabled={isSubmitting || !isValid}
-              // sx={{ color: themeSecondaryLightColor }}
-              size="large"
-              variant="contained"
-              style={{
-                width: "25%",
-                fontSize: 24,
-                margin: 16,
-                backgroundColor: themeYellowColor,
-              }}
-              loading={isSubmitting}
-              loadingIndicator="Submitting..."
-            >
-              Submit
-            </LoadingButton>
+            <AlertIfSavedButNotSubmitted
+              isSavedAndUnsubmitted={isSavedAndUnsubmitted}
+              numPhotometrySubmit={numPhotometrySubmit}
+            />
+            <SubmitButton isSubmitting={isSubmitting} isValid={isValid} />
             {/* <pre>{JSON.stringify(values, null, 2)}</pre> */}
             <AlertError
               isError={isError}

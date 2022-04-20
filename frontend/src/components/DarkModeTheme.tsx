@@ -57,3 +57,5 @@ export const themeBackgroundColor = DarkModeTheme.palette.background.default;
 export const themeSecondaryLightColor = DarkModeTheme.palette.secondary.light;
 
 export const themeYellowColor = "#efd5a2";
+
+export const themeDisabledButtonColor = DarkModeTheme.palette.background.paper;
