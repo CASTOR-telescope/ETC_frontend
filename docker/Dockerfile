@@ -1,4 +1,5 @@
 # As of April 2022, the LTS node version is v16.14.2
+# Don't need this since I'm not building within the Docker container...
 FROM node:lts-alpine as frontend-builder
 
 WORKDIR /frontend/build
@@ -46,7 +47,3 @@ EXPOSE 5000
 # RUN mkdir /skaha
 ADD docker/startup.sh /skaha/
 RUN chmod a+x /skaha/startup.sh
-
-# Use this or startup.sh?
-# WORKDIR /backend
-# CMD ["gunicorn", "-b", "0.0.0.0:5000", "connector:app", "--log-level=debug", "--log-file=/dev/stdout"]
