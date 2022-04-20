@@ -647,11 +647,6 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
         initialValues={myInitialValues}
         onSubmit={async (data, { setSubmitting }) => {
           setSubmitting(true);
-          console.log(data);
-
-          // Set state to indicate that the parameters have been submitted
-          // ! Remove and put in promise later
-          // setIsSavedAndUnsubmitted(false);
 
           // Make async call
           await axios

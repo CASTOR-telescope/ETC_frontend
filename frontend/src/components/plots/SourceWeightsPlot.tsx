@@ -14,7 +14,7 @@ const SourceWeightsPlot: React.FC<SourceWeightsPlotProps> = ({ numPhotometrySubm
     let sourceWeights = JSON.parse(photometryParams["sourceWeights"]); // need to parse twice...
     let extent = photometryParams["aperExtent"]; // [xmin, xmax, ymin, ymax]
     let effNpix = photometryParams["effNpix"];
-    console.log("updating SourceWeightsPlot");
+    // console.log("updating SourceWeightsPlot");
     let plotLengths = [sourceWeights.length, sourceWeights[0].length];
     return (
       <ResponsivePlot

@@ -14,7 +14,7 @@ const AperMaskPlot: React.FC<AperMaskPlotProps> = ({ numPhotometrySubmit }) => {
     let aperMask = JSON.parse(photometryParams["aperMask"]); // need to parse twice...
     let extent = photometryParams["aperExtent"]; // [xmin, xmax, ymin, ymax]
     let effNpix = photometryParams["effNpix"];
-    console.log("updating SourceWeightsPlot");
+    // console.log("updating AperMaskPlot");
     let plotLengths = [aperMask.length, aperMask[0].length];
     return (
       <ResponsivePlot

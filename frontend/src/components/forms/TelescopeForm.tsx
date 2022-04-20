@@ -181,8 +181,6 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                   setIsBackgroundSyncTelescope(false);
                 }
                 setIsSourceSyncTelescope(false);
-                console.log("isChanged", isChanged);
-                console.log("isTelescopeSyncPhotometry", isTelescopeSyncPhotometry);
                 if (sessionStorage.getItem("photometryForm") !== null) {
                   setIsTelescopeSyncPhotometry(false);
                 }

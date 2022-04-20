@@ -16,7 +16,7 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
     let plotData = JSON.parse(`${sessionStorage.getItem("telescopeParams")}`)[
       "fullPassbandCurves"
     ];
-    console.log("updating ResponseCurveSpectrumPlot telescopeParams");
+    // console.log("updating ResponseCurveSpectrumPlot telescopeParams");
     data.push(
       {
         x: plotData.uv.wavelength,
@@ -51,7 +51,7 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
     // });
     if (sessionStorage.getItem("sourceParams") !== null) {
       // Recall that telescopeParams must not be null to have sourceParams
-      console.log("updating ResponseCurveSpectrumPlot sourceParams");
+      // console.log("updating ResponseCurveSpectrumPlot sourceParams");
       let plotData = JSON.parse(`${sessionStorage.getItem("sourceParams")}`);
       data.push({
         x: plotData.wavelengths,
@@ -63,7 +63,6 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
         // line: { width: 1 },
       });
     }
-    console.log("ResponseCurveSpectrumPlot data", data);
     return (
       <ResponsivePlot
         // React re-renders the plot when any state, prop, or parent component changes
@@ -97,7 +96,6 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
             exponentformat: "power",
             automargin: true,
             rangemode: "tozero",
-            range: [0, 9.5e-16], // REVIEW: remove after demo
           },
           margin: { t: 12 },
           showlegend: true,
@@ -166,7 +164,6 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
             gridcolor: "grey",
             overlaying: "y",
             side: "right",
-            // range: [0, 1e-15], // REVIEW: remove after demo
             visible: true,
             exponentformat: "power",
             automargin: true,
