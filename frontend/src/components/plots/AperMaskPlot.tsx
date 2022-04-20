@@ -54,14 +54,14 @@ const AperMaskPlot: React.FC<AperMaskPlotProps> = ({ numPhotometrySubmit }) => {
             showgrid: true,
             title: "<i>x</i> (arcsec)",
             type: "linear",
-            autorange: false,
+            autorange: true,
             range: [extent[0], extent[1]],
           },
           yaxis: {
             showgrid: true,
             title: "<i>y</i> (arcsec)",
             type: "linear",
-            autorange: false,
+            autorange: true,
             range: [extent[2], extent[3]],
             scaleanchor: "x",
           },
@@ -96,7 +96,7 @@ const AperMaskPlot: React.FC<AperMaskPlotProps> = ({ numPhotometrySubmit }) => {
         config={{
           displaylogo: false,
           // modeBarButtonsToRemove: ["zoomIn2d", "zoomOut2d"],
-          toImageButtonOptions: { filename: "source_weights" },
+          toImageButtonOptions: { filename: "aper_mask" },
           // Allow users to edit chart
           showEditInChartStudio: true,
           plotlyServerURL: "https://chart-studio.plotly.com",
@@ -135,14 +135,14 @@ const AperMaskPlot: React.FC<AperMaskPlotProps> = ({ numPhotometrySubmit }) => {
             showgrid: true,
             title: "<i>x</i> (arcsec)",
             type: "linear",
-            autorange: false,
+            autorange: true,
             range: [-1, 1],
           },
           yaxis: {
             showgrid: true,
             title: "<i>y</i> (arcsec)",
             type: "linear",
-            autorange: false,
+            autorange: true,
             range: [-1, 1],
           },
           margin: { r: 30 },
@@ -191,7 +191,7 @@ const AperMaskPlot: React.FC<AperMaskPlotProps> = ({ numPhotometrySubmit }) => {
         config={{
           displaylogo: false,
           // modeBarButtonsToRemove: ["zoomIn2d", "zoomOut2d"],
-          toImageButtonOptions: { filename: "source_weights" },
+          toImageButtonOptions: { filename: "aper_mask" },
           // Allow users to edit chart
           showEditInChartStudio: true,
           plotlyServerURL: "https://chart-studio.plotly.com",
