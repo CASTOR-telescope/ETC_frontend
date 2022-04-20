@@ -327,7 +327,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                 sx={{ fontSize: 18 }}
                 filled={true}
               >
-                Redleak Thresholds
+                Red Leak Thresholds
               </FormLabel>
               <FormHelperText
                 sx={{
