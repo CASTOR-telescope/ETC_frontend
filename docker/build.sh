@@ -16,6 +16,7 @@ source ${SCRIPT_DIR}/Docker_env
 CACHEBUST_BACKEND=${1:-1}
 CACHEBUST_CASTOR=${2:-1}
 CACHEBUST_FRONTEND=${3:-1}
+RUN=${4:-false}
 #
 # Build the project
 #
@@ -27,17 +28,22 @@ docker build --build-arg CACHEBUST_BACKEND=${CACHEBUST_BACKEND} \
         -f docker/Dockerfile .
 #
 echo "Finishing building castor_etc_gui:${VERSION}"
-echo "Now running castor_etc_gui_v${VERSION}..."
 #
 # Run the project
 #
-# https://docs.docker.com/config/containers/container-networking/#published-ports
-docker run --interactive \
-        --tty \
-        --publish 5000:5000 \
-        --name castor_etc_gui_v${VERSION} \
-        -d castor_etc_gui:${VERSION}
-#
-docker logs castor_etc_gui_v${VERSION}
-#
-echo "DONE! Access the castor_etc_gui_v${VERSION} instance via localhost port 5000."
+if [[ ${RUN} = true ]]; then
+    echo "Now running castor_etc_gui_v${VERSION}..."
+    # https://docs.docker.com/config/containers/container-networking/#published-ports
+    docker run --interactive \
+            --tty \
+            --publish 5000:5000 \
+            --name castor_etc_gui_v${VERSION} \
+            -d castor_etc_gui:${VERSION}
+    #
+    docker logs castor_etc_gui_v${VERSION}
+    #
+    echo "DONE! Access the castor_etc_gui_v${VERSION} instance via localhost port 5000."
+else
+    echo "DONE! The castor_etc_gui_v${VERSION} has been built."
+fi
+
