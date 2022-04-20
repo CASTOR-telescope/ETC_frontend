@@ -47,16 +47,23 @@ def put_telescope_json():
             request_data = request.get_json()
             logger.info("Telescope request_data: " + str(request_data))
             fwhm = float(request_data["fwhm"])
+            logger.debug("fwhm: " + str(fwhm))
             px_scale = float(request_data["pxScale"])
+            logger.debug("px_scale: " + str(px_scale))
             mirror_diameter = float(request_data["mirrorDiameter"])
+            logger.debug("mirror_diameter: " + str(mirror_diameter))
             dark_current = float(request_data["darkCurrent"])
+            logger.debug("dark_current: " + str(dark_current))
             read_noise = float(request_data["readNoise"])
+            logger.debug("read_noise: " + str(read_noise))
             redleak_thresholds = request_data["redleakThresholds"]
             extinction_coeffs = request_data["extinctionCoeffs"]
             for band in redleak_thresholds:
                 redleak_thresholds[band] = float(redleak_thresholds[band])
+            logger.debug("redleak_thresholds: " + str(redleak_thresholds))
             for band in extinction_coeffs:
                 extinction_coeffs[band] = float(extinction_coeffs[band])
+            logger.debug("extinction_coeffs: " + str(extinction_coeffs))
         except Exception as e:
             log_traceback(e)
             logger.error(
@@ -71,14 +78,14 @@ def put_telescope_json():
         # Create and store `Telescope` object
         #
         TelescopeObj = Telescope(
-            fwhm=fwhm << u.arcsec,
-            px_scale=px_scale << u.arcsec,
-            mirror_diameter=mirror_diameter << u.cm,
+            fwhm=fwhm * u.arcsec,
+            px_scale=px_scale * u.arcsec,
+            mirror_diameter=mirror_diameter * u.cm,
             dark_current=dark_current,
             read_noise=read_noise,
             redleak_thresholds={
                 # Convert float to `astropy.Quantity`
-                key: val << u.AA
+                key: val * u.AA
                 for key, val in redleak_thresholds.items()
             },
             extinction_coeffs=extinction_coeffs,
