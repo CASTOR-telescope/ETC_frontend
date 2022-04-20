@@ -855,7 +855,6 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
   }
   // Only run this on mount
   React.useEffect(() => {
-    console.log("useEffect PhotometryForm myInitialValues: ", myInitialValues);
     setIsChanged(false);
     setPrevFormValues(myInitialValues);
   }, []);
