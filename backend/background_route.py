@@ -74,9 +74,12 @@ def put_background_json():
         # Create and store `Background` object
         #
         BackgroundObj = Background(mags_per_sq_arcsec=mags_per_sq_arcsec)
-        if use_default_sky_background and DataHolder.TelescopeObj is not None:
-            BackgroundObj.calc_mags_per_sq_arcsec(DataHolder.TelescopeObj)
-            mags_per_sq_arcsec = BackgroundObj.mags_per_sq_arcsec
+        if (
+            use_default_sky_background and DataHolder.TelescopeObj is not None
+        ):  # will always have a TelescopeObj now
+            mags_per_sq_arcsec = BackgroundObj.calc_mags_per_sq_arcsec(
+                DataHolder.TelescopeObj
+            )
         if geo_emission_params:  # non-empty list
             for item in geo_emission_params:  # item is a dictionary
                 flux = item["flux"].lower()
@@ -93,6 +96,9 @@ def put_background_json():
                         )
                 # TODO: add support for custom wavelengths/linewidths
                 BackgroundObj.add_geocoronal_emission(flux=flux)
+        logger.debug(
+            "mags_per_sq_arcsec (excl. geocoronal emission): " + str(mags_per_sq_arcsec)
+        )
         DataHolder.BackgroundObj = BackgroundObj
         # if mags_per_sq_arcsec is None:
         #     # No user-inputted sky background & no telescope defined yet (won't happen since I disabled tabs)
