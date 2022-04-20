@@ -167,7 +167,9 @@ def put_source_json():
         #
         # Make spectrum
         #
-        wavelengths = np.arange(1000.0, 12005.0, 10.0) * u.AA
+        # Ensure wavelengths array is larger than passband response curve extent and is
+        # high-resolution (for interpolation)
+        wavelengths = np.arange(900.0, 12005.0, 10.0) * u.AA
         if custom_spectrum != "":
             # Save file here
             secure_filepath = save_file(custom_spectrum)
@@ -179,6 +181,7 @@ def put_source_json():
             SourceObj.generate_bb(
                 T=float(predefined_spectrum_parameters[predefined_spectrum]["temp"])
                 * u.K,
+                wavelengths=wavelengths,
                 radius=float(
                     predefined_spectrum_parameters[predefined_spectrum]["radius"]
                 ),
@@ -293,6 +296,7 @@ def put_source_json():
         # Get source magnitude in each passband
         #
         source_mags = SourceObj.get_AB_mag(TelescopeObj=DataHolder.TelescopeObj)
+        total_mag = SourceObj.get_AB_mag()
         #
         # Store `Source` object
         #
@@ -304,6 +308,7 @@ def put_source_json():
             wavelengths=list(SourceObj.wavelengths.to(u.AA).value),  # x-values
             spectrum=list(SourceObj.spectrum),  # y-values
             sourceMags=source_mags,  # dict of floats
+            totalMag=total_mag,  # float
         )
     except Exception as e:
         log_traceback(e)
