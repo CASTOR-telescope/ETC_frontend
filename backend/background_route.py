@@ -42,6 +42,7 @@ def put_background_json():
             use_default_sky_background = request_data["useDefaultSkyBackground"]
             custom_sky_background = request_data["customSkyBackground"]  # dict
             geo_emission_params = request_data["geocoronalEmission"]  # list of dicts
+            print("geo_emission_params:", geo_emission_params)
             #
             if use_default_sky_background.lower() == "true":
                 use_default_sky_background = True

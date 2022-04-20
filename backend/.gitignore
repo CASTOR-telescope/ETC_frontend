@@ -133,3 +133,4 @@ dmypy.json
 
 # Keep flask_uploads folder empty
 flask_uploads/*
+!flask_uploads/README.md
