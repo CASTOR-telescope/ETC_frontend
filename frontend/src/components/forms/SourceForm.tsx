@@ -110,6 +110,8 @@ type SpectrumFieldsProps = {
   numSourceTypeChanged: number;
   customSpectrumKey: number;
   setCustomSpectrumKey: (value: number) => void;
+  isInitialRender: boolean;
+  setIsInitialRender: (value: boolean) => void;
 } & FieldAttributes<{}>;
 
 const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
@@ -118,6 +120,8 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
   numSourceTypeChanged,
   customSpectrumKey,
   setCustomSpectrumKey,
+  isInitialRender,
+  setIsInitialRender,
   ...props
 }) => {
   const { setFieldValue } = useFormikContext();
@@ -200,11 +204,14 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
 
   // To clear predefined spectra field when changing source types
   React.useEffect(() => {
-    setMyInputObj(EMPTY_OPTION);
-    setFieldValue("predefinedSpectrum", "");
+    if (isInitialRender) {
+      setIsInitialRender(false);
+    } else {
+      console.log("numSourceTypeChanged in useEffect: ", numSourceTypeChanged);
+      setMyInputObj(EMPTY_OPTION);
+      setFieldValue("predefinedSpectrum", "");
+    }
   }, [numSourceTypeChanged]);
-
-  // TODO: add upload spectrum button functionality
 
   return (
     <FormControl component="fieldset" variant="standard" fullWidth={true}>
@@ -219,7 +226,17 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
           textAlign: "center",
         }}
       >
-        Choose or upload a spectrum for the source.
+        Choose or upload a spectrum for the source. If uploading your own spectrum, it
+        must be in ASCII or FITS format.
+        <br />
+        If the file is in ASCII format (.txt or .dat file extension), the first column
+        should contain the wavelengths in angstrom and the second column should contain
+        the spectrum in erg/s/cm²/Å, with the 2 columns separated by a constant number of
+        spaces. Lines starting with a hash (#) will be ignored.
+        <br />
+        If the file is in FITS format (.fit or .fits file extention), the first field
+        (index 0) should contain the wavelengths in angstrom and the second field (index
+        1) should contain the spectrum in erg/s/cm²/Å.
       </FormHelperText>
       <FormGroup>
         <Grid container spacing={2} columns={12}>
@@ -336,11 +353,13 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
                 marginLeft: 0,
                 padding: 0,
                 fontSize: 18,
+                // visibility: "hidden",
               }}
               sx={[
                 { width: "100%", height: "77.5%" },
+                // { "& label": { color: "red" } },
                 // values.predefinedSpectrum !== "" && {
-                //   "&:disabled": { backgroundColor: "green" },
+                //   "input:disabled": { color: "green" },
                 // },
               ]}
               disabled={values.predefinedSpectrum !== ""}
@@ -421,7 +440,7 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
                   </Grid>
                 </FormGroup>
               );
-            case "power-law":
+            case "powerLaw":
               return (
                 <FormGroup>
                   <FormHelperText
@@ -827,6 +846,16 @@ const SpectralLinesGroup: React.FC<SpectralLinesGroupProps> = ({
           <FormLabel component="legend" required={false} sx={{ fontSize: 18 }}>
             Spectral Lines
           </FormLabel>
+          <FormHelperText
+            sx={{
+              fontSize: "medium",
+              fontWeight: "normal",
+              textAlign: "center",
+            }}
+          >
+            Add emission or absorption lines to the spectrum. The spectral line peaks and
+            dips will be added on top of the continuum and in the order below.
+          </FormHelperText>
           <Grid container columns={12} alignItems="center" justifyContent="center">
             <Grid item xs={3}>
               <Button
@@ -869,7 +898,7 @@ const SpectralLinesGroup: React.FC<SpectralLinesGroupProps> = ({
                 <Grid
                   container
                   spacing={1}
-                  columns={20}
+                  columns={25}
                   justifyContent="center"
                   alignItems="top"
                 >
@@ -889,6 +918,15 @@ const SpectralLinesGroup: React.FC<SpectralLinesGroupProps> = ({
                       placeholder={"Example: 4"}
                       label="FWHM (Å)"
                       // label="Full-Width at Half-Maximum (Å)"
+                      required={true}
+                    />
+                  </Grid>
+                  <Grid item xs={5} sx={{ marginTop: 2, marginBottom: 0 }}>
+                    <CommonTextField
+                      name={`spectralLines.${index}.peak`}
+                      value={`spectralLines.${index}.peak`}
+                      placeholder={"Example: 4"}
+                      label="Peak/Dip (erg/s/cm²/Å)"
                       required={true}
                     />
                   </Grid>
@@ -1327,6 +1365,9 @@ const sourceValidationSchema = Yup.object({
       fwhm: Yup.number()
         .typeError("FWHM must be a number > 0")
         .positive("FWHM must be a number > 0"),
+      peak: Yup.number()
+        .typeError("Flux density must be a number > 0")
+        .positive("Flux density must be a number > 0"),
       shape: Yup.string().oneOf(["gaussian", "lorentzian"]),
       type: Yup.string().oneOf(["emission", "absorption"]),
       id: Yup.number().required(),
@@ -1411,6 +1452,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
         {
           center: "",
           fwhm: "",
+          peak: "",
           shape: "gaussian",
           type: "emission",
           id: "" + Math.random(),
@@ -1424,7 +1466,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
         luminosityDist: { luminosity: "", dist: "" },
         // No need if no normalization (i.e., normMethod === "")
       },
-      isNormAfterSpectralLines: true,
+      isNormAfterSpectralLines: false,
     };
   } else {
     myInitialValues = JSON.parse(`${sessionStorage.getItem(FORM_SESSION)}`);
@@ -1440,6 +1482,10 @@ const SourceForm: React.FC<SourceFormProps> = ({
   const incrNumSourceTypeChanged = () => {
     setNumSourceTypeChanged(numSourceTypeChanged + 1);
   };
+  // Prevent clearing predefined spectra field on first load. My approach is similar to
+  // <https://medium.com/swlh/prevent-useeffects-callback-firing-during-initial-render-the-armchair-critic-f71bc0e03536>
+  // except not using useRef()
+  const [isInitialRender, setIsInitialRender] = React.useState(true);
 
   // To clear custom spectrum file name (<https://stackoverflow.com/a/55495449>)
   const [customSpectrumKey, setCustomSpectrumKey] = React.useState(0);
@@ -1474,11 +1520,23 @@ const SourceForm: React.FC<SourceFormProps> = ({
           async (data, { setSubmitting }) => {
             setSubmitting(true);
 
-            console.log("customSpectrum", data.customSpectrum);
+            // Must convert data to form-data type instead of JSON because of possible
+            // file upload
+            const formData = new FormData();
+            for (const datum in data) {
+              if (datum === "customSpectrum") {
+                formData.append(`${datum}`, data[datum]);
+              } else {
+                formData.append(`${datum}`, JSON.stringify(data[datum]));
+              }
+              // console.log(`${datum}`, data[datum]);
+            }
 
             // Make async call
             await axios
-              .put(API_URL + "source", data)
+              .put(API_URL + "source", formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+              })
               .then((response) => response.data)
               .then((response) =>
                 sessionStorage.setItem(FORM_PARAMS, JSON.stringify(response))
@@ -1529,6 +1587,8 @@ const SourceForm: React.FC<SourceFormProps> = ({
               numSourceTypeChanged={numSourceTypeChanged}
               customSpectrumKey={customSpectrumKey}
               setCustomSpectrumKey={setCustomSpectrumKey}
+              isInitialRender={isInitialRender}
+              setIsInitialRender={setIsInitialRender}
             />
             <br />
             <PhysicalParametersGroup

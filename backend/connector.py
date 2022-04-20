@@ -8,6 +8,7 @@ Isaac Cheng - 2022
 Helpful links:
 - What is an endpoint in Flask (incl. `url_for()`): <https://stackoverflow.com/a/19262349>
 - How to get different parts of a URL: <https://stackoverflow.com/a/15975041>
+- TODO: Returning API errors as JSON: <https://flask.palletsprojects.com/en/2.1.x/errorhandling/#returning-api-errors-as-json>
 """
 import re
 

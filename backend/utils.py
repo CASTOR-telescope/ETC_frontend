@@ -11,6 +11,7 @@ from traceback import format_exception
 
 # from astropy.utils.misc import JsonCustomEncoder
 from flask import Flask, Response, jsonify
+from werkzeug.utils import secure_filename
 
 # from flask.json import JSONEncoder
 from flask_cors import CORS
@@ -18,36 +19,81 @@ from flask_cors import CORS
 # from flask_restful import Api
 
 # TODO: check that the static url path works with CANFAR!
-app = Flask(
-    __name__,
-    # static_folder="../frontend/build",
-    static_folder="/backend/client",
-    static_url_path="/session/castor-etc/" + str(os.getenv("session_id")) + "/",
-)  # gunicorn on CANFAR
-# app = Flask(__name__, static_folder="../frontend/build", static_url_path="/")  # gunicorn
-# app = Flask(__name__)  # python
-# api = Api(app)
-cors = CORS()
 
-# --- Python ---
-# app.logger.handlers.clear()  # prevent double-logging with Flask logger
+session_id = os.getenv("session_id")
 
-# log_handler = logging.StreamHandler()  # log to stdout/stderr
-# # log_handler = logging.FileHandler("etc_frontend.log")  # log to file
+if session_id is None:
+    # --- Python ---
+    app = Flask(__name__)  # python
+    # api = Api(app)
+    cors = CORS()
+    #
+    # Configure logger
+    #
+    app.logger.handlers.clear()  # prevent double-logging with Flask logger
+    log_handler = logging.StreamHandler()  # log to stdout/stderr
+    # log_handler = logging.FileHandler("etc_frontend.log")  # log to file
+    # Add logger to Flask app (only logs application errors, not HTTP errors)
+    log_formatter = logging.Formatter(
+        "%(asctime)s [%(name)-12s] %(levelname)-8s %(message)s"
+    )
+    log_handler.setFormatter(log_formatter)
+    log_handler.setLevel(logging.DEBUG)
+    app.logger.addHandler(log_handler)
+    # Use this logger for manual addition of log messages
+    logger = logging.getLogger("werkzeug")
+    logger.setLevel(logging.DEBUG)
+    # logger.setFormatter(log_formatter)  # this line doesn't work for some reason...
+else:
+    # --- Gunicorn ---
+    app = Flask(
+        __name__,
+        # static_folder="../frontend/build",
+        static_folder="/backend/client",
+        static_url_path="/session/castor-etc/" + os.getenv("session_id") + "/",
+    )  # gunicorn on CANFAR
+    # app = Flask(
+    #     __name__, static_folder="../frontend/build", static_url_path="/"
+    # )  # gunicorn
+    # api = Api(app)
+    cors = CORS()
+    # Add logger to Flask app (only logs application errors, not HTTP errors)
+    logger = logging.getLogger("gunicorn.error")
+    app.logger.handlers = logger.handlers
+    app.logger.setLevel(logger.level)
 
-# # Add logger to Flask app
-# log_formatter = logging.Formatter("%(asctime)s [%(name)-12s] %(levelname)-8s %(message)s")
-# log_handler.setFormatter(log_formatter)
-# log_handler.setLevel(logging.DEBUG)  # only logs application errors, not HTTP errors
-# app.logger.addHandler(log_handler)
+#
+# Configure file uploads
+#
+# https://flask.palletsprojects.com/en/2.1.x/patterns/fileuploads/
+ALLOWED_EXTENSIONS = {"fits", "fit", "txt", "dat"}
+app.config["UPLOAD_FOLDER"] = "./flask_uploads"
 
-# # Use this logger for manual addition of log messages
-# logger = logging.getLogger("werkzeug")  # when using `python connector.py`
 
-# --- Gunicorn ---
-logger = logging.getLogger("gunicorn.error")
-app.logger.handlers = logger.handlers
-app.logger.setLevel(logger.level)
+def save_file(file):
+    """
+    If the file has an allowed file extension, save the file to the configured upload
+    folder using a secure filename.
+
+    Returns
+    -------
+      secure_filepath : str or None
+        The path to the (safely-named) saved file. If None, the file was not saved.
+    """
+    bad_filename = file.filename
+    if (
+        "." in bad_filename
+        and bad_filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+    ):
+        good_filename = secure_filename(bad_filename)
+        secure_filepath = os.path.join(app.config["UPLOAD_FOLDER"], good_filename)
+        file.save(secure_filepath)
+        logger.info(f"Saved file {bad_filename} to {secure_filepath}")
+        return secure_filepath
+    else:
+        logger.error("Bad filename!")
+        return None
+
 
 # class MyCustomJsonEncoder(JSONEncoder):
 #     """

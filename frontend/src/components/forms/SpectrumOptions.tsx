@@ -8,7 +8,8 @@ export const SpectrumOptions = [
   // Any source type is valid
   { spectralValue: "", spectralName: "", sourceType: "general" }, // user uploads own spectrum
   { spectralValue: "blackbody", spectralName: "Blackbody", sourceType: "general" },
-  { spectralValue: "power-law", spectralName: "Power-Law", sourceType: "general" },
+  { spectralValue: "powerLaw", spectralName: "Power-Law", sourceType: "general" },
+  { spectralValue: "uniform", spectralName: "Uniform", sourceType: "general" },
 
   // Galaxy spectra
   {
