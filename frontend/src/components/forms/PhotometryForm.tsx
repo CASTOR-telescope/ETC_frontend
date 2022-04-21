@@ -34,7 +34,11 @@ import LoadingButton from "@mui/lab/LoadingButton";
 import * as Yup from "yup";
 import axios from "axios";
 import { API_URL } from "../../env";
-import { themeYellowColor, themeDisabledButtonColor } from "../DarkModeTheme";
+import {
+  themeYellowColor,
+  themeYellowColorDark,
+  themeDisabledButtonColor,
+} from "../DarkModeTheme";
 import { SourceType } from "./SpectrumOptions";
 
 import {
@@ -59,6 +63,7 @@ const SubmitButton: React.FC<{ isSubmitting: boolean; isValid: boolean }> = ({
       style={{ width: "25%", fontSize: 24, margin: 16 }}
       sx={[
         { backgroundColor: themeYellowColor },
+        { "&:hover": { backgroundColor: themeYellowColorDark } },
         { "&:disabled": { backgroundColor: themeDisabledButtonColor } },
       ]}
       loading={isSubmitting}
