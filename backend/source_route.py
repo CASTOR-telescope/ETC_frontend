@@ -168,8 +168,9 @@ def put_source_json():
         # Make spectrum
         #
         # Ensure wavelengths array is larger than passband response curve extent and is
-        # high-resolution (for interpolation)
-        wavelengths = np.arange(900.0, 12005.0, 10.0) * u.AA
+        # high-resolution (for interpolation). Divide by redshift to ensure final
+        # spectrum, if generating one, spans the full passband range.
+        wavelengths = (np.arange(900.0, 12005.0, 10.0) / (1 + redshift)) * u.AA
         if custom_spectrum != "":
             # Save file here
             secure_filepath = save_file(custom_spectrum)
