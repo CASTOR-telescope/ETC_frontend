@@ -88,10 +88,12 @@ const SourceSelectTypeField: React.FC<SourceSelectTypeFieldProps> = ({
         variant="outlined"
         style={{ minWidth: "7rem" }}
         onChange={(e: React.ChangeEvent<any>) => {
+          // Clear predefined spectrum
           incrNumSourceTypeChanged(); // To let React know that source type has changed
-          setFieldValue("customSpectrum", "");
-          // Clear customSpectrum file name
-          setCustomSpectrumKey(Date.now());
+          // // Don't need to clear any custom spectrum if just changing source type
+          // setFieldValue("customSpectrum", "");
+          // // Clear customSpectrum file name
+          // setCustomSpectrumKey(Date.now());
           return handleChange(e);
         }}
         {...fieldNoOnChange}
