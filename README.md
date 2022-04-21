@@ -37,6 +37,8 @@ Python backend using an application programming interface (API) created using th
    the Docker container is to minimize loading time (? Does this even affect CANFAR
    loading time ?).
 
+4. Remember to double-check the `API_URL` in [env.ts](frontend/src/env.ts).
+
 Can override parameters (e.g., `VERSION`) in Docker_env.
 
 NOTE THAT DEBUG VERSION UTILS.PY IS DIFFERENT FROM PRODUCTION (I.E., CONTAINERIZED)
@@ -86,3 +88,6 @@ gunicorn -b 127.0.0.1:5000 connector:app
 
 2. Figure out how to auto-update all other parameters upon submitting one form (e.g.,
    after saving Telescope, Background + Source + Photometry should all resubmit)
+
+3. Add more transparent error messages visible via GUI, as application errors are
+   currently only viewable via the Docker logs
