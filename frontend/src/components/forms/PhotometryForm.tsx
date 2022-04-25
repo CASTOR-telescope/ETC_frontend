@@ -414,14 +414,24 @@ const DisplayParams = () => {
 };
 
 /**
- * Returns - [base, exp]
+ * Returns - [base, exp] if number < 1, else number (assuming not null).
  */
-const numToSci = (num: number) => {
-  let [base, exp] = num
-    .toExponential()
-    .split("e")
-    .map((item) => parseFloat(item));
-  return [base, exp];
+const numToSci = (num: number | null) => {
+  if (num === null) {
+    return null;
+  } else if (num > 1 || num < 1e-12) {
+    return num;
+  } else {
+    let [base, exp] = num
+      .toExponential()
+      .split("e")
+      .map((item) => parseFloat(item));
+    if (base.toFixed(2) === "10.00") {
+      base = 1.0;
+      exp += 1;
+    }
+    return [base, exp];
+  }
 };
 
 // TODO: make this MUCH more maintainable (will also reduce duplicate code)!
@@ -445,9 +455,36 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
     width: "85%",
   };
 
+  const resultCell = (result: number | number[] | null) => {
+    if (result === null) {
+      return (
+        <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
+          N/A
+        </TableCell>
+      );
+    } else if (typeof result === "number") {
+      return (
+        <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
+          {result.toFixed(2)}
+        </TableCell>
+      );
+    } else {
+      return (
+        <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
+          {result[0].toFixed(2)}&#8239;×&#8239;10
+          <sup>{result[1]}</sup>
+        </TableCell>
+      );
+    }
+  };
+
   const redleakFracUv = numToSci(photParams["redleakFracs"]["uv"]);
   const redleakFracU = numToSci(photParams["redleakFracs"]["u"]);
   const redleakFracG = numToSci(photParams["redleakFracs"]["g"]);
+
+  const photResultsUv = numToSci(photParams["photResults"]["uv"]);
+  const photResultsU = numToSci(photParams["photResults"]["u"]);
+  const photResultsG = numToSci(photParams["photResults"]["g"]);
 
   return (
     <div id={`display-results-${numPhotometrySubmit}`}>
@@ -530,16 +567,11 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
                     >
                       UV
                     </TableCell>
-                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                      {redleakFracUv[0].toFixed(2)}&#8239;×&#8239;10
-                      <sup>{redleakFracUv[1]}</sup>
-                    </TableCell>
+                    {resultCell(redleakFracUv)}
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
                       {photForm["photInput"].val}
                     </TableCell>
-                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                      {photParams["photResults"].uv.toFixed(2)}
-                    </TableCell>
+                    {resultCell(photResultsUv)}
                   </TableRow>
                   <TableRow
                     key={"u"}
@@ -552,16 +584,11 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
                     >
                       u
                     </TableCell>
-                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                      {redleakFracU[0].toFixed(2)}&#8239;×&#8239;10
-                      <sup>{redleakFracU[1]}</sup>
-                    </TableCell>
+                    {resultCell(redleakFracU)}
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
                       {photForm["photInput"].val}
                     </TableCell>
-                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                      {photParams["photResults"].u.toFixed(2)}
-                    </TableCell>
+                    {resultCell(photResultsU)}
                   </TableRow>
                   <TableRow
                     key={"g"}
@@ -574,16 +601,11 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
                     >
                       u
                     </TableCell>
-                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                      {redleakFracG[0].toFixed(2)}&#8239;×&#8239;10
-                      <sup>{redleakFracG[1]}</sup>
-                    </TableCell>
+                    {resultCell(redleakFracG)}
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
                       {photForm["photInput"].val}
                     </TableCell>
-                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                      {photParams["photResults"].g.toFixed(2)}
-                    </TableCell>
+                    {resultCell(photResultsG)}
                   </TableRow>
                 </TableBody>
               ) : (
@@ -600,13 +622,8 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
                     >
                       UV
                     </TableCell>
-                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                      {redleakFracUv[0].toFixed(2)}&#8239;×&#8239;10
-                      <sup>{redleakFracUv[1]}</sup>
-                    </TableCell>
-                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                      {photParams["photResults"].uv.toFixed(2)}
-                    </TableCell>
+                    {resultCell(redleakFracUv)}
+                    {resultCell(photResultsUv)}
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
                       {photForm["photInput"].val}
                     </TableCell>
@@ -622,13 +639,8 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
                     >
                       u
                     </TableCell>
-                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                      {redleakFracU[0].toFixed(2)}&#8239;×&#8239;10
-                      <sup>{redleakFracU[1]}</sup>
-                    </TableCell>
-                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                      {photParams["photResults"].u.toFixed(2)}
-                    </TableCell>
+                    {resultCell(redleakFracU)}
+                    {resultCell(photResultsU)}
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
                       {photForm["photInput"].val}
                     </TableCell>
@@ -644,13 +656,8 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
                     >
                       g
                     </TableCell>
-                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                      {redleakFracG[0].toFixed(2)}&#8239;×&#8239;10
-                      <sup>{redleakFracG[1]}</sup>
-                    </TableCell>
-                    <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
-                      {photParams["photResults"].g.toFixed(2)}
-                    </TableCell>
+                    {resultCell(redleakFracG)}
+                    {resultCell(photResultsG)}
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
                       {photForm["photInput"].val}
                     </TableCell>

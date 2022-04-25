@@ -10,6 +10,7 @@ export const SpectrumOptions = [
   { spectralValue: "blackbody", spectralName: "Blackbody", sourceType: "general" },
   { spectralValue: "powerLaw", spectralName: "Power-Law", sourceType: "general" },
   { spectralValue: "uniform", spectralName: "Uniform", sourceType: "general" },
+  { spectralValue: "emissionLine", spectralName: "Emission Line", sourceType: "general" },
 
   // Galaxy spectra
   {

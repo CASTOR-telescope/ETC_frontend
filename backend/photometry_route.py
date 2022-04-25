@@ -152,10 +152,28 @@ def put_photometry_json():
                 f"The given photometry target value type, {phot_input['val_type']}, "
                 + "is not valid and must be either 'snr' or 't'."
             )
+        # (some passband results may be NaN/inf because, e.g., user chose a single
+        # emission line spectrum)
+        for band in phot_results:
+            if ~np.isfinite(phot_results[band]):
+                phot_results[band] = None
+            else:
+                phot_results[band] = float(phot_results[band])
+        logger.debug("phot_results: " + str(phot_results))
         #
         # Calculate redleak fractions
         #
+        # (in case any redleak fractions are NaNs/infs)
         redleak_fracs = PhotometryObj.calc_redleak_frac()
+        for band in redleak_fracs:
+            if ~np.isfinite(redleak_fracs[band]):
+                redleak_fracs[band] = None
+            else:
+                redleak_fracs[band] = float(redleak_fracs[band])
+        logger.debug("redleak_fracs: " + str(redleak_fracs))
+        #
+        # Store Photometry object
+        #
         DataHolder.PhotometryObj = PhotometryObj
         #
         # Get encircled energy.
@@ -178,6 +196,7 @@ def put_photometry_json():
             aperMask=aper_mask,
             sourceWeights=source_weights,
             aperExtent=PhotometryObj._aper_extent,  # already a list
+            useLogSourceWeights=DataHolder.use_log_source_weights,
         )
     except Exception as e:
         log_traceback(e)

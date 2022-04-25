@@ -10,6 +10,7 @@ import json
 
 import astropy.units as u
 import numpy as np
+import pandas as pd
 from castor_etc.sources import ExtendedSource, GalaxySource, PointSource
 from flask import jsonify, request
 
@@ -19,8 +20,8 @@ from utils import (
     bad_request,
     log_traceback,
     logger,
-    server_error,
     save_file,
+    server_error,
 )
 
 
@@ -52,9 +53,9 @@ def put_source_json():
         try:
             logger.debug("request content_type" + request.content_type)
             request_form = request.form
-            logger.info("\nSource request.form " + str(request_form) + "\n")
+            # logger.debug("\nSource request.form " + str(request_form) + "\n")
             request_data = request_form.to_dict()
-            logger.info("\nSource request.form.to_dict() " + str(request_data) + "\n")
+            # logger.debug("\nSource request.form.to_dict() " + str(request_data) + "\n")
 
             source_type = request_data["sourceType"].strip("\"'").strip("'\"")
             logger.debug("source_type: " + str(source_type))
@@ -123,6 +124,9 @@ def put_source_json():
         #
         source_type = source_type.lower()
         #
+        # Tells frontend to use log source weights (after submitting Photometry request)
+        use_log_source_weights = False  # use linear color scale by default
+        #
         if source_type == "point":
             SourceObj = PointSource()
         elif source_type == "extended":
@@ -154,16 +158,19 @@ def put_source_json():
                     f"{physical_parameters['profile']} is not a valid ExtendedSource profile"
                 )
         elif source_type == "galaxy":
+            n = float(physical_parameters["sersic"])
             SourceObj = GalaxySource(
                 r_eff=float(physical_parameters["rEff"]) * u.arcsec,
-                n=float(physical_parameters["sersic"]),
-                angle_a=float(physical_parameters["angleA"]) * u.arcsec,
-                angle_b=float(physical_parameters["angleB"]) * u.arcsec,
+                n=n,
+                axial_ratio=float(physical_parameters["axialRatio"]),
                 rotation=float(physical_parameters["rotation"]),
             )
+            if n > 1.5:  # threshold is kind of arbitrary
+                use_log_source_weights = True
         else:
             logger.error(f"{source_type} is not a valid Source class")
             return bad_request(f"{source_type} is not a valid Source class")
+        DataHolder.use_log_source_weights = use_log_source_weights
         #
         # Make spectrum
         #
@@ -208,6 +215,38 @@ def put_source_json():
                 ),
                 unit=predefined_spectrum_parameters[predefined_spectrum]["unit"],
             )
+        elif predefined_spectrum == "emissionLine":
+            center = float(predefined_spectrum_parameters[predefined_spectrum]["center"])
+            fwhm = float(predefined_spectrum_parameters[predefined_spectrum]["fwhm"])
+            shape = predefined_spectrum_parameters[predefined_spectrum]["shape"]
+            # Ensure wavelengths array encclose the emission line
+            if shape == "gaussian":
+                min_buffer = 3 * fwhm
+            elif shape == "lorentzian":
+                min_buffer = 10 * fwhm
+            else:
+                logger.error(
+                    f"{shape} is not a valid emission line shape for spectrum generation"
+                )
+            min_wavelength = center - min_buffer
+            max_wavelength = center + min_buffer
+            if min_wavelength >= wavelengths[0].value:
+                min_wavelength = wavelengths[0].value
+            elif min_wavelength <= 0:
+                min_wavelength = 1 if center > 2 else 0.5 * center
+            if max_wavelength <= wavelengths[-1].value:
+                max_wavelength = wavelengths[-1].value
+            logger.debug(
+                "Generating single emission line spectrum with limits (A): "
+                + f" {min_wavelength}, {max_wavelength}"
+            )
+            SourceObj.generate_emission_line(
+                center=center * u.AA,
+                fwhm=fwhm * u.AA,
+                peak=float(predefined_spectrum_parameters[predefined_spectrum]["peak"]),
+                shape=shape,
+                limits=[min_wavelength, max_wavelength] * u.AA,
+            )
         elif predefined_spectrum == "elliptical" or predefined_spectrum == "spiral":
             SourceObj.use_galaxy_spectrum(gal_type=predefined_spectrum)
         else:
@@ -224,7 +263,9 @@ def put_source_json():
         #
         norm_method = norm_method.lower()
         if norm_method != "" and not is_norm_after_spectral_lines:
-            logger.debug(f"Renormalizing spectrum before adding spectral lines")
+            logger.debug(
+                f"Renormalizing spectrum before (possibly) adding spectral lines"
+            )
             if norm_method == "passbandmag":
                 SourceObj.norm_to_AB_mag(
                     ab_mag=float(norm_params["abMag"]),
@@ -274,7 +315,7 @@ def put_source_json():
         # Potentially renormalize the spectrum after adding spectral lines
         #
         if norm_method != "" and is_norm_after_spectral_lines:
-            logger.debug(f"Renormalizing spectrum after adding spectral lines")
+            logger.debug(f"Renormalizing spectrum after (possibly) adding spectral lines")
             if norm_method == "passbandmag":
                 SourceObj.norm_to_AB_mag(
                     ab_mag=float(norm_params["abMag"]),
@@ -295,8 +336,13 @@ def put_source_json():
                 return bad_request(f"{norm_method} is not a valid renormalization")
         #
         # Get source magnitude in each passband
+        # (may have NaNs/infs, e.g., user chose a single emission line spectrum)
         #
         source_mags = SourceObj.get_AB_mag(TelescopeObj=DataHolder.TelescopeObj)
+        source_mags = (
+            pd.DataFrame(source_mags, index=[0]).iloc[0].to_json(orient="values")
+        )
+        logger.debug("Source AB magnitudes in telescope passbands: " + str(source_mags))
         total_mag = SourceObj.get_AB_mag()
         #
         # Store `Source` object

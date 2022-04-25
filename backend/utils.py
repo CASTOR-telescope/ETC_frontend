@@ -128,6 +128,9 @@ class DataHolder:
     SourceObj = None
     PhotometryObj = None
 
+    # To determine if source weights should use log scaling
+    use_log_source_weights = False
+
 
 def bad_request(message):
     """
