@@ -611,7 +611,7 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
             </FormControl>
             <br />
             <SaveButton isSubmitting={isSubmitting} isValid={isValid} />
-            <pre>{JSON.stringify(values, null, 2)}</pre>
+            {/* <pre>{JSON.stringify(values, null, 2)}</pre> */}
             <AlertError
               isError={isError}
               setIsError={setIsError}
