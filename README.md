@@ -10,6 +10,8 @@ backend.
 
 TODO: finish docstrings
 
+TODO: how to access ETC GUI
+
 ---
 
 ## Dependencies

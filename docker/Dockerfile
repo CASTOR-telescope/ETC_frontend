@@ -1,9 +1,10 @@
 # As of April 2022, the LTS node version is v16.14.2
 # Don't need this since I'm not building within the Docker container...
-FROM node:lts-alpine as frontend-builder
+#
+# FROM node:lts-alpine as frontend-builder
 
-WORKDIR /frontend/build
-COPY frontend/build /frontend/build
+# WORKDIR /frontend/build
+# COPY frontend/build /frontend/build
 
 # -------------------------------------------------------------------------------------- #
 
@@ -24,8 +25,9 @@ RUN pip3 install flask flask-cors wheel gunicorn
 
 ARG CACHEBUST_BACKEND=1
 # REVIEW: If you change CACHEBUST for COPY / ADD, it will seem like it doesn't invalidate the Docker cache but it actually does?
-WORKDIR /backend
+# WORKDIR /backend
 COPY backend /backend
+RUN chmod a+w /backend/flask_uploads
 
 # Install castor_etc package
 # TODO: Do it from git+ in the future. Copying files just for testing
@@ -37,8 +39,8 @@ RUN pip3 install .
 
 # Copy the minified frontend files
 ARG CACHEBUST_FRONTEND=1
-# COPY --from=frontend-builder /frontend/build /frontend/build
-COPY --from=frontend-builder /frontend/build /backend/client
+# COPY --from=frontend-builder /frontend/build /backend/client
+COPY frontend/build /backend/client
 
 EXPOSE 5000
 
