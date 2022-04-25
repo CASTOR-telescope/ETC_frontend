@@ -344,6 +344,8 @@ def put_source_json():
         )
         logger.debug("Source AB magnitudes in telescope passbands: " + str(source_mags))
         total_mag = SourceObj.get_AB_mag()
+        total_mag = total_mag if np.isfinite(total_mag) else None
+        logger.debug("Source total AB magnitude: " + str(total_mag))
         #
         # Store `Source` object
         #
