@@ -1,11 +1,4 @@
-import {
-  Formik,
-  Form,
-  useField,
-  FieldAttributes,
-  useFormikContext,
-  FormikValues,
-} from "formik";
+import { Formik, Form, FieldAttributes, useFormikContext, FormikValues } from "formik";
 import {
   FormControl,
   FormGroup,
@@ -428,7 +421,6 @@ const numToSci = (num: number) => {
     .toExponential()
     .split("e")
     .map((item) => parseFloat(item));
-  // return `${base}&#8239;×&#8239;10<sup>${exp}</sup>`;
   return [base, exp];
 };
 
@@ -453,10 +445,6 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
     width: "85%",
   };
 
-  // const redleakFracs = { uv: [], u: [], g: [] };
-  // for (let band in photParams["redleakFracs"]) {
-  //   redleakFracs[band].push(numToSci(photParams["redleakFracs"][band]));
-  // }
   const redleakFracUv = numToSci(photParams["redleakFracs"]["uv"]);
   const redleakFracU = numToSci(photParams["redleakFracs"]["u"]);
   const redleakFracG = numToSci(photParams["redleakFracs"]["g"]);
@@ -525,7 +513,6 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
                 <TableCell sx={{ fontSize: tableHeadFontSize }} align="right">
                   Integration&nbsp;Time&nbsp;(s)
                 </TableCell>
-                {/* <TableCell align="right">Redleak&nbsp;Fraction</TableCell> */}
               </TableRow>
             </TableHead>
             {(() =>
@@ -925,18 +912,7 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
         validationSchema={photometryValidationSchema}
         validateOnMount={true}
       >
-        {({
-          values,
-          // errors,
-          // touched,
-          // handleChange,
-          // handleBlur,
-          // handleSubmit,
-          setFieldValue,
-          isSubmitting,
-          isValid,
-          setStatus,
-        }) => (
+        {({ values, setFieldValue, isSubmitting, isValid }) => (
           <Form>
             <ApertureGroup
               name="apertureGroupThisNameIsNotUsed"
@@ -1013,37 +989,6 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
                       <MenuItem value="snr">S/N Ratio</MenuItem>
                       <MenuItem value="t">Time (s)</MenuItem>
                     </Select>
-                    {/* <Field
-                      name="val_type"
-                      type="select"
-                      as={Select}
-                      label="Value Type"
-                      // size="large"
-                      // variant="contained"
-                      style={{
-                        marginTop: 0,
-                        marginBottom: 0,
-                        marginRight: 0,
-                        marginLeft: 0,
-                        padding: 0,
-                        fontSize: 18,
-                      }}
-                      // onChange={(event: any, value: any) => {
-                      //   console.log(value);
-                      //   {
-                      //     if (value === null) {
-                      //       setFieldValue("val_type", "");
-                      //     } else {
-                      //       setFieldValue("val_type", value);
-                      //     }
-                      //   }
-                      // }}
-                      // value={value}
-                      sx={{ width: "100%", height: "77.5%" }}
-                    >
-                      <MenuItem value="snr">S/N Ratio</MenuItem>
-                      <MenuItem value="t">Time (s)</MenuItem>
-                    </Field> */}
                   </Grid>
                 </Grid>
               </FormGroup>

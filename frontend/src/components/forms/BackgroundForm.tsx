@@ -2,7 +2,6 @@ import {
   Formik,
   Form,
   FormikValues,
-  Field,
   useField,
   FieldAttributes,
   useFormikContext,
@@ -28,7 +27,6 @@ import {
 } from "@mui/material";
 import * as Yup from "yup";
 import axios from "axios";
-import { useEffect } from "react";
 
 import {
   AlertIfFormSavedButPhotometryNotSubmitted,
@@ -122,18 +120,14 @@ const SkyBackgroundRadioGroup: React.FC<SkyBackgroundRadioGroupProps> = ({
                 <Grid item xs={4}>
                   <CommonTextField
                     name="customSkyBackground.uv"
-                    // value={values.customSkyBackground.uv}
                     placeholder={"Example: 26.08"}
                     label="UV-Band (AB mag per sq. arcsec)"
                     required={true}
-                    // prevFormValues={prevFormValues}
-                    // setIsChanged={setIsChanged}
                   />
                 </Grid>
                 <Grid item xs={4}>
                   <CommonTextField
                     name="customSkyBackground.u"
-                    // value={values.customSkyBackground.u}
                     placeholder={"Example: 23.74"}
                     label="u-Band (AB mag per sq. arcsec)"
                     required={true}
@@ -142,7 +136,6 @@ const SkyBackgroundRadioGroup: React.FC<SkyBackgroundRadioGroupProps> = ({
                 <Grid item xs={4}>
                   <CommonTextField
                     name="customSkyBackground.g"
-                    // value={values.customSkyBackground.g}
                     placeholder={"Example: 22.60"}
                     label="g-Band (AB mag per sq. arcsec)"
                     required={true}
@@ -333,7 +326,8 @@ const backgroundValidationSchema = Yup.object({
           "geocoronalInputs",
           "Flux must be one of the predetermined values or a number > 0.",
           (value: any) =>
-            /(^[+]?([1-9][0-9]*(?:[\.][0-9]*)?|0*\.0*[1-9][0-9]*)((?:[eE][+-]?[0-9]+[\.]?[0-9]+)?|(?:[eE][+-]?[0-9]+)?)$)|(^(high|average|low)$)/i.test(
+            // /(^[+]?([1-9][0-9]*(?:[\.][0-9]*)?|0*\.0*[1-9][0-9]*)((?:[eE][+-]?[0-9]+[\.]?[0-9]+)?|(?:[eE][+-]?[0-9]+)?)$)|(^(high|average|low)$)/i.test(
+            /(^[+]?([1-9][0-9]*(?:[.][0-9]*)?|0*\.0*[1-9][0-9]*)((?:[eE][+-]?[0-9]+[.]?[0-9]+)?|(?:[eE][+-]?[0-9]+)?)$)|(^(high|average|low)$)/i.test(
               value
             )
         ),
@@ -351,7 +345,6 @@ const backgroundValidationSchema = Yup.object({
 });
 
 type BackgroundFormProps = {
-  // isTelescopeUpdated: boolean;
   isBackgroundSyncTelescope: boolean;
   setIsBackgroundSyncTelescope: (value: boolean) => void;
   numPhotometrySubmit: number;
@@ -382,7 +375,6 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
     myInitialValues = {
       useDefaultSkyBackground: "true",
       customSkyBackground: { uv: "", u: "", g: "" }, // AB mag per arcsec^2
-      // customSkyBackground: { uv: "26.08", u: "23.74", g: "22.60" }, // AB mag per arcsec^2
       geocoronalEmission: [
         {
           flux: "Average",
@@ -396,7 +388,7 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
     myInitialValues = JSON.parse(`${sessionStorage.getItem(FORM_SESSION)}`);
   }
   // Only run this on mount
-  useEffect(() => {
+  React.useEffect(() => {
     setIsChanged(false);
     setPrevFormValues(myInitialValues);
   }, []);
@@ -428,7 +420,7 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
             setSubmitting(true);
 
             // Make async call
-            const response = await axios
+            await axios
               .put(API_URL + "background", data)
               .then((response) => response.data)
               .then((response) =>
@@ -457,16 +449,7 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
         validationSchema={backgroundValidationSchema}
         validateOnMount={true}
       >
-        {({
-          values,
-          errors,
-          touched,
-          handleChange,
-          // handleBlur,
-          // handleSubmit,
-          isSubmitting,
-          isValid,
-        }) => (
+        {({ values, handleChange, isSubmitting, isValid }) => (
           <Form>
             <AlertIfTelescopeParamsChanged
               isBackgroundSyncTelescope={isBackgroundSyncTelescope}

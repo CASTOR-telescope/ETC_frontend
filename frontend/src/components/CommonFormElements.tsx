@@ -14,12 +14,6 @@ export type CommonFormProps = {
   setIsError: (value: boolean) => void;
   errorMessage: string;
   setErrorMessage: (value: string) => void;
-  // isTelescopeUpdated?: boolean;
-  // setIsTelescopeUpdated?: (value: boolean) => void;
-  // isBackgroundSyncTelescope?: boolean;
-  // setIsBackgroundSyncTelescope?: (value: boolean) => void;
-  // isSourceSyncTelescope?: boolean;
-  // setIsSourceSyncTelescope?: (value: boolean) => void;
 };
 
 /**
@@ -98,7 +92,6 @@ export const useGetIfFormChanged = (
   const { values } = useFormikContext();
 
   useEffect(() => {
-    // compareValues();
     if (isEqual(values, prevFormValues)) {
       setIsChanged(false);
     } else {
@@ -182,34 +175,6 @@ export const CommonTextFieldWithTracker: React.FC<CommonTextFieldWithTrackerProp
   const [field, meta] = useField<{}>(props);
   const errorText = meta.error || meta.touched ? meta.error : "";
 
-  // const { values } = useFormikContext();
-
-  // // const compareValues = useCallback(() => {
-  // //   if (isEqual(values, prevFormValues)) {
-  // //     setIsChanged(false);
-  // //     console.log("unchanged values: ", values);
-  // //     console.log("prevFormValues values: ", prevFormValues);
-  // //   } else {
-  // //     setIsChanged(true);
-  // //     console.log("changed values: ", values);
-  // //     console.log("prevFormValues values: ", prevFormValues);
-  // //   }
-  // // }, [values]);
-
-  // useEffect(() => {
-  //   // compareValues();
-  //   if (isEqual(values, prevFormValues)) {
-  //     setIsChanged(false);
-  //     // console.log("unchanged values: ", values);
-  //     // console.log("prevFormValues values: ", prevFormValues);
-  //   } else {
-  //     setIsChanged(true);
-  //     // console.log("changed values: ", values);
-  //     // console.log("prevFormValues values: ", prevFormValues);
-  //   }
-  //   console.log(values);
-  // }, [values]);
-
   useGetIfFormChanged(setIsChanged, prevFormValues);
 
   return (
@@ -235,7 +200,6 @@ export const SaveButton: React.FC<{ isSubmitting: boolean; isValid: boolean }> =
   isSubmitting,
   isValid,
 }) => {
-  // console.log("isValid?", isValid);
   return (
     <LoadingButton
       type="submit"

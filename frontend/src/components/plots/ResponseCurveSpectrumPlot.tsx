@@ -2,21 +2,20 @@ import { themeBackgroundColor } from "../DarkModeTheme";
 import ResponsivePlot from "../ResponsivePlot";
 
 type ResponseCurveSpectrumPlotProps = {
-  numTelescopeSaved: number;
+  numTelescopeOrSourceSaved: number;
 };
 
 const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
-  numTelescopeSaved,
+  numTelescopeOrSourceSaved,
 }) => {
   // Re-render plot (more robust this way because it persists across refreshes, unlike
-  // numTelescopeSaved > 0)
+  // numTelescopeOrSourceSaved > 0)
   const data = [];
   if (sessionStorage.getItem("telescopeParams") !== null) {
     // Update to proper sessionStorage key after
     let plotData = JSON.parse(`${sessionStorage.getItem("telescopeParams")}`)[
       "fullPassbandCurves"
     ];
-    // console.log("updating ResponseCurveSpectrumPlot telescopeParams");
     data.push(
       {
         x: plotData.uv.wavelength,
@@ -40,18 +39,8 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
         name: "g-Band",
       }
     );
-    // data.push({
-    //   x: [1000, 3000, 10000],
-    //   y: [25, 40, 35],
-    //   mode: "lines",
-    //   line: { color: "white" },
-    //   name: "Source",
-    //   yaxis: "y2",
-    //   // line: { width: 1 },
-    // });
     if (sessionStorage.getItem("sourceParams") !== null) {
       // Recall that telescopeParams must not be null to have sourceParams
-      // console.log("updating ResponseCurveSpectrumPlot sourceParams");
       let plotData = JSON.parse(`${sessionStorage.getItem("sourceParams")}`);
       data.push({
         x: plotData.wavelengths,
@@ -66,7 +55,7 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
     return (
       <ResponsivePlot
         // React re-renders the plot when any state, prop, or parent component changes
-        divId={`passband-source-spectrum-plot-${numTelescopeSaved}`}
+        divId={`passband-source-spectrum-plot-${numTelescopeOrSourceSaved}`}
         data={data}
         layout={{
           // title: "Passband Response Curves & Source Spectrum",
@@ -122,7 +111,7 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
       // Initial startup plot
       <ResponsivePlot
         // React re-renders the plot when any state, prop, or parent component changes
-        divId={`passband-source-spectrum-plot-${numTelescopeSaved}`}
+        divId={`passband-source-spectrum-plot-${numTelescopeOrSourceSaved}`}
         data={[
           {
             x: [],

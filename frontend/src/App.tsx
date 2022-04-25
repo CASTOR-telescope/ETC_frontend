@@ -15,20 +15,16 @@ import ResponseCurveSpectrumPlot from "./components/plots/ResponseCurveSpectrumP
 import { useState } from "react";
 import SourceWeightsPlot from "./components/plots/SourceWeightsPlot";
 import AperMaskPlot from "./components/plots/AperMaskPlot";
-// import PanePlots from "./components/PanePlots";
 
 function App() {
   // Set Material UI theme
   useTheme();
-  // const theme = useTheme();
 
-  // console.log(window.location);
-
-  // To update the ResponseCurveSpectrumPlot once new Telescope parameters are returned
-  // TODO: rename this to reflect source + telescope dependence
-  const [numTelescopeSaved, setNumTelescopeSaved] = useState(0);
-  const incrNumTelescopeSaved = () => {
-    setNumTelescopeSaved(numTelescopeSaved + 1);
+  // To update the ResponseCurveSpectrumPlot once new Telescope or Source parameters are
+  // successfully returned from the server
+  const [numTelescopeOrSourceSaved, setNumTelescopeOrSourceSaved] = useState(0);
+  const incrNumTelescopeOrSourceSaved = () => {
+    setNumTelescopeOrSourceSaved(numTelescopeOrSourceSaved + 1);
   };
 
   // To update image plots on each new Photometry submission and to track whether a
@@ -59,7 +55,7 @@ function App() {
             >
               <Allotment.Pane>
                 <TabForms
-                  incrNumTelescopeSaved={incrNumTelescopeSaved}
+                  incrNumTelescopeOrSourceSaved={incrNumTelescopeOrSourceSaved}
                   incrNumPhotometrySubmit={incrNumPhotometrySubmit}
                   numPhotometrySubmit={numPhotometrySubmit}
                 />
@@ -75,7 +71,9 @@ function App() {
                   </Allotment>
                 </Allotment.Pane>
                 <Allotment.Pane>
-                  <ResponseCurveSpectrumPlot numTelescopeSaved={numTelescopeSaved} />
+                  <ResponseCurveSpectrumPlot
+                    numTelescopeOrSourceSaved={numTelescopeOrSourceSaved}
+                  />
                 </Allotment.Pane>
               </Allotment>
             </Allotment.Pane>

@@ -74,7 +74,7 @@ const telescopeValidationSchema = Yup.object({
 });
 
 type TelescopeFormProps = {
-  incrNumTelescopeSaved: () => void;
+  incrNumTelescopeOrSourceSaved: () => void;
   // setIsTelescopeUpdated: (value: boolean) => void;
   setIsBackgroundSyncTelescope: (value: boolean) => void;
   setIsSourceSyncTelescope: (value: boolean) => void;
@@ -94,7 +94,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
   setIsChanged,
   prevFormValues,
   setPrevFormValues,
-  incrNumTelescopeSaved,
+  incrNumTelescopeOrSourceSaved,
   isError,
   setIsError,
   errorMessage,
@@ -170,7 +170,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                 setPrevFormValues(data);
                 setIsChanged(false);
                 sessionStorage.setItem(FORM_SESSION, JSON.stringify(data));
-                incrNumTelescopeSaved();
+                incrNumTelescopeOrSourceSaved();
                 if (
                   sessionStorage.getItem("backgroundForm") === null ||
                   (sessionStorage.getItem("backgroundForm") !== null &&
@@ -264,23 +264,13 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
         validationSchema={telescopeValidationSchema}
         validateOnMount={true}
       >
-        {({
-          values,
-          // errors,
-          // touched,
-          // handleChange,
-          // handleBlur,
-          // handleSubmit,
-          isSubmitting,
-          isValid,
-        }) => (
+        {({ values, isSubmitting, isValid }) => (
           <Form>
             <CommonTextFieldWithTracker
               name="fwhm"
               value={values.fwhm} // Allow both initial value + placeholder text
               placeholder={"Default: 0.15"}
               label="FWHM of PSF (arcsec)"
-              // values={values}
               prevFormValues={prevFormValues}
               setIsChanged={setIsChanged}
             />
@@ -289,36 +279,24 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
               value={values.pxScale}
               placeholder={"Default: 0.1"}
               label="Pixel Scale (arcsec per pixel)"
-              // values={values}
-              // prevFormValues={prevFormValues}
-              // setIsChanged={setIsChanged}
             />
             <CommonTextField
               name="mirrorDiameter"
               value={values.mirrorDiameter}
               placeholder={"Default: 100"}
               label="Mirror Diameter (cm)"
-              // values={values}
-              // prevFormValues={prevFormValues}
-              // setIsChanged={setIsChanged}
             />
             <CommonTextField
               name="darkCurrent"
               value={values.darkCurrent}
               placeholder={"Default: 1e-4"}
               label="Dark Current (electron/s per pixel)"
-              // values={values}
-              // prevFormValues={prevFormValues}
-              // setIsChanged={setIsChanged}
             />
             <CommonTextField
               name="readNoise"
               value={values.readNoise}
               placeholder={"Default: 2.0"}
               label="Read Noise (electron/s per pixel)"
-              // values={values}
-              // prevFormValues={prevFormValues}
-              // setIsChanged={setIsChanged}
             />
             <FormControl component="fieldset" variant="standard">
               <FormLabel
@@ -346,27 +324,18 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                   value={values.redleakThresholds.uv}
                   placeholder={"Default: 3010"}
                   label="UV-Band (angstrom)"
-                  // values={values}
-                  // prevFormValues={prevFormValues}
-                  // setIsChanged={setIsChanged}
                 />
                 <CommonTextField
                   name="redleakThresholds.u"
                   value={values.redleakThresholds.u}
                   placeholder={"Default: 4160"}
                   label="u-Band (angstrom)"
-                  // values={values}
-                  // prevFormValues={prevFormValues}
-                  // setIsChanged={setIsChanged}
                 />
                 <CommonTextField
                   name="redleakThresholds.g"
                   value={values.redleakThresholds.g}
                   placeholder={"Default: 5600"}
                   label="g-Band (angstrom)"
-                  // values={values}
-                  // prevFormValues={prevFormValues}
-                  // setIsChanged={setIsChanged}
                 />
               </FormGroup>
             </FormControl>
@@ -415,8 +384,6 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                         placeholder={"Example: 7.06"}
                         label="UV-Band"
                         required={true}
-                        // prevFormValues={prevFormValues}
-                        // setIsChanged={setIsChanged}
                       />
                     </Grid>
                     <Grid item xs={4}>

@@ -58,13 +58,13 @@ function TabProps(index: number) {
 // ------------------------------------------------------------------------------------ //
 
 type TabFormsProps = {
-  incrNumTelescopeSaved: () => void;
+  incrNumTelescopeOrSourceSaved: () => void;
   incrNumPhotometrySubmit: () => void;
   numPhotometrySubmit: number;
 };
 
 const TabForms: React.FC<TabFormsProps> = ({
-  incrNumTelescopeSaved,
+  incrNumTelescopeOrSourceSaved,
   incrNumPhotometrySubmit,
   numPhotometrySubmit,
 }) => {
@@ -88,7 +88,7 @@ const TabForms: React.FC<TabFormsProps> = ({
   const [isBackgroundSyncTelescope, setIsBackgroundSyncTelescope] = React.useState(true);
   const [isSourceSyncTelescope, setIsSourceSyncTelescope] = React.useState(true);
 
-  // // For tracking Telescope, Background, & Source dependencies on Photometry
+  // For tracking Telescope, Background, & Source dependencies on Photometry
   const [isTelescopeSyncPhotometry, setIsTelescopeSyncPhotometry] = React.useState(true);
   const [isBackgroundSyncPhotometry, setIsBackgroundSyncPhotometry] =
     React.useState(true);
@@ -177,7 +177,7 @@ const TabForms: React.FC<TabFormsProps> = ({
           setIsChanged={setIsChanged}
           prevFormValues={prevFormValues}
           setPrevFormValues={setPrevFormValues}
-          incrNumTelescopeSaved={incrNumTelescopeSaved}
+          incrNumTelescopeOrSourceSaved={incrNumTelescopeOrSourceSaved}
           isError={isError}
           setIsError={setIsError}
           errorMessage={errorMessage}
@@ -221,7 +221,7 @@ const TabForms: React.FC<TabFormsProps> = ({
           setErrorMessage={setErrorMessage}
           isSourceSyncTelescope={isSourceSyncTelescope}
           setIsSourceSyncTelescope={setIsSourceSyncTelescope}
-          incrNumTelescopeSaved={incrNumTelescopeSaved}
+          incrNumTelescopeOrSourceSaved={incrNumTelescopeOrSourceSaved}
           numPhotometrySubmit={numPhotometrySubmit}
           isSourceSyncPhotometry={isSourceSyncPhotometry}
           setIsSourceSyncPhotometry={setIsSourceSyncPhotometry}
