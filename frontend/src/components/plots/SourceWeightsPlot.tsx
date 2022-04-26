@@ -1,15 +1,15 @@
 import { themeBackgroundColor } from "../DarkModeTheme";
 import ResponsivePlot from "../ResponsivePlot";
 
-/**
- * Returns the minimum number above zero in a 1D array.
- */
-const getMinAboveZero = (arr: number[]): number => {
-  return Math.min(...arr.filter(Number));
-};
-const getMaxAboveZero = (arr: number[]): number => {
-  return Math.max(...arr.filter(Number));
-};
+// /**
+//  * Returns the minimum number above zero in a 1D array.
+//  */
+// const getMinAboveZero = (arr: number[]): number => {
+//   return Math.min(...arr.filter(Number));
+// };
+// const getMaxAboveZero = (arr: number[]): number => {
+//   return Math.max(...arr.filter(Number));
+// };
 
 type SourceWeightsPlotProps = {
   numPhotometrySubmit: number;
