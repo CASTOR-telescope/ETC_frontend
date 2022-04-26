@@ -8,11 +8,10 @@
 
 # -------------------------------------------------------------------------------------- #
 
-# FROM python:3.9-alpine
 FROM python:3.9-slim
 
 USER root
-# RUN apk add --no-cache bash
+
 RUN mkdir /opt/image-build && chmod 777 /opt/image-build
 # Add required files for CANFAR (gunicorn for Flask server)
 ADD docker/nsswitch.conf /etc/
@@ -20,11 +19,10 @@ COPY docker/apt-install.sh /opt/image-build
 WORKDIR /opt/image-build
 RUN ./apt-install.sh sssd acl gunicorn gcc libcurl4-openssl-dev libssl-dev
 
-# Don't need flask-restful...
 RUN pip3 install flask flask-cors wheel gunicorn
 
 ARG CACHEBUST_BACKEND=1
-# REVIEW: If you change CACHEBUST for COPY / ADD, it will seem like it doesn't invalidate the Docker cache but it actually does?
+# REVIEW: cachebust not working?
 # WORKDIR /backend
 COPY backend /backend
 RUN chmod a+w /backend/flask_uploads
@@ -44,8 +42,5 @@ COPY frontend/build /backend/client
 
 EXPOSE 5000
 
-# Change this to the proper CANFAR URL & port
-
-# RUN mkdir /skaha
 ADD docker/startup.sh /skaha/
 RUN chmod a+x /skaha/startup.sh
