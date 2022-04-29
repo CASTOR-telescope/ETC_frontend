@@ -10,12 +10,14 @@ backend](https://github.com/CASTOR-telescope/ETC).
 
 ## Table of Contents
 
-1. [Accessing the GUI](#accessing-the-gui)
-2. [Deployment on CANFAR](#deployment-on-canfar)
-   1. [Dependencies](#dependencies)
-   2. [CANFAR Build Instructions](#canfar-build-instructions)
-3. [Roadmap](#roadmap)
-4. [Questions, Issues, Suggestions, and Other
+- [CASTOR ETC GUI](#castor-etc-gui)
+  - [Table of Contents](#table-of-contents)
+  - [Accessing the GUI](#accessing-the-gui)
+  - [Deployment on CANFAR](#deployment-on-canfar)
+    - [Dependencies](#dependencies)
+    - [CANFAR Build Instructions](#canfar-build-instructions)
+  - [Roadmap](#roadmap)
+  - [Questions, Issues, Suggestions, and Other Feedback](#questions-issues-suggestions-and-other-feedback)
    Feedback](#questions-issues-suggestions-and-other-feedback)
 
 ## Accessing the GUI
@@ -28,10 +30,17 @@ backend](https://github.com/CASTOR-telescope/ETC).
    must send an email to [support@canfar.net](mailto:support@canfar.net) requesting access
    to the Science Portal.
 3. Inside the [Science Portal](https://www.canfar.net/science-portal/), click the "`+`"
-   icon to launch a new session. Under "`type`", select "`castor-etc`". If multiple ETC
+   icon to launch a new session. Under "`type`", select "`contrib`". If multiple ETC
    GUI versions are available, you can select the specific version you would like to use
-   under the "`container image`" field.
-4. Click the blue "`Launch`" button to start your new ETC GUI session. It can take up to a
+   under the "`container image`" field. The version number is denoted by the string
+   following the colon (e.g., `images.canfar.net/castor/castor_etc_gui:1.0.0` means
+   version `1.0.0` of the `castor_etc_gui` CASTOR ETC GUI image).
+4. Assign a name to your ETC GUI container and choose the maximum amount of memory (RAM)
+   and maximum number of CPU cores you would like to have available for your GUI instance.
+   Note that RAM and CPU are shared resources. The ETC GUI should _not_ require a lot of
+   CPU or RAM to run. I cannot imagine a case where using the ETC GUI would require more
+   than, for example, would be 4 or 8 GB of RAM and 1 or 2 CPU cores.
+5. Click the blue "`Launch`" button to start your new ETC GUI session. It can take up to a
    minute to launch the session depending on which computing node you are assigned to and
    the last time the image was launched. Additionally, only 1 session of each type is
    allowed at a time and they automatically shut down after 14 consecutive days.
@@ -88,15 +97,15 @@ microframework.
 
 6. Finally, follow the instructions detailed on the skaha GitHub for [session
    containers](https://github.com/opencadc/skaha/tree/master/containers#publishing-skaha-containers).
-   Remember to tag the pushed image as `castor-etc` on [Harbor](https://images.canfar.net)
-   to be able to access it via the Science Portal drop-down menu!
+   Remember to tag the pushed image as `contrib` on [Harbor](https://images.canfar.net) to
+   be able to access it via the Science Portal drop-down menu!
 
 7. (EXTRA NOTE) In the future, when developing any FORECASTOR projects or web apps that
    will be deployed on the CANFAR Science Platform, consider using port 5000 as the server
-   connection. See [this pull
-   request](https://github.com/opencadc/skaha/pull/317#issuecomment-1110086152) for more
-   details. I (Isaac) am happy to provide support or to clarify any questions you might
-   have on this topic.
+   connection. See [this pull request](https://github.com/opencadc/skaha/pull/323) and
+   [this comment](https://github.com/opencadc/skaha/pull/317#issuecomment-1110086152) for
+   more details. I am happy to provide support or to clarify any questions you might have
+   on this topic.
 
 ## Roadmap
 
@@ -110,6 +119,9 @@ microframework.
   currently only viewable via the CANFAR session logs. See [these
   instructions](https://github.com/CASTOR-telescope/ETC/blob/master/docker/how_to_view_session_logs.md)
   for how to view these logs.
+- Add loading of custom surface brightness profiles (i.e., from a FITS file) on the GUI.
+  This functionality is available in the `castor_etc` Python package but has not been made
+  available on the GUI yet.
 
 ## Questions, Issues, Suggestions, and Other Feedback
 
