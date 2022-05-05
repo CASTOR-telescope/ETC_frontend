@@ -867,10 +867,10 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
           are valid prior to saving.
         </b>
         <br />
-        Note that we do <b>not</b> support local concurrent ETC GUI sessions. If you have
-        saved or submitted a request from another ETC instance,{" "}
-        <i>your photometry results will be incorrect </i>! For more flexibility, use the
-        Python{" "}
+        Note that we do <b>not</b> support concurrent ETC GUI sessions for the same user.
+        If you have saved or submitted a request from another ETC instance (e.g., in
+        another tab), then <i>your photometry results will be incorrect </i>! For more
+        flexibility, use the Python{" "}
         <Link
           href="https://github.com/CASTOR-telescope/ETC"
           // Open link in new tab
@@ -880,6 +880,18 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
           <code>castor_etc</code>
         </Link>{" "}
         package.
+        <br />
+        The FORECASTOR ETC GUI is an open source project. Questions, suggestions, and
+        contributions to our{" "}
+        <Link
+          href="https://github.com/CASTOR-telescope/ETC_frontend"
+          // Open link in new tab
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          <code>GitHub</code>
+        </Link>{" "}
+        repository are all welcome.
       </Typography>
       <Formik
         initialValues={myInitialValues}

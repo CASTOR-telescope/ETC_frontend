@@ -147,6 +147,18 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
           <code>castor_etc</code>
         </Link>{" "}
         package instead.
+        <br />
+        The FORECASTOR ETC GUI is an open source project. Questions, suggestions, and
+        contributions to our{" "}
+        <Link
+          href="https://github.com/CASTOR-telescope/ETC_frontend"
+          // Open link in new tab
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          <code>GitHub</code>
+        </Link>{" "}
+        repository are all welcome.
       </Typography>
       <AlertIfFormSavedButPhotometryNotSubmitted
         isFormSyncPhotometry={isTelescopeSyncPhotometry}
