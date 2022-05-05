@@ -416,10 +416,18 @@ const DisplayParams = () => {
 /**
  * Returns - [base, exp] if number < 1, else number (assuming not null).
  */
-const numToSci = (num: number | null, checkCloseToZero = true) => {
+const numToSci = (
+  num: number | null,
+  checkCloseToZero = false,
+  checkCloseToOne = false
+) => {
   if (num === null) {
     return null;
-  } else if (num > 1 || (num < 1e-12 && checkCloseToZero)) {
+  } else if (
+    num > 1 ||
+    (num < 1e-14 && checkCloseToZero) ||
+    (Math.abs(num - 1) < 1e-14 && checkCloseToOne)
+  ) {
     return num;
   } else {
     let [base, exp] = num
@@ -478,13 +486,13 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
     }
   };
 
-  const redleakFracUv = numToSci(photParams["redleakFracs"]["uv"], true);
-  const redleakFracU = numToSci(photParams["redleakFracs"]["u"], true);
-  const redleakFracG = numToSci(photParams["redleakFracs"]["g"], true);
+  const redleakFracUv = numToSci(photParams["redleakFracs"]["uv"], true, true);
+  const redleakFracU = numToSci(photParams["redleakFracs"]["u"], true, true);
+  const redleakFracG = numToSci(photParams["redleakFracs"]["g"], true, true);
 
-  const photResultsUv = numToSci(photParams["photResults"]["uv"], false);
-  const photResultsU = numToSci(photParams["photResults"]["u"], false);
-  const photResultsG = numToSci(photParams["photResults"]["g"], false);
+  const photResultsUv = numToSci(photParams["photResults"]["uv"], false, false);
+  const photResultsU = numToSci(photParams["photResults"]["u"], false, false);
+  const photResultsG = numToSci(photParams["photResults"]["g"], false, false);
 
   return (
     <div id={`display-results-${numPhotometrySubmit}`}>

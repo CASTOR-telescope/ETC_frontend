@@ -164,7 +164,7 @@ def put_photometry_json():
         # Calculate redleak fractions
         #
         # (in case any redleak fractions are NaNs/infs)
-        redleak_fracs = PhotometryObj.calc_redleak_frac()
+        redleak_fracs = DataHolder.SourceObj.calc_redleak_frac(DataHolder.TelescopeObj)
         for band in redleak_fracs:
             if ~np.isfinite(redleak_fracs[band]):
                 redleak_fracs[band] = None
