@@ -65,7 +65,6 @@ import { ThemeProvider, useTheme } from "@mui/material/styles";
 
 import { DarkModeTheme } from "./components/DarkModeTheme";
 import { Container, CssBaseline } from "@mui/material";
-import "./components/react-resizable.css";
 
 import TabForms from "./components/TabForms";
 
