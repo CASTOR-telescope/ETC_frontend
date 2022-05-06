@@ -17,6 +17,7 @@ backend](https://github.com/CASTOR-telescope/ETC).
     - [Dependencies](#dependencies)
     - [CANFAR Build Instructions](#canfar-build-instructions)
   - [Roadmap](#roadmap)
+  - [Known Issues](#known-issues)
   - [Questions, Issues, Suggestions, and Other Feedback](#questions-issues-suggestions-and-other-feedback)
    Feedback](#questions-issues-suggestions-and-other-feedback)
 
@@ -123,6 +124,13 @@ microframework.
 - Add loading of custom surface brightness profiles (i.e., from a FITS file) on the GUI.
   This functionality is available in the `castor_etc` Python package but has not been made
   available on the GUI yet.
+
+## Known Issues
+
+- There is a quirk when vertically resizing the plots (i.e., changing their vertical
+  heights). When clicking on the horizontal divider, only the right half of the divider is
+  highlighted. We are using the [`allotment`](https://github.com/johnwalley/allotment)
+  package for our resizable panes.
 
 ## Questions, Issues, Suggestions, and Other Feedback
 
