@@ -21,12 +21,6 @@ RUN ./apt-install.sh sssd acl gunicorn gcc libcurl4-openssl-dev libssl-dev
 
 RUN pip3 install flask flask-cors wheel gunicorn
 
-ARG CACHEBUST_BACKEND=1
-# REVIEW: cachebust not working?
-# WORKDIR /backend
-COPY backend /backend
-RUN chmod a+w /backend/flask_uploads
-
 # Install castor_etc package
 # TODO: Do it from git+ in the future. Copying files just for testing
 ARG CACHEBUST_CASTOR=1
@@ -34,6 +28,12 @@ ADD castor_etc /opt/mypackage/castor_etc
 COPY setup.py /opt/mypackage/
 WORKDIR /opt/mypackage
 RUN pip3 install .
+
+ARG CACHEBUST_BACKEND=1
+# REVIEW: cachebust not working?
+COPY backend /backend
+RUN chmod a+w /backend/flask_uploads
+
 
 # Copy the minified frontend files
 ARG CACHEBUST_FRONTEND=1
@@ -44,3 +44,8 @@ EXPOSE 5000
 
 ADD docker/startup.sh /skaha/
 RUN chmod a+x /skaha/startup.sh
+
+# https://stackoverflow.com/a/67206046
+ENV skaha_sessionid=1
+ENTRYPOINT [ "/bin/bash", "-c", "exec /skaha/startup.sh ${skaha_sessionid} \"${@}\"", "--" ]
+# ENTRYPOINT [ "/skaha/startup.sh" ]

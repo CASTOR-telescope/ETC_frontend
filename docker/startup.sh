@@ -1,14 +1,14 @@
 #!/bin/bash
 
-SESSIONID=$1
-LOGLEVEL=${2:-debug}
+# The session ID is no longer necessary for the backend (see
+# <https://github.com/opencadc/skaha/pull/323>), but keep this to let the Flask app know
+# it is running in gunicorn
+skaha_sessionid=${1:-test123}
 
 echo "Starting gunicorn..."
 
 cd /backend
 gunicorn -b 0.0.0.0:5000 connector:app \
-        --log-level=${LOGLEVEL} \
+        --log-level=debug \
         --log-file=/dev/stdout \
-        -e session_id=${SESSIONID}
-
-# gunicorn -b 0.0.0.0:5000 connector:app --log-level=debug --log-file=/dev/stdout -e session_id=12345
+        -e skaha_sessionid=${skaha_sessionid}

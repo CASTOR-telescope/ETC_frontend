@@ -5,27 +5,19 @@ General utilities for the CASTOR Flask API.
 
 Isaac Cheng - 2022
 """
-import os
 import logging
+import os
 from traceback import format_exception
 
-# from astropy.utils.misc import JsonCustomEncoder
 from flask import Flask, Response, jsonify
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
 
-# from flask.json import JSONEncoder
-from flask_cors import CORS
+skaha_sessionid = os.getenv("skaha_sessionid")
 
-# from flask_restful import Api
-
-# TODO: check that the static url path works with CANFAR!
-
-session_id = os.getenv("session_id")
-
-if session_id is None:
+if skaha_sessionid is None:
     # --- Python ---
-    app = Flask(__name__)  # python
-    # api = Api(app)
+    app = Flask(__name__)
     cors = CORS()
     #
     # Configure logger
@@ -50,19 +42,16 @@ else:
         __name__,
         # static_folder="../frontend/build",
         static_folder="/backend/client",
-        static_url_path="/session/castor-etc/" + os.getenv("session_id") + "/",
-    )  # gunicorn on CANFAR
-    # app = Flask(
-    #     __name__, static_folder="../frontend/build", static_url_path="/"
-    # )  # gunicorn
-    # api = Api(app)
+        # static_url_path="/session/castor-etc/" + os.getenv("skaha_sessionid") + "/",
+        static_url_path="/",  # https://github.com/opencadc/skaha/pull/323
+    )
     cors = CORS()
     # Add logger to Flask app (only logs application errors, not HTTP errors)
     logger = logging.getLogger("gunicorn.error")
     app.logger.handlers = logger.handlers
     app.logger.setLevel(logger.level)
-    logger.info("Flask believes the session ID is: " + session_id)
-    logger.info("Static URL path is set to: " + app.static_url_path)
+    logger.debug("Flask believes the session ID is: " + skaha_sessionid)
+    logger.debug("Static URL path is set to: /" + str(app.static_url_path))
 
 #
 # Configure file uploads
@@ -95,17 +84,6 @@ def save_file(file):
     else:
         logger.error(f"{bad_filename} is not an allowed file!")
         return None
-
-
-# class MyCustomJsonEncoder(JSONEncoder):
-#     """
-#     Custom JSON encoder with support for astropy units.
-
-#     See <https://stackoverflow.com/a/44158611>.
-#     """
-
-#     def default(self, obj):
-#         return json.dumps(obj, cls=JsonCustomEncoder)
 
 
 class DataHolder:

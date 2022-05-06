@@ -30,7 +30,7 @@ backend](https://github.com/CASTOR-telescope/ETC).
    must send an email to [support@canfar.net](mailto:support@canfar.net) requesting access
    to the Science Portal.
 3. Inside the [Science Portal](https://www.canfar.net/science-portal/), click the "`+`"
-   icon to launch a new session. Under "`type`", select "`contrib`". If multiple ETC
+   icon to launch a new session. Under "`type`", select "`contributed`". If multiple ETC
    GUI versions are available, you can select the specific version you would like to use
    under the "`container image`" field. The version number is denoted by the string
    following the colon (e.g., `images.canfar.net/castor/castor_etc_gui:1.0.0` means
@@ -69,7 +69,7 @@ microframework.
    [`frontend/`](frontend/) folder and run `npm run build` in the terminal to build the
    React application (this may take some time). There have been [reported performance
    issues](https://github.com/npm/cli/issues/3208#issuecomment-966579441) regarding
-   executing `npm run build` within a container. If you're curious, feel free to try a
+   executing `npm run build` within a container. If you're curious, feel free to try fa
    multi-stage build (i.e., building the app within the container then copying the built
    files to the Python base image); a basic outline of how this would be integrated is
    provided in the [Dockerfile](docker/Dockerfile) comments.
@@ -79,26 +79,27 @@ microframework.
    [CANFAR](https://www.canfar.net/en/)!
 
 5. Run the [`build.sh`](docker/build.sh) script to build the Docker container. It takes 4
-   optional arguments: `CACHEBUST_BACKEND` (default: `1`), `CACHEBUST_CASTOR` (default:
+   optional arguments: `CACHEBUST_CASTOR` (default: `1`), `CACHEBUST_BACKEND` (default:
    `1`), `CACHEBUST_FRONTEND` (default: `1`), and `RUN` (default: `false`). The first 3
    variables attempt to invalidate the [Docker
    cache](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#leverage-build-cache)
-   for: (a) copying the backend files to the Docker image, (b) installing the `castor_etc`
-   package in the Docker image, and (c) copying the built frontend files to the Docker
-   image. The last variable, when `true`, will also automatically run the Docker image
-   (convenient for local testing).
+   for: (a) installing the `castor_etc` package in the Docker image, (b) copying the
+   backend files to the Docker image, and (c) copying the built frontend files to the
+   Docker image. The last variable, when `true`, will also automatically run the Docker
+   image (convenient for local testing).
    - (Optional) Set a custom `VERSION` for the built image in
      [Docker_env](docker/Docker_env). This follows the same procedure as documented in the
      [ETC Docker README](https://github.com/CASTOR-telescope/ETC/tree/master/docker).
-   - (Optional) You can also set custom `CACHEBUST_BACKEND`, `CACHEBUST_CASTOR`,
+   - (Optional) You can also set custom `CACHEBUST_CASTOR`, `CACHEBUST_BACKEND`,
      `CACHEBUST_FRONTEND`, and `RUN` variables in [Docker_env](docker/Docker_env). Note,
      however, that command-line arguments provided will overwrite the value(s) if
      provided.
 
 6. Finally, follow the instructions detailed on the skaha GitHub for [session
    containers](https://github.com/opencadc/skaha/tree/master/containers#publishing-skaha-containers).
-   Remember to tag the pushed image as `contrib` on [Harbor](https://images.canfar.net) to
-   be able to access it via the Science Portal drop-down menu!
+   Remember to tag the pushed image as `contributed` on
+   [Harbor](https://images.canfar.net) to be able to access it via the Science Portal
+   drop-down menu!
 
 7. (EXTRA NOTE) In the future, when developing any FORECASTOR projects or web apps that
    will be deployed on the CANFAR Science Platform, consider using port 5000 as the server

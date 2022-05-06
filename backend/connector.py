@@ -21,17 +21,15 @@ from source_route import put_source_json
 from photometry_route import put_photometry_json
 
 if __name__ != "__main__":
-    # i.e., run via gunicorn. Ensure app in utils.py is configured for gunicorn.
-    logger.info("Assuming app is configured for gunicorn in Docker container.")
+    logger.debug("Assuming app is configured for gunicorn in Docker container.")
 
-    @app.route(app.static_url_path)
-    @app.route(app.static_url_path + "/")
+    @app.route("/")
     def index():
         """
         Serve the index.html file when client requests the static url (e.g.,
-        <http://localhost:5000/session/castor-etc/12345>).
+        <http://localhost:5000/>).
         """
-        logger.info(f"Serving index.html because client requested {app.static_url_path}")
+        logger.info(f"Serving index.html because client requested {app.static_url_path}/")
         return app.send_static_file("index.html")
 
 
@@ -100,26 +98,12 @@ def redirect(path):
         return app.send_static_file("robots.txt")
 
     else:
-        # Everything after session/castor-etc/
-        after_url = re.search(r"(?<=session/castor-etc/).*$", path).group()
         filename = re.search(r"[^/?]*\.(?:gif|png|jpeg|jpg|ico|js|css)$", path)
-        if filename is not None and after_url != "" and app.static_folder is not None:
+        if app.static_folder is not None and filename is not None:
             if request.method != "GET":
                 abort(405)
-            logger.info(f"Serving some image/js/css (after_url={after_url})")
-            logger.info(f"Static folder: {app.static_folder}")
-            # return app.send_static_file(img_file)
-            return send_from_directory(app.static_folder, after_url)
-        # Match file name & type
-        # other_path = re.search(r"[^/?]*\.(?:gif|png|jpeg|jpg|ico|js|css)$", path)
-        # if other_path is not None and app.static_folder is not None:
-        #     if request.method != "GET":
-        #         abort(405)
-        #     img_file = other_path.group()
-        #     logger.info(f"Serving some image or js or css (file={img_file})")
-        #     logger.info(f"Static folder: {app.static_folder} (+/static)")
-        #     # return app.send_static_file(img_file)
-        #     return send_from_directory(app.static_folder + "/static", img_file)
+            logger.debug(f"Serving some image/js/css at /{path}")
+            return send_from_directory(app.static_folder, filename.group())
 
         else:
             logger.error(f"Bad route: route=/{path}")
@@ -127,8 +111,7 @@ def redirect(path):
 
 
 if __name__ == "__main__":
+    # i.e., not running via gunicorn
     cors.init_app(app)
-    # For development, port=5000 and debug=True
     app.run(port=5000, debug=True)
-    # Change port and debug mode in production. not necessary since using gunicorn?
-    # app.run(debug=False)
+
