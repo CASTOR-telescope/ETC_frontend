@@ -22,12 +22,12 @@ RUN ./apt-install.sh sssd acl gunicorn gcc libcurl4-openssl-dev libssl-dev
 RUN pip3 install flask flask-cors wheel gunicorn
 
 # Install castor_etc package
-# TODO: Do it from git+ in the future. Copying files just for testing
 ARG CACHEBUST_CASTOR=1
-ADD castor_etc /opt/mypackage/castor_etc
-COPY setup.py /opt/mypackage/
-WORKDIR /opt/mypackage
-RUN pip3 install .
+# ADD castor_etc /opt/mypackage/castor_etc
+# COPY setup.py /opt/mypackage/
+# WORKDIR /opt/mypackage
+# RUN pip3 install .
+RUN pip3 install git+https://github.com/CASTOR-telescope/ETC.git
 
 ARG CACHEBUST_BACKEND=1
 # REVIEW: cachebust not working?
