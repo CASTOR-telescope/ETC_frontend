@@ -19,7 +19,6 @@ backend](https://github.com/CASTOR-telescope/ETC).
   - [Roadmap](#roadmap)
   - [Known Issues](#known-issues)
   - [Questions, Issues, Suggestions, and Other Feedback](#questions-issues-suggestions-and-other-feedback)
-   Feedback](#questions-issues-suggestions-and-other-feedback)
 
 ## Accessing the GUI
 
