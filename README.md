@@ -39,7 +39,7 @@ backend](https://github.com/CASTOR-telescope/ETC).
    and maximum number of CPU cores you would like to have available for your GUI instance.
    Note that RAM and CPU are shared resources. The ETC GUI should _not_ require a lot of
    CPU or RAM to run. I cannot imagine a case where using the ETC GUI would require more
-   than, for example, would be 4 or 8 GB of RAM and 1 or 2 CPU cores.
+   than, for example, 4 GB of RAM and 1 or 2 CPU cores.
 5. Click the blue "`Launch`" button to start your new ETC GUI session. It can take up to a
    minute to launch the session depending on which computing node you are assigned to and
    the last time the image was launched. Additionally, only 1 session of each type is
