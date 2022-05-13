@@ -14,6 +14,7 @@ for more context/details. -->
 ## [1.0.1](https://github.com/CASTOR-telescope/ETC_frontend/tree/v1.0.1) (2022-05-13)
 
 - Added `git` to Dockerfile
+- Reset custom spectrum value upon loading of Source form
 - Fixed 500 error when uploading spectrum from a FITS file
   (PR [#3](https://github.com/CASTOR-telescope/ETC_frontend/pull/3))
 - Fix typo in Photometry results tab (issue

@@ -1548,6 +1548,9 @@ const SourceForm: React.FC<SourceFormProps> = ({
   // Only run this on mount
   React.useEffect(() => {
     setIsChanged(false);
+    // Always reset custom spectrum field (see <https://stackoverflow.com/q/2862357> and
+    // <https://stackoverflow.com/q/14867848>)\
+    myInitialValues.customSpectrum = "";
     setPrevFormValues(myInitialValues);
   }, []);
 
