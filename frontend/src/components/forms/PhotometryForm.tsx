@@ -669,7 +669,7 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
                       scope="row"
                       sx={{ fontSize: tableCellFontSize }}
                     >
-                      u
+                      g
                     </TableCell>
                     {resultCell(redleakFracG)}
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
