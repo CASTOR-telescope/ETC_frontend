@@ -414,7 +414,7 @@ def put_source_json():
         #
         # Only return the attributes that we want to show on the frontend
         return jsonify(
-            wavelengths=list(SourceObj.wavelengths.to(u.AA).value),  # x-values
+            wavelengths=SourceObj.wavelengths.to(u.AA).value.tolist(),  # x-values
             spectrum=list(SourceObj.spectrum),  # y-values
             sourceMags=source_mags,  # dict of floats
             totalMag=total_mag,  # float

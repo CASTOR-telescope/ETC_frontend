@@ -118,7 +118,8 @@ else:
 #
 # https://flask.palletsprojects.com/en/2.1.x/patterns/fileuploads/
 ALLOWED_EXTENSIONS = {"fits", "fit", "txt", "dat"}
-app.config["UPLOAD_FOLDER"] = "./flask_uploads"
+app.config["UPLOAD_FOLDER"] = os.path.join(os.getcwd(), "flask_uploads")
+logger.debug("Upload folder: " + app.config["UPLOAD_FOLDER"])
 
 
 def save_file(file):
