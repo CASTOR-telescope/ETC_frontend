@@ -1,2 +1,5 @@
 # VS Code stuff
 **/.vscode/
+
+# Invisible file in macOS
+**/.DS_Store
