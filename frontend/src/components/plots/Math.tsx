@@ -1,3 +1,5 @@
+/*Javascript functions corresponding to predefined methods in Numpy python library*/
+
 /**
  *         GNU General Public License v3 (GNU GPLv3)
  *
@@ -60,8 +62,101 @@
  * <http://www.gnu.org/licenses/>.      <http://www.gnu.org/licenses/>.
  */
 
-// For CANFAR deployment
-// export const API_URL: string = window.location.href; // e.g., <http://ws-uv.canfar.net/session/contrib/<sessionID>/>
+export function linspace(startValue: number, stopValue: number, cardinality: number = 50) {
+    var arr = [];
+    var step = (stopValue - startValue) / (cardinality - 1)
+        for (var i = 0; i < cardinality; i++) {
+            arr.push(startValue + (step * i))
+        }
+    return arr
+}
 
-// For local development
-export const API_URL: string = "http://localhost:5000/";
+export function squareArr(arr: any) {
+    var newArray: any = [];
+    for (var i = 0; i < arr.length; i++) {
+        newArray.push(Math.pow(arr[i],2))
+    }
+    return newArray
+}
+
+export function meshgrid(arr1: any, arr2: any) {
+    var output1 = [];
+    var output2 = [];
+    for (var i = 0; i < arr1.length; i++) {
+        output1[i] = arr1
+    }
+    for (var j = 0; j < arr2.length; j++) {
+        output2[j] = Array(arr2.length).fill(arr2[j])
+    }
+    return [output1,output2]
+}
+
+
+export function gaussian2D(x: any, y: any, sigma: number) {
+    var term1 = [];
+    var term2:any = [];
+    var finalSum:any = [];
+    var output:any = [];
+    var a = 1;
+    for (var i = 0; i < x.length; i++){
+       term1.push(squareArr(x[i]).map((item: number)=> item/(2*Math.pow(sigma,2))))
+       term2.push(squareArr(y[i]).map((item: number)=> item/(2*Math.pow(sigma,2))))
+    }
+    for (var i = 0; i < x.length; i++){
+        finalSum.push(term1[i].map((num: number,idx: number) => 
+            num + term2[i][idx] )); 
+    }
+    for (var i = 0; i < x.length; i++){
+        output.push(finalSum[i].map((item: number)=> a*Math.exp(-item)))
+     }
+    return output
+}
+
+// export function arange(startValue: number, stopValue: number, spacing: number = 1) {
+//     if (startValue < stopValue) {
+//         var numStep = Math.ceil((stopValue-startValue)/spacing);
+//         var arr = [startValue];
+//         for (var i = 1; i < numStep; i++) {
+//             arr[i] = arr[i-1] + spacing
+//         }
+//         return arr
+//     }
+
+//     else {
+//         return null
+//     }
+// }
+
+export function arange(startValue: number, stopValue: number, spacing: number = 1) {
+    if (startValue < stopValue) {
+        var arr = [startValue];
+        let i = 1;
+        do {
+            arr[i] = arr[i-1] + spacing
+            i +=1
+        } while (arr[i-1] < stopValue)
+        arr.pop()
+        return arr
+    }
+    else {
+        return null
+    }
+}
+
+export function min2Darray(arr: any) {
+    var newArray: number[] = []; 
+    for (var i = 0; i < arr.length; i++){
+        newArray.push(Math.min.apply(null,arr[i]))
+    }
+    var result = Math.min.apply(null, newArray)
+    return result
+}
+
+export function max2Darray(arr: any) {
+    var newArray: number[] = []; 
+    for (var i = 0; i < arr.length; i++){
+        newArray.push(Math.max.apply(null,arr[i]))
+    }
+    var result = Math.max.apply(null, newArray)
+    return result
+}

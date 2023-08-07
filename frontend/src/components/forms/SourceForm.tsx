@@ -97,10 +97,11 @@ import * as Yup from "yup";
 import axios from "axios";
 
 import {
-  AlertIfFormSavedButPhotometryNotSubmitted,
+  AlertIfFormSavedButNotSubmitted,
   useGetIfFormChanged,
   CommonFormProps,
   AlertError,
+  AlertSuccessfulRequest,
   CommonTextField,
   SaveButton,
 } from "../CommonFormElements";
@@ -266,7 +267,14 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
           textAlign: "center",
         }}
       >
-        Choose or upload a spectrum for the source. If uploading your own spectrum, it
+        From the 'Predefined Spectra' dropdown menu, choose a spectrum for the source. For point sources, one can either search the keyword 'gaia' and specify the target parameters or choose an appropriate spectral class. 
+        
+        <b>
+        Transit simulation feature is only available with the former choice.
+        </b>
+        
+        <br />
+        If uploading your own spectrum, it
         must be in ASCII or FITS format.
         <br />
         If the file is in ASCII format (.txt or .dat file extension), the first column
@@ -304,6 +312,9 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
                     } else {
                       setMyInputObj(value);
                       setFieldValue("predefinedSpectrum", value.spectralValue);
+                      if (value.spectralValue === "gaia"){
+                        setFieldValue("normMethod", NormMethods.None)
+                      }
                     }
                     setFieldValue("customSpectrum", "");
                     // Clear customSpectrum file name
@@ -434,6 +445,51 @@ const SpectrumFields: React.FC<SpectrumFieldsProps> = ({
                         value={values.predefinedSpectrumParameters.blackbody.dist}
                         placeholder={"Example: 1"}
                         label="Distance (kpc)"
+                        required={true}
+                      />
+                    </Grid>
+                  </Grid>
+                </FormGroup>
+              );
+            case "gaia":
+              return (
+                <FormGroup>
+                  <FormHelperText
+                    sx={{
+                      fontSize: "medium",
+                      fontWeight: "normal",
+                      marginBottom: 2,
+                      textAlign: "center",
+                    }}
+                  >
+                    Please specify right ascension, declination, and threshold Gaia G magnitude to query the Gaia database for potential sources. From all the identified candidate stars, the brightest one will be chosen as the point source. <b>Note that the spectrum would come normalized.
+                      </b> 
+                  </FormHelperText>
+                  <Grid container spacing={2} columns={12}>
+                    <Grid item xs={4}>
+                      <CommonTextField
+                        name="predefinedSpectrumParameters.gaia.ra"
+                        value={values.predefinedSpectrumParameters.gaia.ra}
+                        placeholder={"Example: 311.2897"}
+                        label="Right Ascension (Degree)"
+                        required={true}
+                      />
+                    </Grid>
+                    <Grid item xs={4}>
+                      <CommonTextField
+                        name="predefinedSpectrumParameters.gaia.dec"
+                        value={values.predefinedSpectrumParameters.gaia.dec}
+                        placeholder={"Example: -31.34089"}
+                        label="Declination (Degree)"
+                        required={true}
+                      />
+                    </Grid>
+                    <Grid item xs={4}>
+                      <CommonTextField
+                        name="predefinedSpectrumParameters.gaia.srchGmax"
+                        value={values.predefinedSpectrumParameters.gaia.srchGmax}
+                        placeholder={"Example: 21"}
+                        label="Threshold Gaia G magnitude"
                         required={true}
                       />
                     </Grid>
@@ -899,6 +955,7 @@ const SpectralLinesGroup: React.FC<SpectralLinesGroupProps> = ({
                   arrayHelpers.push({
                     center: "",
                     fwhm: "",
+                    peak: "",
                     shape: "gaussian",
                     type: "emission",
                     id: "" + Math.random(),
@@ -1069,20 +1126,23 @@ const NormMethodGroup: React.FC<NormMethodGroupProps> = ({
           setFieldValue("normMethod", event.currentTarget.value);
         }}
         sx={{ marginBottom: 2 }}
-      >
+        >
         <FormControlLabel
           value={NormMethods.PassbandMag}
           control={<Radio />}
+          disabled={values.predefinedSpectrum === "gaia" || false}
           label="AB magnitude in a passband"
         />
         <FormControlLabel
           value={NormMethods.TotalMag}
           control={<Radio />}
+          disabled={values.predefinedSpectrum === "gaia" || false}
           label="Total (bolometric) AB magnitude"
         />
         <FormControlLabel
           value={NormMethods.LuminosityDist}
           control={<Radio />}
+          disabled={values.predefinedSpectrum === "gaia" || false}
           label="Total (bolometric) luminosity and distance"
         />
         <FormControlLabel
@@ -1343,6 +1403,15 @@ const sourceValidationSchema = Yup.object({
 
   // TODO: when uniform spectrum unit is "flam" or "fnu", spectrumValue must be > 0.
   predefinedSpectrumParameters: Yup.object({
+    gaia: Yup.object({
+      ra: Yup.number()
+      .typeError("Right Ascension must be a number"),
+      dec: Yup.number()
+      .typeError("Declination must be a number"),
+      srchGmax: Yup.number()
+      .typeError("Threshold Gaia G magnitude must be a number > 0")
+      .positive("Threshold Gaia G magnitude must be a number > 0"),
+    }),
     blackbody: Yup.object({
       temp: Yup.number()
         .typeError("Temperature must be a number > 0")
@@ -1474,25 +1543,44 @@ type SourceFormProps = {
   setIsSourceSyncTelescope: (value: boolean) => void;
   incrNumTelescopeOrSourceSaved: () => void;
   numPhotometrySubmit: number;
+  numUVMOSSubmit: number;
+  numTransitSubmit: number;
   isSourceSyncPhotometry: boolean;
+  isSourceSyncUVMOS: boolean;
+  isSourceSyncTransit: boolean;
   setIsSourceSyncPhotometry: (value: boolean) => void;
+  setIsSourceSyncUVMOS: (value: boolean) => void;
+  setIsSourceSyncTransit: (value: boolean) => void;
+  setIsPhotometrySavedAndUnsubmitted: (value: boolean) => void;
+  setIsUVMOSSavedAndUnsubmitted: (value: boolean) => void;
+  setIsTransitSavedAndUnsubmitted: (value: boolean) => void;
 } & CommonFormProps;
 
 const SourceForm: React.FC<SourceFormProps> = ({
-  setIsSavedAndUnsubmitted,
+  setIsPhotometrySavedAndUnsubmitted,
+  setIsUVMOSSavedAndUnsubmitted,
+  setIsTransitSavedAndUnsubmitted,
   setIsChanged,
   prevFormValues,
   setPrevFormValues,
   isError,
   setIsError,
+  isSent,
+  setIsSent,
   errorMessage,
   setErrorMessage,
   isSourceSyncTelescope,
   setIsSourceSyncTelescope,
   incrNumTelescopeOrSourceSaved,
   numPhotometrySubmit,
+  numUVMOSSubmit,
+  numTransitSubmit,
   isSourceSyncPhotometry,
   setIsSourceSyncPhotometry,
+  isSourceSyncUVMOS,
+  setIsSourceSyncUVMOS,
+  isSourceSyncTransit,
+  setIsSourceSyncTransit,
 }) => {
   // Save user form inputs between tab switches
   const FORM_SESSION = "sourceForm"; // key for sessionStorage (user inputs)
@@ -1504,6 +1592,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
       redshift: "0",
       predefinedSpectrum: "", // spectrum options. N.B. different validation per source
       predefinedSpectrumParameters: {
+        gaia : { ra: "", dec: "", srchGmax: "21" },
         blackbody: { temp: "", radius: "1", dist: "1" },
         powerLaw: { refWavelength: "", exponent: "" },
         uniform: { spectrumValue: "", unit: "flam" },
@@ -1599,9 +1688,25 @@ const SourceForm: React.FC<SourceFormProps> = ({
         </Link>{" "}
         repository are all welcome.
       </Typography>
-      <AlertIfFormSavedButPhotometryNotSubmitted
-        isFormSyncPhotometry={isSourceSyncPhotometry}
-        numPhotometrySubmit={numPhotometrySubmit}
+      <AlertIfFormSavedButNotSubmitted
+      parameters={
+        [
+      {
+        name: 'Photometry',
+        isFormSync:isSourceSyncPhotometry,
+        numSubmit:numPhotometrySubmit
+      },
+      {
+        name: 'UVMOS',
+        isFormSync:isSourceSyncUVMOS,
+        numSubmit:numUVMOSSubmit
+      },
+      {
+        name: 'Transit',
+        isFormSync:isSourceSyncTransit,
+        numSubmit:numTransitSubmit
+      },
+      ]}
       />
       <Formik
         initialValues={myInitialValues}
@@ -1630,7 +1735,10 @@ const SourceForm: React.FC<SourceFormProps> = ({
                 sessionStorage.setItem(FORM_PARAMS, JSON.stringify(response))
               )
               .then(() => {
-                setIsSavedAndUnsubmitted(true);
+                setIsSent(true)
+                setIsPhotometrySavedAndUnsubmitted(true);
+                setIsUVMOSSavedAndUnsubmitted(true);
+                setIsTransitSavedAndUnsubmitted(true);
                 setPrevFormValues(data);
                 setIsChanged(false);
                 sessionStorage.setItem(FORM_SESSION, JSON.stringify(data));
@@ -1638,6 +1746,12 @@ const SourceForm: React.FC<SourceFormProps> = ({
                 incrNumTelescopeOrSourceSaved();
                 if (sessionStorage.getItem("photometryForm") !== null) {
                   setIsSourceSyncPhotometry(false);
+                }
+                if (sessionStorage.getItem("uvmosForm") !== null) {
+                  setIsSourceSyncUVMOS(false);
+                }
+                if (sessionStorage.getItem("transitForm") !== null) {
+                  setIsSourceSyncTransit(false);
                 }
               })
               .catch((error) => {
@@ -1708,6 +1822,11 @@ const SourceForm: React.FC<SourceFormProps> = ({
             }
             <SaveButton isSubmitting={isSubmitting} isValid={isValid} />
             {/* <pre>{JSON.stringify(values, null, 2)}</pre> */}
+            <AlertSuccessfulRequest
+            type={"Saved"}
+            isSent={isSent}
+            setIsSent={setIsSent}
+            />
             <AlertError
               isError={isError}
               setIsError={setIsError}

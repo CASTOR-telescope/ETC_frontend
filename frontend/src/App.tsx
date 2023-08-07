@@ -76,6 +76,11 @@ import ResponseCurveSpectrumPlot from "./components/plots/ResponseCurveSpectrumP
 import { useState } from "react";
 import SourceWeightsPlot from "./components/plots/SourceWeightsPlot";
 import AperMaskPlot from "./components/plots/AperMaskPlot";
+import CastorSpectrumPlot from "components/plots/CastorSpectraPlot";
+import SourcePixelWeightDetectorPlot from "components/plots/SourcePixelWeightDetectorPlot";
+import ShowSlitPlot from "components/plots/ShowSlitPlot";
+import SceneSimFoVPlot from "components/plots/SceneSimFoVPlot";
+import LightCurveSimPlot from "components/plots/LightCurveSimPlot";
 
 function App() {
   // Set Material UI theme
@@ -88,12 +93,29 @@ function App() {
     setNumTelescopeOrSourceSaved(numTelescopeOrSourceSaved + 1);
   };
 
+
   // To update image plots on each new Photometry submission and to track whether a
   // Photometry request has ever been submitted
   const [numPhotometrySubmit, setNumPhotometrySubmit] = useState(0);
   const incrNumPhotometrySubmit = () => {
     setNumPhotometrySubmit(numPhotometrySubmit + 1);
   };
+
+    // To update image plots on each new UVMOS submission to track whether a
+  // UVMOS request has ever been submitted
+  const [numUVMOSSubmit, setNumUVMOSSubmit] = useState(0);
+  const incrNumUVMOSSubmit = () => {
+    setNumUVMOSSubmit(numUVMOSSubmit + 1);
+  };
+
+    // To update image plots on each new Transit submission to track whether a
+  // Transit request has ever been submitted
+  const [numTransitSubmit, setNumTransitSubmit] = useState(0);
+  const incrNumTransitSubmit = () => {
+    setNumTransitSubmit(numTransitSubmit + 1);
+  };
+    // For tracking tabs
+    const [value, setValue] = useState(0);
 
   return (
     <div className="App">
@@ -116,14 +138,24 @@ function App() {
             >
               <Allotment.Pane>
                 <TabForms
+                  value={value}
+                  setValue={setValue}
                   incrNumTelescopeOrSourceSaved={incrNumTelescopeOrSourceSaved}
                   incrNumPhotometrySubmit={incrNumPhotometrySubmit}
                   numPhotometrySubmit={numPhotometrySubmit}
+                  incrNumUVMOSSubmit={incrNumUVMOSSubmit}
+                  numUVMOSSubmit={numUVMOSSubmit}
+                  incrNumTransitSubmit={incrNumTransitSubmit}
+                  numTransitSubmit={numTransitSubmit}
                 />
               </Allotment.Pane>
             </div>
 
-            <Allotment.Pane>
+            {/* Pane on the right side */}
+            <Allotment.Pane> 
+              {(value === 0 || value === 1 || value === 2 || value === 3)
+              ? 
+              <>
               <Allotment vertical defaultSizes={[50, 50]} minSize={0}>
                 <Allotment.Pane>
                   <Allotment defaultSizes={[50, 50]} minSize={0}>
@@ -131,13 +163,79 @@ function App() {
                     <AperMaskPlot numPhotometrySubmit={numPhotometrySubmit} />
                   </Allotment>
                 </Allotment.Pane>
+                <div
+              style={{
+                // Allow the user to scroll overflowed content
+                width: "100%",
+                height: "100%",
+                overflow: "auto",
+              }}
+            >
                 <Allotment.Pane>
                   <ResponseCurveSpectrumPlot
                     numTelescopeOrSourceSaved={numTelescopeOrSourceSaved}
                   />
                 </Allotment.Pane>
+                </div>
               </Allotment>
+              </>
+              :
+              value === 4
+              ?
+              <>
+              <Allotment vertical defaultSizes={[50, 50]} minSize={0}>
+                  <Allotment defaultSizes={[40, 60]} minSize={0}>
+                  <SourcePixelWeightDetectorPlot
+                  numUVMOSSubmit={numUVMOSSubmit}
+                  />
+                  <ShowSlitPlot
+                  numUVMOSSubmit={numUVMOSSubmit}
+                  />
+                  </Allotment>
+                <div
+              style={{
+                // Allow the user to scroll overflowed content
+                width: "100%",
+                height: "100%",
+                overflow: "auto",
+              }}
+            >
+                <Allotment.Pane>
+                  <CastorSpectrumPlot
+                  numUVMOSSubmit={numUVMOSSubmit}
+                  />
+                </Allotment.Pane>
+                </div>
+              </Allotment>
+              </>
+              :
+              <>
+              <Allotment vertical defaultSizes={[50, 50]} minSize={0}>
+                <Allotment.Pane>  
+                  <SceneSimFoVPlot
+                  numTransitSubmit={numTransitSubmit}
+                  />
+                  </Allotment.Pane>
+              <div
+              style={{
+                // Allow the user to scroll overflowed content
+                width: "100%",
+                height: "100%",
+                overflow: "auto",
+              }}
+            >
+                  <Allotment.Pane>
+                  <LightCurveSimPlot
+                  numTransitSubmit={numTransitSubmit}
+                  />
+                  </Allotment.Pane>
+                </div>
+              </Allotment>
+              </>
+              }
+
             </Allotment.Pane>
+
           </Allotment>
         </div>
       </header>

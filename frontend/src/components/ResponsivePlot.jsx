@@ -107,7 +107,7 @@ export default function ResponsivePlot(props) {
     refreshRate: 10,
   });
   return (
-    <div ref={ref} style={{ display: "flex", height: "100%" }}>
+    <div ref={ref} style={{ display: "flex", height: "100%", overflow: "auto" }}>
       <Plot
         data={data}
         layout={{

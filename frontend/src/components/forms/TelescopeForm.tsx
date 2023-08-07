@@ -75,14 +75,17 @@ import axios from "axios";
 import { useEffect } from "react";
 
 import {
-  AlertIfFormSavedButPhotometryNotSubmitted,
+  AlertIfFormSavedButNotSubmitted,
   CommonTextFieldWithTracker,
   CommonFormProps,
   AlertError,
+  AlertSuccessfulRequest,
   CommonTextField,
   SaveButton,
 } from "../CommonFormElements";
 import { API_URL } from "../../env";
+
+import Button from "@mui/material/Button";
 
 const telescopeValidationSchema = Yup.object({
   fwhm: Yup.number()
@@ -136,13 +139,22 @@ const telescopeValidationSchema = Yup.object({
 });
 
 type TelescopeFormProps = {
+  setIsPhotometrySavedAndUnsubmitted: (value: boolean) => void;
+  setIsUVMOSSavedAndUnsubmitted: (value: boolean) => void;
+  setIsTransitSavedAndUnsubmitted: (value: boolean) => void;
   incrNumTelescopeOrSourceSaved: () => void;
   // setIsTelescopeUpdated: (value: boolean) => void;
   setIsBackgroundSyncTelescope: (value: boolean) => void;
   setIsSourceSyncTelescope: (value: boolean) => void;
   numPhotometrySubmit: number;
+  numUVMOSSubmit: number;
+  numTransitSubmit: number;
   isTelescopeSyncPhotometry: boolean;
   setIsTelescopeSyncPhotometry: (value: boolean) => void;
+  isTelescopeSyncUVMOS: boolean;
+  setIsTelescopeSyncUVMOS: (value: boolean) => void;
+  isTelescopeSyncTransit: boolean;
+  setIsTelescopeSyncTransit: (value: boolean) => void;
   // incrNumPhotometrySubmit: () => void;
   isChanged: boolean;
 } & CommonFormProps;
@@ -152,13 +164,17 @@ type TelescopeFormProps = {
  *
  */
 const TelescopeForm: React.FC<TelescopeFormProps> = ({
-  setIsSavedAndUnsubmitted,
+  setIsPhotometrySavedAndUnsubmitted,
+  setIsUVMOSSavedAndUnsubmitted,
+  setIsTransitSavedAndUnsubmitted,
   setIsChanged,
   prevFormValues,
   setPrevFormValues,
   incrNumTelescopeOrSourceSaved,
   isError,
   setIsError,
+  isSent,
+  setIsSent,
   errorMessage,
   setErrorMessage,
   // isTelescopeUpdated, // don't need this
@@ -168,6 +184,12 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
   numPhotometrySubmit,
   isTelescopeSyncPhotometry,
   setIsTelescopeSyncPhotometry,
+  numUVMOSSubmit,
+  isTelescopeSyncUVMOS,
+  setIsTelescopeSyncUVMOS,
+  numTransitSubmit,
+  isTelescopeSyncTransit,
+  setIsTelescopeSyncTransit,
   // incrNumPhotometrySubmit,
   isChanged,
 }) => {
@@ -196,7 +218,11 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
 
   return (
     <div>
-      <Typography variant="h5">Input parameters for the telescope below.</Typography>
+      <Button variant="outlined" style={{textTransform: "none", fontSize: 16}}>
+      ETC v1.1.1</Button>
+      <Typography variant="h5" style={{marginTop: 15}}>
+        Input parameters for the telescope below.
+        </Typography>
       <Typography variant="body1" style={{ marginBottom: 16 }}>
         The telescope passband limits, passband response, pivot wavelengths, photometric
         zeropoints are currently not customizable here. Please use the Python{" "}
@@ -222,9 +248,25 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
         </Link>{" "}
         repository are all welcome.
       </Typography>
-      <AlertIfFormSavedButPhotometryNotSubmitted
-        isFormSyncPhotometry={isTelescopeSyncPhotometry}
-        numPhotometrySubmit={numPhotometrySubmit}
+      <AlertIfFormSavedButNotSubmitted
+      parameters={
+        [
+      {
+        name: 'Photometry',
+        isFormSync:isTelescopeSyncPhotometry,
+        numSubmit:numPhotometrySubmit
+      },
+      {
+        name: 'UVMOS',
+        isFormSync:isTelescopeSyncUVMOS,
+        numSubmit:numUVMOSSubmit
+      },
+      {
+        name: 'Transit',
+        isFormSync:isTelescopeSyncTransit,
+        numSubmit:numTransitSubmit
+      },
+      ]}
       />
       <Formik
         initialValues={myInitialValues}
@@ -240,7 +282,10 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                 sessionStorage.setItem(FORM_PARAMS, JSON.stringify(response))
               )
               .then(() => {
-                setIsSavedAndUnsubmitted(true);
+                setIsSent(true)
+                setIsPhotometrySavedAndUnsubmitted(true);
+                setIsUVMOSSavedAndUnsubmitted(true);
+                setIsTransitSavedAndUnsubmitted(true);
                 setPrevFormValues(data);
                 setIsChanged(false);
                 sessionStorage.setItem(FORM_SESSION, JSON.stringify(data));
@@ -257,6 +302,12 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                 setIsSourceSyncTelescope(false);
                 if (sessionStorage.getItem("photometryForm") !== null) {
                   setIsTelescopeSyncPhotometry(false);
+                }
+                if (sessionStorage.getItem("uvmosForm") !== null) {
+                  setIsTelescopeSyncUVMOS(false);
+                }
+                if (sessionStorage.getItem("transitForm") !== null) {
+                  setIsTelescopeSyncTransit(false);
                 }
 
                 // // Resubmit Photometry form to update images and calculations (doesn't
@@ -489,6 +540,11 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
               setIsError={setIsError}
               errorMessage={errorMessage}
               setErrorMessage={setErrorMessage}
+            />
+            <AlertSuccessfulRequest
+            type={"Saved"}
+            isSent={isSent}
+            setIsSent={setIsSent}
             />
           </Form>
         )}

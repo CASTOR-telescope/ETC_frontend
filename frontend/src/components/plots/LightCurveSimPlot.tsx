@@ -60,80 +60,140 @@
  * <http://www.gnu.org/licenses/>.      <http://www.gnu.org/licenses/>.
  */
 
+import { useEffect, useState } from "react";
 import { themeBackgroundColor } from "../DarkModeTheme";
 import ResponsivePlot from "../ResponsivePlot";
+import localforage from "localforage";
 
-type AperMaskPlotProps = {
-  numPhotometrySubmit: number;
+type LightCurveSimPlotProps = {
+    numTransitSubmit: number;
 };
 
-const AperMaskPlot: React.FC<AperMaskPlotProps> = ({ numPhotometrySubmit }) => {
-  // Re-render plot (more robust this way because it persists across refreshes, unlike
-  // numPhotometrySubmit > 0)
-  if (sessionStorage.getItem("photometryParams") !== null) {
-    // Update to proper sessionStorage key after
-    let photometryParams = JSON.parse(`${sessionStorage.getItem("photometryParams")}`);
-    let aperMask = JSON.parse(photometryParams["aperMask"]); // need to parse twice...
-    let extent = photometryParams["aperExtent"]; // [xmin, xmax, ymin, ymax]
-    // let effNpix = photometryParams["effNpix"];
-    let plotLengths = [aperMask.length, aperMask[0].length];
-    let px_scale_x = (extent[1] - extent[0]) / plotLengths[1];
-    let px_scale_y = (extent[3] - extent[2]) / plotLengths[0];
+const LightCurveSimPlot: React.FC<LightCurveSimPlotProps> = ({
+    numTransitSubmit,
+}) => {
+
+    const data = [];
+
+    const [plotData, setPlotData] = useState<{light_curve: {
+      x_sim_castor: number[],
+      y_sim_castor: number[],
+      y_error: number[],
+      x_transit_model: number[],
+      y_transit_model: number[],
+      xlim: number[]
+    }}>({
+    light_curve: {
+        x_sim_castor : [],
+        y_sim_castor : [],
+        y_error: [],
+        x_transit_model: [],
+        y_transit_model: [],
+        xlim: []
+    }
+    });
+
+    useEffect(()=>{
+        localforage.getItem("transitParams").then((res: any) => {
+            setPlotData(JSON.parse(res))
+        })
+    }, [numTransitSubmit])
+
+  if (plotData !== null) {
+
+    let x_sim_castor = plotData.light_curve.x_sim_castor
+    let y_sim_castor = plotData.light_curve.y_sim_castor
+    let y_error = plotData.light_curve.y_error
+    let xlim = plotData.light_curve.xlim
+    let x_transit_model = plotData.light_curve.x_transit_model
+    let y_transit_model = plotData.light_curve.y_transit_model
+    
+    data.push(
+        {
+            x: x_sim_castor,
+            y: y_sim_castor,
+            error_y: {
+                type: 'data',
+                array: y_error,
+                visible: true,
+                thickness: 1.5,
+                width: 3
+            },
+            name: "Simulated CASTOR",
+            type: 'scatter',
+            mode: 'markers',
+            marker: {
+                size: 5,
+                symbol: 'circle',
+                line: {
+                    width: 1
+                }
+            }
+        },
+        {
+            x: x_transit_model,
+            y: y_transit_model,
+            mode: 'lines',
+            name: "Transit Model"
+        }
+    )
     return (
       <ResponsivePlot
-        // React re-renders the plot when any state, prop, or parent component changes
-        divId={`aper-mask-plot-${numPhotometrySubmit}`}
-        data={[
-          {
-            z: aperMask,
-            type: "heatmap",
-            colorscale: "YlOrRd",
-            colorbar: {
-              title: {
-                text: "Fraction of Pixel in Aperture",
-                side: "right",
-                font: { size: 14 },
-              },
-            },
-            x0: extent[0] + 0.5 * px_scale_x,
-            dx: px_scale_x,
-            y0: extent[2] + 0.5 * px_scale_y,
-            dy: px_scale_y,
-            transpose: false,
+      divId={`simulated-lightcurve-${numTransitSubmit}`}
+      data={data}
+      layout={{
+        title: "Simulated Lightcurve",
+        font: { color: "white", size: 14},
+        autosize: true,
+        paper_bgcolor: themeBackgroundColor,
+        plot_bgcolor: themeBackgroundColor,
+        xaxis: {
+          title: "t-t0 (day)",
+          range: [xlim[0], xlim[1]],
+          zeroline: false,
+          ticks: 'inside',
+          mirror: 'ticks',
+          ticklen: 6,
+          tickcolor: 'white',
+          minor: {
+            ticks: "inside",
+            ticklen: 3,
           },
-        ]}
-        layout={{
-          title: "(Aperture Mask)",
-          font: { color: "white", size: 10 },
-          autosize: true,
-          paper_bgcolor: themeBackgroundColor,
-          plot_bgcolor: themeBackgroundColor,
-          xaxis: {
-            showgrid: true,
-            title: "<i>x</i> (arcsec)",
-            type: "linear",
-            autorange: true,
-            range: [extent[0], extent[1]],
+          showline: true,
+        },
+        yaxis: { 
+          title: "Normalized Flux (ppt)",
+          range: [Math.min.apply(null,y_transit_model) - 0.1 ,Math.max.apply(null,y_transit_model) + 0.2],
+          zeroline: false,
+          ticks: 'inside',
+          mirror: 'ticks',
+          ticklen: 6,
+          showgrid: false,
+          tickcolor: "white",
+          minor: {
+            ticks: "inside",
+            ticklen: 3,
           },
-          yaxis: {
-            showgrid: true,
-            title: "<i>y</i> (arcsec)",
-            type: "linear",
-            autorange: true,
-            range: [extent[2], extent[3]],
-            scaleanchor: "x",
-          },
-          margin: { t: 40 }, // if no title
-        }}
-        useResizeHandler={true}
-        config={{
-          displaylogo: false,
-          // modeBarButtonsToRemove: ["zoomIn2d", "zoomOut2d"],
-          toImageButtonOptions: { filename: "aper_mask" },
-          // Allow users to edit chart
-          showEditInChartStudio: true,
-          plotlyServerURL: "https://chart-studio.plotly.com",
-        }}
+          showline: true,
+        },
+        margin: { t: 60 },
+        showlegend: true,
+        legend: {
+          x: 0.01,
+          xanchor: "left",
+          y: 1.1,
+          font: {
+            size: 10
+          }
+        },
+      }}
+      useResizeHandler={true}
+      config={{
+        displaylogo: false,
+        toImageButtonOptions: {filname: "simulated_lightcurve"},
+        showEditInChartStudio: true,
+        plotlyServerURL: "https://chart-studio.plotly.com"
+      }}
       />
     );
   } else {
@@ -141,37 +201,47 @@ const AperMaskPlot: React.FC<AperMaskPlotProps> = ({ numPhotometrySubmit }) => {
       // Initial startup plot
       <ResponsivePlot
         // React re-renders the plot when any state, prop, or parent component changes
-        divId={`aper-mask-plot-${numPhotometrySubmit}`}
-        data={[]}
+        divId={`simulated-lightcurve-${numTransitSubmit}`}
+        data={[
+          {
+            x: [],
+            y: [],
+            marker: { color: "transparent", size: 0 },
+            yaxis: "y",
+          }
+        ]}
         layout={{
-          title: "(Aperture Mask)",
+          title: "(Generated Simulated Lightcurve)",
           font: { color: "white", size: 14 },
           autosize: true,
           paper_bgcolor: themeBackgroundColor,
           plot_bgcolor: themeBackgroundColor,
           xaxis: {
-            showgrid: true,
-            title: "<i>x</i> (arcsec)",
-            type: "linear",
-            autorange: true,
-            range: [-1, 1],
+            showgrid: false,
+            title: "t - t0 ([d])",
+            ticks: 'inside',
+            mirror: 'ticks',
+            showline: true,
+            zeroline: false,
           },
           yaxis: {
-            showgrid: true,
-            title: "<i>y</i> (arcsec)",
-            type: "linear",
-            autorange: true,
-            range: [-1, 1],
+            showgrid: false,
+            title: "Normalized Flux [ppt]",
+            ticks: 'inside',
+            mirror: 'ticks',
+            showline: true,
+            zeroline: false,
           },
-          margin: { r: 30 },
+          margin: { r: 26 },
+          showlegend: false,
           annotations: [
             {
-              text: "Please submit a Photometry<br />calculation first",
+              text: "Please save Transit parameters first",
               xref: "paper",
               yref: "paper",
               showarrow: false,
               font: {
-                size: 20,
+                size: 28,
               },
             },
           ],
@@ -180,7 +250,7 @@ const AperMaskPlot: React.FC<AperMaskPlotProps> = ({ numPhotometrySubmit }) => {
         config={{
           displaylogo: false,
           // modeBarButtonsToRemove: ["zoomIn2d", "zoomOut2d"],
-          toImageButtonOptions: { filename: "aper_mask" },
+          toImageButtonOptions: { filename: "simulated_light_curve" },
           // Allow users to edit chart
           showEditInChartStudio: true,
           plotlyServerURL: "https://chart-studio.plotly.com",
@@ -190,4 +260,4 @@ const AperMaskPlot: React.FC<AperMaskPlotProps> = ({ numPhotometrySubmit }) => {
   }
 };
 
-export default AperMaskPlot;
+export default LightCurveSimPlot;

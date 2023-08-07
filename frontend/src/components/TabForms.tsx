@@ -75,6 +75,8 @@ import BackgroundForm from "./forms/BackgroundForm";
 import PhotometryForm from "./forms/PhotometryForm";
 import SourceForm from "./forms/SourceForm";
 import TelescopeForm from "./forms/TelescopeForm";
+import UVMOSForm from "./forms/UVMOSForm"
+import TransitForm from "./forms/TransitForm";
 import logo from "./logo-fullsize.png";
 
 interface TabPanelProps {
@@ -119,26 +121,48 @@ function TabProps(index: number) {
 // ------------------------------------------------------------------------------------ //
 
 type TabFormsProps = {
-  incrNumTelescopeOrSourceSaved: () => void;
+  value: number;
+  setValue: (value: number) => void;
+  incrNumTelescopeOrSourceSaved: () => void; 
   incrNumPhotometrySubmit: () => void;
   numPhotometrySubmit: number;
+  incrNumUVMOSSubmit: () => void,
+  numUVMOSSubmit: number,
+  incrNumTransitSubmit: () => void,
+  numTransitSubmit: number,
 };
 
+/* Functional components */
 const TabForms: React.FC<TabFormsProps> = ({
+  value,
+  setValue,
   incrNumTelescopeOrSourceSaved,
   incrNumPhotometrySubmit,
   numPhotometrySubmit,
+  incrNumUVMOSSubmit,
+  numUVMOSSubmit,
+  incrNumTransitSubmit,
+  numTransitSubmit,
 }) => {
-  // For tracking tabs
-  const [value, setValue] = React.useState(0);
 
   // For tracking errors on save/submit (i.e., network/request errors)
   const [isError, setIsError] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState("");
 
+  // For tracking successfuly form submission on save/submit
+  const [isSent, setIsSent] = React.useState(false);
+
   // For tracking successful form submission between components
-  // If any tab is saved but not submitted, an info message will appear on Photometry tab
-  const [isSavedAndUnsubmitted, setIsSavedAndUnsubmitted] = React.useState(false);
+  // If any tab is saved but not submitted, an info message will appear on the Photometry tab.
+  const [isPhotometrySavedAndUnsubmitted, setIsPhotometrySavedAndUnsubmitted] = React.useState(false);
+
+  // For tracking successful form submission between components
+  // If any tab is saved but not submitted, an info message will appear on the UVMOS tab.
+  const [isUVMOSSavedAndUnsubmitted, setIsUVMOSSavedAndUnsubmitted] = React.useState(false);
+
+  // For tracking successful form submission between components
+  // If any tab is saved but not submitted, an info message will appear on the Transit tab.
+  const [isTransitSavedAndUnsubmitted, setIsTransitSavedAndUnsubmitted] = React.useState(false);
 
   // For tracking changed & unsaved forms
   const [isChanged, setIsChanged] = React.useState(false);
@@ -154,6 +178,18 @@ const TabForms: React.FC<TabFormsProps> = ({
   const [isBackgroundSyncPhotometry, setIsBackgroundSyncPhotometry] =
     React.useState(true);
   const [isSourceSyncPhotometry, setIsSourceSyncPhotometry] = React.useState(true);
+
+    // For tracking Telescope, Background, & Source dependencies on UVMOS
+  const [isTelescopeSyncUVMOS, setIsTelescopeSyncUVMOS] = React.useState(true);
+  const [isBackgroundSyncUVMOS, setIsBackgroundSyncUVMOS] =
+      React.useState(true);
+  const [isSourceSyncUVMOS, setIsSourceSyncUVMOS] = React.useState(true);
+
+    // For tracking Telescope, Background, & Source dependencies on Transit
+  const [isTelescopeSyncTransit, setIsTelescopeSyncTransit] = React.useState(true);
+  const [isBackgroundSyncTransit, setIsBackgroundSyncTransit] =
+      React.useState(true);
+  const [isSourceSyncTransit, setIsSourceSyncTransit] = React.useState(true);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     // if (newValue !== value && !isSavedAndUnsubmitted) {
@@ -229,74 +265,118 @@ const TabForms: React.FC<TabFormsProps> = ({
               !isSourceSyncTelescope
             }
           />
-          {/* <Tab label="Spectroscopy" {...TabProps(4)} /> */}
+          <Tab label="UVMOS" {...TabProps(4)} 
+          disabled={
+              sessionStorage.getItem("telescopeParams") === null ||
+              !isBackgroundSyncTelescope ||
+              !isSourceSyncTelescope
+            }/>
+          <Tab label="Transit" {...TabProps(5)} 
+          // <https://stackoverflow.com/questions/46915002>
+          disabled={
+              sessionStorage.getItem("telescopeParams") === null ||
+              !isBackgroundSyncTelescope ||
+              !isSourceSyncTelescope || sessionStorage.getItem("sourceForm") === null ? true : JSON.parse(sessionStorage.getItem("sourceForm")!)["predefinedSpectrum"] !== "gaia"
+            }/>
         </Tabs>
       </Box>
       <TabPanel value={value} index={0}>
         <TelescopeForm
-          setIsSavedAndUnsubmitted={setIsSavedAndUnsubmitted}
+          setIsPhotometrySavedAndUnsubmitted={setIsPhotometrySavedAndUnsubmitted}
+          setIsUVMOSSavedAndUnsubmitted={setIsUVMOSSavedAndUnsubmitted}
+          setIsTransitSavedAndUnsubmitted={setIsTransitSavedAndUnsubmitted}
           setIsChanged={setIsChanged}
           prevFormValues={prevFormValues}
           setPrevFormValues={setPrevFormValues}
           incrNumTelescopeOrSourceSaved={incrNumTelescopeOrSourceSaved}
           isError={isError}
           setIsError={setIsError}
+          isSent={isSent}
+          setIsSent={setIsSent}
           errorMessage={errorMessage}
           setErrorMessage={setErrorMessage}
           // setIsTelescopeUpdated={setIsTelescopeUpdated}
           setIsBackgroundSyncTelescope={setIsBackgroundSyncTelescope}
           setIsSourceSyncTelescope={setIsSourceSyncTelescope}
           numPhotometrySubmit={numPhotometrySubmit}
+          numUVMOSSubmit = {numUVMOSSubmit}
+          numTransitSubmit = {numTransitSubmit}
           isTelescopeSyncPhotometry={isTelescopeSyncPhotometry}
           setIsTelescopeSyncPhotometry={setIsTelescopeSyncPhotometry}
+          isTelescopeSyncUVMOS={isTelescopeSyncUVMOS}
+          setIsTelescopeSyncUVMOS={setIsTelescopeSyncUVMOS}
+          isTelescopeSyncTransit={isTelescopeSyncTransit}
+          setIsTelescopeSyncTransit={setIsTelescopeSyncTransit}
           // incrNumPhotometrySubmit={incrNumPhotometrySubmit}
           isChanged={isChanged}
         />
       </TabPanel>
       <TabPanel value={value} index={1}>
         <BackgroundForm
-          setIsSavedAndUnsubmitted={setIsSavedAndUnsubmitted}
+          setIsPhotometrySavedAndUnsubmitted={setIsPhotometrySavedAndUnsubmitted}
+          setIsUVMOSSavedAndUnsubmitted={setIsUVMOSSavedAndUnsubmitted}
+          setIsTransitSavedAndUnsubmitted={setIsTransitSavedAndUnsubmitted}
           setIsChanged={setIsChanged}
           prevFormValues={prevFormValues}
           setPrevFormValues={setPrevFormValues}
           isError={isError}
           setIsError={setIsError}
+          isSent={isSent}
+          setIsSent={setIsSent}
           errorMessage={errorMessage}
           setErrorMessage={setErrorMessage}
           isBackgroundSyncTelescope={isBackgroundSyncTelescope}
           setIsBackgroundSyncTelescope={setIsBackgroundSyncTelescope}
           numPhotometrySubmit={numPhotometrySubmit}
+          numUVMOSSubmit={numUVMOSSubmit}
+          numTransitSubmit={numTransitSubmit}
           isBackgroundSyncPhotometry={isBackgroundSyncPhotometry}
           setIsBackgroundSyncPhotometry={setIsBackgroundSyncPhotometry}
+          isBackgroundSyncUVMOS={isBackgroundSyncUVMOS}
+          setIsBackgroundSyncUVMOS={setIsBackgroundSyncUVMOS}
+          isBackgroundSyncTransit={isBackgroundSyncTransit}
+          setIsBackgroundSyncTransit={setIsBackgroundSyncTransit}
         />
       </TabPanel>
       <TabPanel value={value} index={2}>
         <SourceForm
-          setIsSavedAndUnsubmitted={setIsSavedAndUnsubmitted}
+          setIsPhotometrySavedAndUnsubmitted={setIsPhotometrySavedAndUnsubmitted}
+          setIsUVMOSSavedAndUnsubmitted={setIsUVMOSSavedAndUnsubmitted}
+          setIsTransitSavedAndUnsubmitted={setIsTransitSavedAndUnsubmitted}
           setIsChanged={setIsChanged}
           prevFormValues={prevFormValues}
           setPrevFormValues={setPrevFormValues}
           isError={isError}
           setIsError={setIsError}
+          isSent={isSent}
+          setIsSent={setIsSent}
           errorMessage={errorMessage}
           setErrorMessage={setErrorMessage}
           isSourceSyncTelescope={isSourceSyncTelescope}
           setIsSourceSyncTelescope={setIsSourceSyncTelescope}
           incrNumTelescopeOrSourceSaved={incrNumTelescopeOrSourceSaved}
           numPhotometrySubmit={numPhotometrySubmit}
+          numUVMOSSubmit={numUVMOSSubmit}
+          numTransitSubmit={numTransitSubmit}
           isSourceSyncPhotometry={isSourceSyncPhotometry}
           setIsSourceSyncPhotometry={setIsSourceSyncPhotometry}
+          isSourceSyncUVMOS={isSourceSyncUVMOS}
+          setIsSourceSyncUVMOS={setIsSourceSyncUVMOS}
+          isSourceSyncTransit={isSourceSyncTransit}
+          setIsSourceSyncTransit={setIsSourceSyncTransit}
         />
       </TabPanel>
       <TabPanel value={value} index={3}>
         <PhotometryForm
-          isSavedAndUnsubmitted={isSavedAndUnsubmitted}
-          setIsSavedAndUnsubmitted={setIsSavedAndUnsubmitted}
+          isPhotometrySavedAndUnsubmitted={isPhotometrySavedAndUnsubmitted}
+          setIsPhotometrySavedAndUnsubmitted={setIsPhotometrySavedAndUnsubmitted}
           setIsChanged={setIsChanged}
           prevFormValues={prevFormValues}
           setPrevFormValues={setPrevFormValues}
           isError={isError}
           setIsError={setIsError}
+          isSent={isSent}
+          setIsSent={setIsSent}
           errorMessage={errorMessage}
           setErrorMessage={setErrorMessage}
           numPhotometrySubmit={numPhotometrySubmit}
@@ -306,9 +386,46 @@ const TabForms: React.FC<TabFormsProps> = ({
           setIsSourceSyncPhotometry={setIsSourceSyncPhotometry}
         />
       </TabPanel>
-      {/* <TabPanel value={value} index={4}>
-        Spectroscopy capability is not implemented yet.
-      </TabPanel> */}
+      <TabPanel value={value} index={4}>
+      <UVMOSForm
+          isUVMOSSavedAndUnsubmitted={isUVMOSSavedAndUnsubmitted}
+          setIsUVMOSSavedAndUnsubmitted={setIsUVMOSSavedAndUnsubmitted}
+          setIsChanged={setIsChanged}
+          prevFormValues={prevFormValues}
+          setPrevFormValues={setPrevFormValues}
+          isError={isError}
+          setIsError={setIsError}
+          isSent={isSent}
+          setIsSent={setIsSent}
+          errorMessage={errorMessage}
+          setErrorMessage={setErrorMessage}
+          incrNumUVMOSSubmit={incrNumUVMOSSubmit}
+          numUVMOSSubmit={numUVMOSSubmit}
+          setIsTelescopeSyncUVMOS={setIsTelescopeSyncUVMOS}
+          setIsBackgroundSyncUVMOS={setIsBackgroundSyncUVMOS}
+          setIsSourceSyncUVMOS={setIsSourceSyncUVMOS}
+        />
+      </TabPanel>
+      <TabPanel value={value} index={5}>
+      <TransitForm
+          isTransitSavedAndUnsubmitted={isTransitSavedAndUnsubmitted}
+          setIsTransitSavedAndUnsubmitted={setIsTransitSavedAndUnsubmitted}
+          setIsChanged={setIsChanged}
+          prevFormValues={prevFormValues}
+          setPrevFormValues={setPrevFormValues}
+          isError={isError}
+          setIsError={setIsError}
+          isSent={isSent}
+          setIsSent={setIsSent}
+          errorMessage={errorMessage}
+          setErrorMessage={setErrorMessage}
+          incrNumTransitSubmit={incrNumTransitSubmit}
+          numTransitSubmit={numTransitSubmit}
+          setIsTelescopeSyncTransit={setIsTelescopeSyncTransit}
+          setIsBackgroundSyncTransit={setIsBackgroundSyncTransit}
+          setIsSourceSyncTransit={setIsSourceSyncTransit}
+        />
+      </TabPanel>
     </Box>
   );
 };

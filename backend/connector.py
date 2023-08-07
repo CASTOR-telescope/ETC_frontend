@@ -79,6 +79,8 @@ from telescope_route import put_telescope_json
 from background_route import put_background_json
 from source_route import put_source_json
 from photometry_route import put_photometry_json
+from uvmos_route import put_uvmos_json
+from transit_route import put_transit_json
 
 if __name__ != "__main__":
     logger.debug("Assuming app is configured for gunicorn in Docker container.")
@@ -136,8 +138,19 @@ def redirect(path):
         logger.info(request.method)
         if request.method != "PUT":
             abort(405)
-
         return put_photometry_json()
+    
+    elif re.search(r"\buvmos\b", path) is not None:  # match whole word
+        logger.info(request.method)
+        if request.method != "PUT":
+            abort(405)
+        return put_uvmos_json()
+    
+    elif re.search(r"\btransit\b", path) is not None:  # match whole word
+        logger.info(request.method)
+        if request.method != "PUT":
+            abort(405)
+        return put_transit_json()
 
     elif re.search(r"\bmanifest.json\b", path) is not None:  # match whole word
         logger.info("Serving manifest.json")

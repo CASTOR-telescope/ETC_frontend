@@ -139,11 +139,8 @@ const SourceWeightsPlot: React.FC<SourceWeightsPlotProps> = ({ numPhotometrySubm
           },
         ]}
         layout={{
-          // title: {
-          //   text: "Effective No. of Pixels: " + Math.round(100 * effNpix) / 100,
-          //   font: { size: 18 },
-          // },
-          font: { color: "white", size: 14 },
+          title: "(Relative Source Flux in Aperture)",
+          font: { color: "white", size: 10 },
           autosize: true,
           paper_bgcolor: themeBackgroundColor,
           plot_bgcolor: themeBackgroundColor,
@@ -162,7 +159,7 @@ const SourceWeightsPlot: React.FC<SourceWeightsPlotProps> = ({ numPhotometrySubm
             range: [extent[2], extent[3]],
             scaleanchor: "x",
           },
-          margin: { t: 40 }, // if no title
+          margin: { t: 50 }, // if no title
         }}
         useResizeHandler={true}
         config={{

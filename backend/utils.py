@@ -78,7 +78,7 @@ skaha_sessionid = os.getenv("skaha_sessionid")
 if skaha_sessionid is None:
     # --- Python ---
     app = Flask(__name__)
-    cors = CORS()
+    cors = CORS(app=app)
     #
     # Configure logger
     #
@@ -90,7 +90,7 @@ if skaha_sessionid is None:
         "%(asctime)s [%(name)-12s] %(levelname)-8s %(message)s"
     )
     log_handler.setFormatter(log_formatter)
-    log_handler.setLevel(logging.DEBUG)
+    log_handler.setLevel(logging.DEBUG) # this should allow all error messages to be displayed
     app.logger.addHandler(log_handler)
     # Use this logger for manual addition of log messages
     logger = logging.getLogger("werkzeug")
@@ -166,6 +166,8 @@ class DataHolder:
     BackgroundObj = None
     SourceObj = None
     PhotometryObj = None
+    SpectroscopyObj = None
+    TransitObj = None
 
     # To determine if source weights should use log scaling
     use_log_source_weights = False
