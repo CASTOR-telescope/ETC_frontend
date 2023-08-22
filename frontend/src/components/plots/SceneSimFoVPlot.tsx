@@ -76,6 +76,8 @@ const SceneSimFoVPlot: React.FC<SceneSimFoVPlotProps> = ({
     const data = [];
     const annotations = [];
 
+    const pako = require('pako')
+
     const [plotData, setPlotData] = useState<{ccd_dim: number[], gaia: {
         ra: number[],
         dec: number[],
@@ -97,7 +99,7 @@ const SceneSimFoVPlot: React.FC<SceneSimFoVPlotProps> = ({
             x: [],
             y: [],
             gs_i: [],
-            _f: '[]',
+            _f: ''
         },
         xout: 0,
         yout: 0,
@@ -108,9 +110,46 @@ const SceneSimFoVPlot: React.FC<SceneSimFoVPlotProps> = ({
     useEffect(() => {
         localForage.getItem("transitParams").then((res: any) => {
             setPlotData(JSON.parse(res))} )
-    }, [numTransitSubmit]) 
+    }, [numTransitSubmit])
+    
     if (plotData !== null){
         
+        let _f = plotData.gaia._f
+
+        // compressed json response is decompressed in the frontend
+        // https://stackoverflow.com/questions/72947222/ 
+        if (_f){
+            let compressedData = Uint8Array.from(window.atob(_f), (c) => c.charCodeAt(0));
+            let decompressedData = pako.inflate(compressedData, {to: "string"});
+            let jsonObject = JSON.parse(decompressedData)
+
+            // Adding scene
+
+            let ccd_dim = plotData.ccd_dim
+            let xout = plotData.xout
+            let yout = plotData.yout
+
+            let extent = [ Math.floor(ccd_dim[0]/2) - xout/2, Math.floor(ccd_dim[0]/2) + xout/2, Math.floor(ccd_dim[1]/2) - yout/2 - 2, Math.floor(ccd_dim[1]/2) + yout/2 - 2 ]
+
+            let plotLengths = jsonObject.length === 0 ? [1,1] : [jsonObject.length, jsonObject[0].length];
+            let px_scale_x = (extent[1] - extent[0]) / plotLengths[1];
+            let px_scale_y = (extent[3] - extent[2]) / plotLengths[0];
+
+            data.push(
+                 {
+                z: jsonObject.map((row: number[]) =>
+                row.map((value: number) => Math.log10(value))),
+                type: "heatmap",
+                x0: extent[0],
+                dx: px_scale_x,
+                y0: extent[2],
+                dy: px_scale_y,
+                colorscale: 'Cividis',
+                showscale: false,
+            }
+            )
+        }
+
         let ccd_dim = plotData.ccd_dim
         let xout = plotData.xout
         let yout = plotData.yout
@@ -144,71 +183,7 @@ const SceneSimFoVPlot: React.FC<SceneSimFoVPlotProps> = ({
                     }
                 }
             })
-        
-        // Adding scene
-        let extent = [ Math.floor(ccd_dim[0]/2) - xout/2, Math.floor(ccd_dim[0]/2) + xout/2, Math.floor(ccd_dim[1]/2) - yout/2 - 2, Math.floor(ccd_dim[1]/2) + yout/2 - 2 ]
-        
-        let _f = JSON.parse(plotData.gaia._f)
-        
-        // let result_g_ra = JSON.parse(plotData['result_g_ra'])
-        // let result_g_dec = JSON.parse(plotData['result_g_dec'])
-        
-        let plotLengths = _f.length === 0 ? [1,1] : [_f.length, _f[0].length];
-        let px_scale_x = (extent[1] - extent[0]) / plotLengths[1];
-        let px_scale_y = (extent[3] - extent[2]) / plotLengths[0];
-        
-        // Grid lines and annotations
-        
-        // // Annotations
-        // let rotation_array = JSON.parse(plotData['scene_sim']['rotation_array']).flat()
-        // let grid_x_array = JSON.parse(plotData['scene_sim']['grid_x_array']).flat()
-        // let grid_y_array = JSON.parse(plotData['scene_sim']['grid_y_array']).flat()
-        // let coord_str_array = JSON.parse(plotData['scene_sim']['coord_str_array']).flat()
 
-        // for (var i = 0; i < result_g_ra.length; i +=2){
-            //     data.push({
-                //         x: result_g_ra[i],
-                //         y: result_g_ra[i+1],
-                //         mode: 'lines',
-                //         line: {
-        //             color: 'rgb(0,0,0)',
-        //             width: 1
-        //         },
-        //         opacity: 0.4
-        //     })
-        // }
-
-        // for (var i = 0; i < result_g_dec.length; i += 2){
-        //     data.push({
-        //         x: result_g_dec[i],
-        //         y: result_g_dec[i+1],
-        //         mode: 'lines',
-        //         line: {
-        //             color: 'rgb(0,0,0)',
-        //             width: 1
-        //         },
-        //         opacity: 0.4
-        //     })
-        // }
-
-        // for (var i = 0; i < grid_x_array.length; i ++){
-        //     annotations.push({
-        //         x: grid_x_array[i] + 0.007*(xlim[1] - xlim[0]),
-        //         y: grid_y_array[i] + 0.007*(ylim[1] - ylim[1]),
-        //         ax: 27,
-        //         ay: -6,
-        //         xref: 'x',
-        //         yref: 'y',
-        //         text: coord_str_array[i],
-        //         showarrow: true,
-        //         arrowhead: 0,
-        //         textangle: rotation_array[i],
-        //         font: {
-        //             color: 'black',
-        //             size: 8
-        //         }
-        //     })
-        // }
 
         data.push(
             {
@@ -219,7 +194,7 @@ const SceneSimFoVPlot: React.FC<SceneSimFoVPlotProps> = ({
                 marker: {
                     color: 'rgb(255,0,0)',
                     size: 10,
-                    symbol: "circle-open",
+                    symbol: "circle-open-dot",
                     line: {
                         width: 1,
                     }
@@ -232,21 +207,6 @@ const SceneSimFoVPlot: React.FC<SceneSimFoVPlotProps> = ({
                     color: 'rgb(255,0,0)'
                 }
             },
-            {
-                z: _f.map((row: number[]) =>
-                row.map((value: number) => Math.log10(value))),
-                type: "heatmap",
-                x0: extent[0],
-                dx: px_scale_x,
-                y0: extent[2],
-                dy: px_scale_y,
-                colorscale: 'Cividis',
-                showscale: false,
-                // colorbar: {
-                //     tickvals: [0,1,2,3,4,5,6,7,8,9],
-                //     ticks: 'outside'
-                // }
-            }
             )
 
         return (
@@ -275,12 +235,12 @@ const SceneSimFoVPlot: React.FC<SceneSimFoVPlotProps> = ({
                 mirror: 'ticks',
                 ticklen: 6,
                 showline: true,
-                tickvals: [0,250,500,750,1000],
+                tickvals: [0,500,1000,1500,2000],
                 minor: {
                     ticks: 'inside',
                     ticklen: 3,
                     tickcolor: 'black',
-                    dtick: 50,
+                    dtick: 100,
                   }
             },
             yaxis : {
@@ -335,7 +295,7 @@ const SceneSimFoVPlot: React.FC<SceneSimFoVPlotProps> = ({
                     showgrid: false,
                     title: "[pxl]",
                     autorange: true,
-                    range: [-200,1224],
+                    range: [-200,2224],
                     ticks: 'inside',
                     mirror: 'ticks',
                     showline: true,
@@ -344,7 +304,7 @@ const SceneSimFoVPlot: React.FC<SceneSimFoVPlotProps> = ({
                 yaxis: {
                     showgrid: false,
                     title: "[pxl]",
-                    range: [-200,1224],
+                    range: [-200,2224],
                     visible: true,
                     ticks: 'inside',
                     mirror: 'ticks',

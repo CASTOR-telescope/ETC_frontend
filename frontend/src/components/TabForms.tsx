@@ -77,6 +77,7 @@ import SourceForm from "./forms/SourceForm";
 import TelescopeForm from "./forms/TelescopeForm";
 import UVMOSForm from "./forms/UVMOSForm"
 import TransitForm from "./forms/TransitForm";
+import GrismForm from "./forms/GrismForm"
 import logo from "./logo-fullsize.png";
 
 interface TabPanelProps {
@@ -130,6 +131,8 @@ type TabFormsProps = {
   numUVMOSSubmit: number,
   incrNumTransitSubmit: () => void,
   numTransitSubmit: number,
+  incrNumGrismSubmit: () => void,
+  numGrismSubmit: number,
 };
 
 /* Functional components */
@@ -143,6 +146,8 @@ const TabForms: React.FC<TabFormsProps> = ({
   numUVMOSSubmit,
   incrNumTransitSubmit,
   numTransitSubmit,
+  incrNumGrismSubmit,
+  numGrismSubmit,
 }) => {
 
   // For tracking errors on save/submit (i.e., network/request errors)
@@ -163,6 +168,10 @@ const TabForms: React.FC<TabFormsProps> = ({
   // For tracking successful form submission between components
   // If any tab is saved but not submitted, an info message will appear on the Transit tab.
   const [isTransitSavedAndUnsubmitted, setIsTransitSavedAndUnsubmitted] = React.useState(false);
+
+  // For tracking successful form submission between components
+  // If any tab is saved but not submitted, an info message will appear on the Grism tab.
+  const [isGrismSavedAndUnsubmitted, setIsGrismSavedAndUnsubmitted] = React.useState(false);
 
   // For tracking changed & unsaved forms
   const [isChanged, setIsChanged] = React.useState(false);
@@ -190,6 +199,12 @@ const TabForms: React.FC<TabFormsProps> = ({
   const [isBackgroundSyncTransit, setIsBackgroundSyncTransit] =
       React.useState(true);
   const [isSourceSyncTransit, setIsSourceSyncTransit] = React.useState(true);
+
+    // For tracking Telescope, Background, & Source dependencies on Grism
+  const [isTelescopeSyncGrism, setIsTelescopeSyncGrism] = React.useState(true);
+  const [isBackgroundSyncGrism, setIsBackgroundSyncGrism] =
+      React.useState(true);
+  const [isSourceSyncGrism, setIsSourceSyncGrism] = React.useState(true);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     // if (newValue !== value && !isSavedAndUnsubmitted) {
@@ -271,7 +286,14 @@ const TabForms: React.FC<TabFormsProps> = ({
               !isBackgroundSyncTelescope ||
               !isSourceSyncTelescope
             }/>
-          <Tab label="Transit" {...TabProps(5)} 
+          <Tab label="Grism" {...TabProps(5)} 
+          // <https://stackoverflow.com/questions/46915002>
+          disabled={
+              sessionStorage.getItem("telescopeParams") === null ||
+              !isBackgroundSyncTelescope ||
+              !isSourceSyncTelescope
+            }/>
+          <Tab label="Transit" {...TabProps(6)} 
           // <https://stackoverflow.com/questions/46915002>
           disabled={
               sessionStorage.getItem("telescopeParams") === null ||
@@ -285,6 +307,7 @@ const TabForms: React.FC<TabFormsProps> = ({
           setIsPhotometrySavedAndUnsubmitted={setIsPhotometrySavedAndUnsubmitted}
           setIsUVMOSSavedAndUnsubmitted={setIsUVMOSSavedAndUnsubmitted}
           setIsTransitSavedAndUnsubmitted={setIsTransitSavedAndUnsubmitted}
+          setIsGrismSavedAndUnsubmitted={setIsGrismSavedAndUnsubmitted}
           setIsChanged={setIsChanged}
           prevFormValues={prevFormValues}
           setPrevFormValues={setPrevFormValues}
@@ -301,12 +324,15 @@ const TabForms: React.FC<TabFormsProps> = ({
           numPhotometrySubmit={numPhotometrySubmit}
           numUVMOSSubmit = {numUVMOSSubmit}
           numTransitSubmit = {numTransitSubmit}
+          numGrismSubmit = {numGrismSubmit}
           isTelescopeSyncPhotometry={isTelescopeSyncPhotometry}
           setIsTelescopeSyncPhotometry={setIsTelescopeSyncPhotometry}
           isTelescopeSyncUVMOS={isTelescopeSyncUVMOS}
           setIsTelescopeSyncUVMOS={setIsTelescopeSyncUVMOS}
           isTelescopeSyncTransit={isTelescopeSyncTransit}
           setIsTelescopeSyncTransit={setIsTelescopeSyncTransit}
+          isTelescopeSyncGrism={isTelescopeSyncGrism}
+          setIsTelescopeSyncGrism={setIsTelescopeSyncGrism}
           // incrNumPhotometrySubmit={incrNumPhotometrySubmit}
           isChanged={isChanged}
         />
@@ -316,6 +342,7 @@ const TabForms: React.FC<TabFormsProps> = ({
           setIsPhotometrySavedAndUnsubmitted={setIsPhotometrySavedAndUnsubmitted}
           setIsUVMOSSavedAndUnsubmitted={setIsUVMOSSavedAndUnsubmitted}
           setIsTransitSavedAndUnsubmitted={setIsTransitSavedAndUnsubmitted}
+          setIsGrismSavedAndUnsubmitted={setIsGrismSavedAndUnsubmitted}
           setIsChanged={setIsChanged}
           prevFormValues={prevFormValues}
           setPrevFormValues={setPrevFormValues}
@@ -330,12 +357,15 @@ const TabForms: React.FC<TabFormsProps> = ({
           numPhotometrySubmit={numPhotometrySubmit}
           numUVMOSSubmit={numUVMOSSubmit}
           numTransitSubmit={numTransitSubmit}
+          numGrismSubmit={numGrismSubmit}
           isBackgroundSyncPhotometry={isBackgroundSyncPhotometry}
           setIsBackgroundSyncPhotometry={setIsBackgroundSyncPhotometry}
           isBackgroundSyncUVMOS={isBackgroundSyncUVMOS}
           setIsBackgroundSyncUVMOS={setIsBackgroundSyncUVMOS}
           isBackgroundSyncTransit={isBackgroundSyncTransit}
           setIsBackgroundSyncTransit={setIsBackgroundSyncTransit}
+          isBackgroundSyncGrism={isBackgroundSyncGrism}
+          setIsBackgroundSyncGrism={setIsBackgroundSyncGrism}
         />
       </TabPanel>
       <TabPanel value={value} index={2}>
@@ -343,6 +373,7 @@ const TabForms: React.FC<TabFormsProps> = ({
           setIsPhotometrySavedAndUnsubmitted={setIsPhotometrySavedAndUnsubmitted}
           setIsUVMOSSavedAndUnsubmitted={setIsUVMOSSavedAndUnsubmitted}
           setIsTransitSavedAndUnsubmitted={setIsTransitSavedAndUnsubmitted}
+          setIsGrismSavedAndUnsubmitted={setIsGrismSavedAndUnsubmitted}
           setIsChanged={setIsChanged}
           prevFormValues={prevFormValues}
           setPrevFormValues={setPrevFormValues}
@@ -358,12 +389,15 @@ const TabForms: React.FC<TabFormsProps> = ({
           numPhotometrySubmit={numPhotometrySubmit}
           numUVMOSSubmit={numUVMOSSubmit}
           numTransitSubmit={numTransitSubmit}
+          numGrismSubmit={numGrismSubmit}
           isSourceSyncPhotometry={isSourceSyncPhotometry}
           setIsSourceSyncPhotometry={setIsSourceSyncPhotometry}
           isSourceSyncUVMOS={isSourceSyncUVMOS}
           setIsSourceSyncUVMOS={setIsSourceSyncUVMOS}
           isSourceSyncTransit={isSourceSyncTransit}
           setIsSourceSyncTransit={setIsSourceSyncTransit}
+          isSourceSyncGrism={isSourceSyncGrism}
+          setIsSourceSyncGrism={setIsSourceSyncGrism}
         />
       </TabPanel>
       <TabPanel value={value} index={3}>
@@ -407,6 +441,26 @@ const TabForms: React.FC<TabFormsProps> = ({
         />
       </TabPanel>
       <TabPanel value={value} index={5}>
+      <GrismForm
+          isGrismSavedAndUnsubmitted={isGrismSavedAndUnsubmitted}
+          setIsGrismSavedAndUnsubmitted={setIsGrismSavedAndUnsubmitted}
+          setIsChanged={setIsChanged}
+          prevFormValues={prevFormValues}
+          setPrevFormValues={setPrevFormValues}
+          isError={isError}
+          setIsError={setIsError}
+          isSent={isSent}
+          setIsSent={setIsSent}
+          errorMessage={errorMessage}
+          setErrorMessage={setErrorMessage}
+          incrNumGrismSubmit={incrNumGrismSubmit}
+          numGrismSubmit={numGrismSubmit}
+          setIsTelescopeSyncGrism={setIsTelescopeSyncGrism}
+          setIsBackgroundSyncGrism={setIsBackgroundSyncGrism}
+          setIsSourceSyncGrism={setIsSourceSyncGrism}
+        />
+      </TabPanel>
+      <TabPanel value={value} index={6}>
       <TransitForm
           isTransitSavedAndUnsubmitted={isTransitSavedAndUnsubmitted}
           setIsTransitSavedAndUnsubmitted={setIsTransitSavedAndUnsubmitted}

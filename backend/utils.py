@@ -168,6 +168,7 @@ class DataHolder:
     PhotometryObj = None
     SpectroscopyObj = None
     TransitObj = None
+    GrismObj = None
 
     # To determine if source weights should use log scaling
     use_log_source_weights = False

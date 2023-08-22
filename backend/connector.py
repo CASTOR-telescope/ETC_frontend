@@ -81,6 +81,7 @@ from source_route import put_source_json
 from photometry_route import put_photometry_json
 from uvmos_route import put_uvmos_json
 from transit_route import put_transit_json
+from grism_route import put_grism_json
 
 if __name__ != "__main__":
     logger.debug("Assuming app is configured for gunicorn in Docker container.")
@@ -145,6 +146,12 @@ def redirect(path):
         if request.method != "PUT":
             abort(405)
         return put_uvmos_json()
+    
+    elif re.search(r"\bgrism\b", path) is not None:  # match whole word
+        logger.info(request.method)
+        if request.method != "PUT":
+            abort(405)
+        return put_grism_json()
     
     elif re.search(r"\btransit\b", path) is not None:  # match whole word
         logger.info(request.method)

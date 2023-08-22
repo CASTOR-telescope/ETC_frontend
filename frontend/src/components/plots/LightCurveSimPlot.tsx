@@ -163,7 +163,7 @@ const LightCurveSimPlot: React.FC<LightCurveSimPlotProps> = ({
         },
         yaxis: { 
           title: "Normalized Flux (ppt)",
-          range: [Math.min.apply(null,y_transit_model) - 0.1 ,Math.max.apply(null,y_transit_model) + 0.2],
+          autorange: true,
           zeroline: false,
           ticks: 'inside',
           mirror: 'ticks',
@@ -181,7 +181,7 @@ const LightCurveSimPlot: React.FC<LightCurveSimPlotProps> = ({
         legend: {
           x: 0.01,
           xanchor: "left",
-          y: 1.1,
+          y: 1.2,
           font: {
             size: 10
           }

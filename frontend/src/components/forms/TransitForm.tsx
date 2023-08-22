@@ -292,7 +292,7 @@ const TransitForm: React.FC<TransitFormProps> = ({
                                     marginBottom: 2,
                                     textAlign: "center",
                                 }} >
-                                    Right ascension and declination of the target with maximum Gaia G magnitude for Gaia catalog query.
+                                    Right ascension and declination of the target with threshold Gaia G magnitude for querying the Gaia catalog.
                                 </FormHelperText>
                                 <FormGroup>
                                     <CommonTextField
@@ -310,7 +310,7 @@ const TransitForm: React.FC<TransitFormProps> = ({
                                     <CommonTextField
                                     name="targetParameters.srch_Gmax"
                                     placeholder={""}
-                                    label="Maximum Gaia G magnitude"
+                                    label="Threshold Gaia G magnitude"
                                     disabled={true}
                                     />
                                 </FormGroup>
@@ -478,7 +478,7 @@ const TransitForm: React.FC<TransitFormProps> = ({
                             <br />
                             <br />
                             <SubmitButton isSubmitting={isSubmitting} isValid={isValid} />
-                            {isSubmitting && <h2>Calculating...</h2>}
+                            {isSubmitting && <h2>Approximate calculation time ~ 15 seconds</h2>}
                             <br />
                             <br />
                             <AlertError

@@ -1545,21 +1545,26 @@ type SourceFormProps = {
   numPhotometrySubmit: number;
   numUVMOSSubmit: number;
   numTransitSubmit: number;
+  numGrismSubmit: number;
   isSourceSyncPhotometry: boolean;
   isSourceSyncUVMOS: boolean;
   isSourceSyncTransit: boolean;
+  isSourceSyncGrism: boolean;
   setIsSourceSyncPhotometry: (value: boolean) => void;
   setIsSourceSyncUVMOS: (value: boolean) => void;
   setIsSourceSyncTransit: (value: boolean) => void;
+  setIsSourceSyncGrism: (value: boolean) => void;
   setIsPhotometrySavedAndUnsubmitted: (value: boolean) => void;
   setIsUVMOSSavedAndUnsubmitted: (value: boolean) => void;
   setIsTransitSavedAndUnsubmitted: (value: boolean) => void;
+  setIsGrismSavedAndUnsubmitted: (value: boolean) => void;
 } & CommonFormProps;
 
 const SourceForm: React.FC<SourceFormProps> = ({
   setIsPhotometrySavedAndUnsubmitted,
   setIsUVMOSSavedAndUnsubmitted,
   setIsTransitSavedAndUnsubmitted,
+  setIsGrismSavedAndUnsubmitted,
   setIsChanged,
   prevFormValues,
   setPrevFormValues,
@@ -1575,12 +1580,15 @@ const SourceForm: React.FC<SourceFormProps> = ({
   numPhotometrySubmit,
   numUVMOSSubmit,
   numTransitSubmit,
+  numGrismSubmit,
   isSourceSyncPhotometry,
   setIsSourceSyncPhotometry,
   isSourceSyncUVMOS,
   setIsSourceSyncUVMOS,
   isSourceSyncTransit,
   setIsSourceSyncTransit,
+  isSourceSyncGrism,
+  setIsSourceSyncGrism,
 }) => {
   // Save user form inputs between tab switches
   const FORM_SESSION = "sourceForm"; // key for sessionStorage (user inputs)
@@ -1706,6 +1714,11 @@ const SourceForm: React.FC<SourceFormProps> = ({
         isFormSync:isSourceSyncTransit,
         numSubmit:numTransitSubmit
       },
+      {
+        name: 'Grism',
+        isFormSync:isSourceSyncGrism,
+        numSubmit:numGrismSubmit
+      },
       ]}
       />
       <Formik
@@ -1739,6 +1752,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
                 setIsPhotometrySavedAndUnsubmitted(true);
                 setIsUVMOSSavedAndUnsubmitted(true);
                 setIsTransitSavedAndUnsubmitted(true);
+                setIsGrismSavedAndUnsubmitted(true);
                 setPrevFormValues(data);
                 setIsChanged(false);
                 sessionStorage.setItem(FORM_SESSION, JSON.stringify(data));
@@ -1752,6 +1766,9 @@ const SourceForm: React.FC<SourceFormProps> = ({
                 }
                 if (sessionStorage.getItem("transitForm") !== null) {
                   setIsSourceSyncTransit(false);
+                }
+                if (sessionStorage.getItem("grismForm") !== null) {
+                  setIsSourceSyncGrism(false);
                 }
               })
               .catch((error) => {

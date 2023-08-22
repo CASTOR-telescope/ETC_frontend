@@ -142,6 +142,7 @@ type TelescopeFormProps = {
   setIsPhotometrySavedAndUnsubmitted: (value: boolean) => void;
   setIsUVMOSSavedAndUnsubmitted: (value: boolean) => void;
   setIsTransitSavedAndUnsubmitted: (value: boolean) => void;
+  setIsGrismSavedAndUnsubmitted: (value: boolean) => void;
   incrNumTelescopeOrSourceSaved: () => void;
   // setIsTelescopeUpdated: (value: boolean) => void;
   setIsBackgroundSyncTelescope: (value: boolean) => void;
@@ -149,12 +150,15 @@ type TelescopeFormProps = {
   numPhotometrySubmit: number;
   numUVMOSSubmit: number;
   numTransitSubmit: number;
+  numGrismSubmit: number;
   isTelescopeSyncPhotometry: boolean;
   setIsTelescopeSyncPhotometry: (value: boolean) => void;
   isTelescopeSyncUVMOS: boolean;
   setIsTelescopeSyncUVMOS: (value: boolean) => void;
   isTelescopeSyncTransit: boolean;
   setIsTelescopeSyncTransit: (value: boolean) => void;
+  isTelescopeSyncGrism: boolean;
+  setIsTelescopeSyncGrism: (value: boolean) => void;
   // incrNumPhotometrySubmit: () => void;
   isChanged: boolean;
 } & CommonFormProps;
@@ -167,6 +171,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
   setIsPhotometrySavedAndUnsubmitted,
   setIsUVMOSSavedAndUnsubmitted,
   setIsTransitSavedAndUnsubmitted,
+  setIsGrismSavedAndUnsubmitted,
   setIsChanged,
   prevFormValues,
   setPrevFormValues,
@@ -190,6 +195,9 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
   numTransitSubmit,
   isTelescopeSyncTransit,
   setIsTelescopeSyncTransit,
+  numGrismSubmit,
+  isTelescopeSyncGrism,
+  setIsTelescopeSyncGrism,
   // incrNumPhotometrySubmit,
   isChanged,
 }) => {
@@ -266,6 +274,11 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
         isFormSync:isTelescopeSyncTransit,
         numSubmit:numTransitSubmit
       },
+      {
+        name: 'Grism',
+        isFormSync:isTelescopeSyncGrism,
+        numSubmit:numGrismSubmit
+      },
       ]}
       />
       <Formik
@@ -286,6 +299,7 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                 setIsPhotometrySavedAndUnsubmitted(true);
                 setIsUVMOSSavedAndUnsubmitted(true);
                 setIsTransitSavedAndUnsubmitted(true);
+                setIsGrismSavedAndUnsubmitted(true);
                 setPrevFormValues(data);
                 setIsChanged(false);
                 sessionStorage.setItem(FORM_SESSION, JSON.stringify(data));
@@ -308,6 +322,9 @@ const TelescopeForm: React.FC<TelescopeFormProps> = ({
                 }
                 if (sessionStorage.getItem("transitForm") !== null) {
                   setIsTelescopeSyncTransit(false);
+                }
+                if (sessionStorage.getItem("grismForm") !== null) {
+                  setIsTelescopeSyncGrism(false);
                 }
 
                 // // Resubmit Photometry form to update images and calculations (doesn't

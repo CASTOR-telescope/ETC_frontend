@@ -75,6 +75,9 @@ import numpy as np
 
 from utils import DataHolder, app, bad_request, server_error, logger, log_traceback
 
+import zlib, json, base64
+
+
 @app.route("/transit", methods=["PUT"])
 def put_transit_json():
     """
@@ -135,7 +138,7 @@ def put_transit_json():
         #
 
         #
-        # 1. Specifying CASTOR bandpass
+        # 1. Specify CASTOR bandpass
         #
 
         TransitObj.specify_bandpass(passband_name=str(bandpass['bandpass_id']))
@@ -147,145 +150,26 @@ def put_transit_json():
         TransitObj.scene_sim()
 
         # From plot_fov function in transit.py
-        if ( ('gs_i' in DataHolder.SourceObj.gaia.keys()) == False ) & hasattr(TransitObj,'gs_criteria'):
+        if ( ('gs_i' in TransitObj.gaia.keys()) == False ) & hasattr(TransitObj,'gs_criteria'):
                     TransitObj.id_guide_stars()
 
-        _f = DataHolder.SourceObj.gaia['scene'] - np.min(DataHolder.SourceObj.gaia['scene']) + 1
+        _f = TransitObj.gaia['scene'] - np.min(TransitObj.gaia['scene']) + 1
 
-        _f = pd.DataFrame(_f).to_json(
-            orient="values"
-        )
+        _f = base64.b64encode(zlib.compress(bytes(json.dumps(_f.tolist()),"utf-8"))).decode("ascii")
 
+
+        # print('Initial size=',len(_f.encode("utf-8"))/(10**6),'Mb') #25.18 Mb in size!
+
+        # _size = base64.b64encode(zlib.compress(bytes(_f, "utf-8"))).decode("ascii")
+        # print('Compressed size=',len(_size.encode("utf-8"))/(10**6),'Mb') #10.36 Mb in size!
 
         xlim = int(DataHolder.TelescopeObj.ccd_dim[0]/2) + TransitObj.xout * 0.7 * np.array([-1.0,1.0])
-        ylim = int(DataHolder.TelescopeObj.ccd_dim[1]/2) + TransitObj.yout * 0.7 * np.array([-1.0,1.0])
-
-        # Grid lines were plotted according to the POET's fov, i.e., 1 deg. Since, CASTOR's FoV is 204.5 arcseconds, these grid lines aren't visible. To reproduce grid results, change the fov parameter to 3600 arcseconds, i.e., 1 deg. The corresponding grid lines plotting in the GUI has also been commented out for the same reason.
-
-        # The below commented lines are pasted from the plot_fov function in the transit.py file.
-
-        # grid_ra = np.linspace( np.floor(np.min(DataHolder.SourceObj.gaia['ra']) - 0.5), 
-        #                                             np.ceil(np.max(DataHolder.SourceObj.gaia['ra'] + 0.5)), 1000 )
-        # grid_dec = np.linspace( np.floor(np.min(DataHolder.SourceObj.gaia['dec']) - 1.), 
-        #                                 np.ceil(np.max(DataHolder.SourceObj.gaia['dec']) + 0.5), 1000 )
-
-        # ra_lim = [np.floor(grid_ra[0]), np.ceil(grid_ra[-1])]
-        # for del_ra in [0.5, 1.0, 5.0, 10.]:
-        #     if (ra_lim[1] - ra_lim[0])/del_ra < 10:
-        #         break
-
-        # dec_lim = [np.floor(grid_dec[0]), np.ceil(grid_dec[-1])]
-        # for del_dec in [0.5, 1.0, 5.0, 10.]:
-        #     if (dec_lim[1] - dec_lim[0])/del_dec < 10:
-        #         break
-
-        # ra_fact = 1.
-        # if (ra_lim[1] - ra_lim[0])/del_ra > 8:
-        #     ra_fact = 2.
-        # dec_fact = 1.
-        # if (dec_lim[1] - dec_lim[0])/del_dec > 8:
-        #     dec_fact = 2.
-
-        # # Extend RA grid
-        # ax_xy = np.array([ [xlim[0], ylim[0]], [xlim[1], ylim[0]], \
-        #                 [xlim[1], ylim[1]], [xlim[0], ylim[1]] ])
-        # ax_radec = DataHolder.SourceObj.gaia['wcs'].pixel_to_world(ax_xy[:,0],ax_xy[:,1])
-        # if np.floor(np.min(ax_radec.ra.value)) < (grid_ra[0] - del_ra):
-        #     grid_ra = np.hstack([ np.arange( np.floor(np.min(ax_radec.ra.value)), 
-        #                                         grid_ra[0], del_ra ), grid_ra ])
-        #     ra_lim[0] = grid_ra[0]
-        # if np.ceil(np.max(ax_radec.ra.value)) < (grid_ra[0] + del_ra):
-        #     grid_ra = np.hstack([ grid_ra, np.arange( grid_ra[-1], 
-        #                                         np.ceil(np.max(ax_radec.ra.value)), 
-        #                                             del_ra ) ])
-        #     ra_lim[1] = grid_ra[-1]
-
-        # if grid_ra[-1] < (ra_lim[1] + del_ra):
-        #     grid_ra = np.hstack([ grid_ra, np.arange(grid_ra[-1],ra_lim[1]+3*del_ra) ])
-        # if grid_dec[-1] < (dec_lim[1] + del_dec):
-        #     grid_dec = np.hstack([ grid_dec, np.arange(grid_dec[-1],dec_lim[1]+del_dec) ])
-
-        # array_g_ra = []
-
-        # for _g_ra in np.arange( ra_lim[0], ra_lim[1] + 2*del_ra, del_ra ):
-        #     grid_coord = SkyCoord(ra=_g_ra+np.zeros(len(grid_dec)), dec=grid_dec, 
-        #                     unit=(u.degree, u.degree), frame='icrs')
-        #     grid_x, grid_y = DataHolder.SourceObj.gaia['wcs'].world_to_pixel(grid_coord)
-        #     array_g_ra.append(grid_x)
-        #     array_g_ra.append(grid_y)
-        
-        # result_g_ra = np.vstack(array_g_ra)
-
-        # result_g_ra = pd.DataFrame(result_g_ra).to_json(
-        #     orient="values"
-        # )
-            
-        # array_g_dec = []
-
-        # for _g_dec in np.arange( dec_lim[0], dec_lim[1] + del_dec, del_dec ):
-        #     grid_coord = SkyCoord(ra=grid_ra, dec=_g_dec+np.zeros(len(grid_ra)), 
-        #                     unit=(u.degree, u.degree), frame='icrs')
-        #     grid_x, grid_y = DataHolder.SourceObj.gaia['wcs'].world_to_pixel(grid_coord)
-        #     array_g_dec.append(grid_x)
-        #     array_g_dec.append(grid_y)
-
-        # result_g_dec = np.vstack(array_g_dec)
-
-        # result_g_dec = pd.DataFrame(result_g_dec).to_json(
-        #     orient="values"
-        # )
-
-        # grid_x_array = []
-        # grid_y_array = []
-        # coord_str_array = []
-        # rotation_array = []
-
-        # for _g_ra in np.arange( ra_lim[0], ra_lim[1] + del_ra, ra_fact*del_ra ):
-        #     for _g_dec in np.arange( dec_lim[0], dec_lim[1] + del_dec, dec_fact*del_dec ):
-        #         grid_coord = SkyCoord(ra=_g_ra, dec=_g_dec, 
-        #                             unit=(u.degree, u.degree), frame='icrs')
-        #         grid_x, grid_y = DataHolder.SourceObj.gaia['wcs'].world_to_pixel(grid_coord)
-
-        #         if (grid_x > xlim[0]) & (grid_x < (xlim[1] - 0.1*(xlim[1] - xlim[0]))) \
-        #                 & (grid_y > (ylim[0] + 0.05*(ylim[1] - ylim[0]))) \
-        #                 & (grid_y < ylim[1]):
-        #             grid_coord = SkyCoord(ra=_g_ra+del_ra, dec=_g_dec, 
-        #                                 unit=(u.degree, u.degree), frame='icrs')
-        #             grid_x2, grid_y2 = DataHolder.SourceObj.gaia['wcs'].world_to_pixel(grid_coord)
-        #             coord_str = '('
-        #             if del_ra < 1:
-        #                 coord_str += '{:.1f}'.format(_g_ra) + ','
-        #             else:
-        #                 coord_str += '{:.0f}'.format(_g_ra) + ','
-
-        #             if del_dec < 1:
-        #                 coord_str += '{:.1f}'.format(_g_dec) + ')'
-        #             else:
-        #                 coord_str += '{:.0f}'.format(_g_dec) + ')'
-
-        #             rotation = (180./np.pi) * np.arctan( (grid_y2 - grid_y) / (grid_x2 - grid_x) ) 
-                    
-        #             rotation_array.append(rotation)
-        #             grid_x_array.append(grid_x)
-        #             grid_y_array.append(grid_y)
-        #             coord_str_array.append(str(coord_str))
-
-        # rotation_array = pd.DataFrame(rotation_array).to_json(
-        #     orient="values"
-        # )
-        # grid_x_array = pd.DataFrame(grid_x_array).to_json(
-        #     orient="values"
-        # )
-        # grid_y_array = pd.DataFrame(grid_y_array).to_json(
-        #     orient="values"
-        # )
-        # coord_str_array = pd.DataFrame(coord_str_array).to_json(
-        #     orient="values"
-        # )
+        # ylim = int(DataHolder.TelescopeObj.ccd_dim[1]/2) + TransitObj.yout * 0.7 * np.array([-1.0,1.0])
 
         #
         # 3. Stimulate light curve & inject a transit model
         #
+
         exptime = float(exposure_parameters['exptime']) * u.second
         nstack = int(exposure_parameters['nstack'])
         tstart = float(exposure_parameters['tstart']) * u.d
@@ -339,8 +223,8 @@ def put_transit_json():
                 "dec": list(DataHolder.SourceObj.gaia['dec']),
                 "x": list(DataHolder.SourceObj.gaia['x']),
                 "y": list(DataHolder.SourceObj.gaia['y']),
-                "gs_i": list(np.float64(DataHolder.SourceObj.gaia['gs_i'])),
-                "_f": _f,
+                "gs_i": list(np.float64(TransitObj.gaia['gs_i'])),
+                "_f": _f
             },
             # scene_sim = {
             #     "rotation_array": rotation_array,

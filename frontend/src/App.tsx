@@ -81,6 +81,8 @@ import SourcePixelWeightDetectorPlot from "components/plots/SourcePixelWeightDet
 import ShowSlitPlot from "components/plots/ShowSlitPlot";
 import SceneSimFoVPlot from "components/plots/SceneSimFoVPlot";
 import LightCurveSimPlot from "components/plots/LightCurveSimPlot";
+import Show1DSnrResolutionPlot from "components/plots/Show1DSnrResolutionPlot";
+import Show2DSnrResolutionPlot from "components/plots/Show2DSnrResolutionPlot"
 
 function App() {
   // Set Material UI theme
@@ -113,6 +115,13 @@ function App() {
   const [numTransitSubmit, setNumTransitSubmit] = useState(0);
   const incrNumTransitSubmit = () => {
     setNumTransitSubmit(numTransitSubmit + 1);
+  };
+
+    // To update image plots on each new Grism submission to track whether a
+  // Grism request has ever been submitted
+  const [numGrismSubmit, setNumGrismSubmit] = useState(0);
+  const incrNumGrismSubmit = () => {
+    setNumGrismSubmit(numGrismSubmit + 1);
   };
     // For tracking tabs
     const [value, setValue] = useState(0);
@@ -147,6 +156,8 @@ function App() {
                   numUVMOSSubmit={numUVMOSSubmit}
                   incrNumTransitSubmit={incrNumTransitSubmit}
                   numTransitSubmit={numTransitSubmit}
+                  incrNumGrismSubmit={incrNumGrismSubmit}
+                  numGrismSubmit={numGrismSubmit}
                 />
               </Allotment.Pane>
             </div>
@@ -208,6 +219,32 @@ function App() {
                 </div>
               </Allotment>
               </>
+              :
+              value === 5
+              ?
+                <>
+                <Allotment vertical defaultSizes={[50, 50]} minSize={0}>
+                  <Allotment.Pane>  
+                  <Show2DSnrResolutionPlot
+                numGrismSubmit={numGrismSubmit}
+                />
+                    </Allotment.Pane>
+                <div
+                style={{
+                  // Allow the user to scroll overflowed content
+                  width: "100%",
+                  height: "100%",
+                  overflow: "auto",
+                }}
+              >
+                    <Allotment.Pane>
+                <Show1DSnrResolutionPlot
+                numGrismSubmit={numGrismSubmit}
+                />
+                    </Allotment.Pane>
+                  </div>
+                </Allotment>
+                </>
               :
               <>
               <Allotment vertical defaultSizes={[50, 50]} minSize={0}>

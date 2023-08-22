@@ -509,23 +509,28 @@ type BackgroundFormProps = {
   setIsPhotometrySavedAndUnsubmitted: (value: boolean) => void;
   setIsUVMOSSavedAndUnsubmitted: (value: boolean) => void;
   setIsTransitSavedAndUnsubmitted: (value: boolean) => void;
+  setIsGrismSavedAndUnsubmitted: (value: boolean) => void;
   isBackgroundSyncTelescope: boolean;
   setIsBackgroundSyncTelescope: (value: boolean) => void;
   numPhotometrySubmit: number;
   numUVMOSSubmit: number;
   numTransitSubmit: number;
+  numGrismSubmit: number;
   isBackgroundSyncPhotometry: boolean;
   isBackgroundSyncUVMOS: boolean;
   isBackgroundSyncTransit: boolean;
+  isBackgroundSyncGrism: boolean;
   setIsBackgroundSyncPhotometry: (value: boolean) => void;
   setIsBackgroundSyncUVMOS: (value: boolean) => void;
   setIsBackgroundSyncTransit: (value: boolean) => void;
+  setIsBackgroundSyncGrism: (value: boolean) => void;
 } & CommonFormProps;
 
 const BackgroundForm: React.FC<BackgroundFormProps> = ({
   setIsPhotometrySavedAndUnsubmitted,
   setIsUVMOSSavedAndUnsubmitted,
   setIsTransitSavedAndUnsubmitted,
+  setIsGrismSavedAndUnsubmitted,
   setIsChanged,
   prevFormValues,
   setPrevFormValues,
@@ -540,12 +545,15 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
   numPhotometrySubmit,
   numUVMOSSubmit,
   numTransitSubmit,
+  numGrismSubmit,
   isBackgroundSyncPhotometry,
   setIsBackgroundSyncPhotometry,
   isBackgroundSyncUVMOS,
   setIsBackgroundSyncUVMOS,
   isBackgroundSyncTransit,
   setIsBackgroundSyncTransit,
+  isBackgroundSyncGrism,
+  setIsBackgroundSyncGrism,
 }) => {
   // Save user form inputs between tab switches
   const FORM_SESSION = "backgroundForm"; // key for sessionStorage (user inputs)
@@ -619,6 +627,11 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
         isFormSync:isBackgroundSyncTransit,
         numSubmit:numTransitSubmit
       },
+      {
+        name: 'Grism',
+        isFormSync:isBackgroundSyncGrism,
+        numSubmit:numGrismSubmit
+      },
       ]}
       />
       <Formik
@@ -640,6 +653,7 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
                 setIsPhotometrySavedAndUnsubmitted(true);
                 setIsUVMOSSavedAndUnsubmitted(true);
                 setIsTransitSavedAndUnsubmitted(true);
+                setIsGrismSavedAndUnsubmitted(true);
                 setPrevFormValues(data);
                 setIsChanged(false);
                 sessionStorage.setItem(FORM_SESSION, JSON.stringify(data));
@@ -652,6 +666,9 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
                 }
                 if (sessionStorage.getItem("transitForm") !== null) {
                   setIsBackgroundSyncTransit(false);
+                }
+                if (sessionStorage.getItem("grismForm") !== null) {
+                  setIsBackgroundSyncGrism(false);
                 }
               })
               .catch((error) => {

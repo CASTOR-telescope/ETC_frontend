@@ -1,5 +1,3 @@
-/*Javascript functions corresponding to predefined methods in Numpy python library*/
-
 /**
  *         GNU General Public License v3 (GNU GPLv3)
  *
@@ -62,111 +60,122 @@
  * <http://www.gnu.org/licenses/>.      <http://www.gnu.org/licenses/>.
  */
 
-export function linspace(startValue: number, stopValue: number, cardinality: number = 50) {
-    var arr = [];
-    var step = (stopValue - startValue) / (cardinality - 1)
-        for (var i = 0; i < cardinality; i++) {
-            arr.push(startValue + (step * i))
-        }
-    return arr
+import { themeBackgroundColor } from "../DarkModeTheme";
+import ResponsivePlot from "../ResponsivePlot";
+
+type Show2DSnrResolutionPlotProps = {
+    numGrismSubmit: number;
 }
 
-export function squareArr(arr: number[]) {
-    var newArray: any = [];
-    for (var i = 0; i < arr.length; i++) {
-        newArray.push(Math.pow(arr[i],2))
+const Show2DSnrResolutionPlot: React.FC<Show2DSnrResolutionPlotProps> = ({numGrismSubmit}) => {
+    if (sessionStorage.getItem("grismParams") !== null) {
+        let grismParams = JSON.parse(`${sessionStorage.getItem("grismParams")}`);
+
+        let grism2d = JSON.parse(grismParams["grism2d"])
+
+        return (
+            <ResponsivePlot
+            // React re-renders the plot when any state, prop, or parent component changes
+            divId = {`source-2D-SNR-resolution-plot-${numGrismSubmit}`}
+            data={[
+              {
+                z: grism2d,
+                type: "heatmap",
+                colorscale: "Viridis",
+                colorbar: {
+                  title:{
+                    text: "SNR",
+                    side: "right",
+                    font: {size: 14}
+                  }
+              }
+            },
+            ]}
+            layout={{
+                title: "(2D SNR per resolution)",
+                font: {color: "white", size: 14},
+                autosize: true,
+                paper_bgcolor: themeBackgroundColor,
+                plot_bgcolor: themeBackgroundColor,
+                xaxis: {
+                    showgrid: true,
+                    gridcolor: "grey",
+                    title: "Pixels (Dispersion direction)",
+                },
+                yaxis: {
+                    showgrid: true,
+                    gridcolor: "grey",
+                    title: "Pixels (Spatial direction)",
+                    rangemode: "tozero",
+                },
+                margin: {t: 60},
+                showlegend: true,
+            }}
+            useResizeHandler={true}
+            config={{
+                displaylogo: false,
+                toImageButtonOptions: {filename:
+                "grism_2d_SNR_per_resolution"
+                },
+                // Allow users to edit chart
+                showEditInChartStudio: true,
+                plotlyServerURL: "https://chart-studio.plotly.com",
+            }}
+            />
+        )
+    } else {
+        return (
+        // Initial startup plot
+      <ResponsivePlot
+      // React re-renders the plot when any state, prop, or parent component changes
+      divId={`source-2D-SNR-resolution-plot-${numGrismSubmit}`}
+      data={[]}
+      layout={{
+        title: "(Source 2 Dimension Signal-Noise-Ratio on the detector)",
+        font: { color: "white", size: 11 },
+        autosize: true,
+        paper_bgcolor: themeBackgroundColor,
+        plot_bgcolor: themeBackgroundColor,
+        xaxis: {
+          showgrid: false,
+          title: "Pixel",
+          type: "linear",
+          autorange: true,
+          range: [0, 2],
+        },
+        yaxis: {
+          showgrid: false,
+          title: "Pixel",
+          type: "linear",
+          autorange: true,
+          range: [0, 5],
+        },
+        margin: { r: 26 },
+        annotations: [
+          {
+            text: "Please submit a Grism Spectroscopy<br />calculation first",
+            xref: "paper",
+            yref: "paper",
+            showarrow: false,
+            font: {
+              size: 12,
+            },
+          },
+        ],
+      }}
+      useResizeHandler={true}
+      config={{
+        displaylogo: false,
+        toImageButtonOptions: { filename: "source_pix_weights" },
+        // Allow users to edit chart
+        showEditInChartStudio: true,
+        plotlyServerURL: "https://chart-studio.plotly.com",
+      }}
+    />
+        )
     }
-    return newArray
+
 }
 
-export function meshgrid(arr1: number[], arr2: number[]) {
-    var output1 = [];
-    var output2 = [];
-    for (var i = 0; i < arr1.length; i++) {
-        output1[i] = arr1
-    }
-    for (var j = 0; j < arr2.length; j++) {
-        output2[j] = Array(arr2.length).fill(arr2[j])
-    }
-    return [output1,output2]
-}
 
-
-export function gaussian2D(x: number[][], y: number[][], sigma: number) {
-    var term1 = [];
-    var term2:any = [];
-    var finalSum:any = [];
-    var output:any = [];
-    var a = 1;
-    for (var i = 0; i < x.length; i++){
-       term1.push(squareArr(x[i]).map((item: number)=> item/(2*Math.pow(sigma,2))))
-       term2.push(squareArr(y[i]).map((item: number)=> item/(2*Math.pow(sigma,2))))
-    }
-    for (var i = 0; i < x.length; i++){
-        finalSum.push(term1[i].map((num: number,idx: number) => 
-            num + term2[i][idx] )); 
-    }
-    for (var i = 0; i < x.length; i++){
-        output.push(finalSum[i].map((item: number)=> a*Math.exp(-item)))
-     }
-    return output
-}
-
-// export function arange(startValue: number, stopValue: number, spacing: number = 1) {
-//     if (startValue < stopValue) {
-//         var numStep = Math.ceil((stopValue-startValue)/spacing);
-//         var arr = [startValue];
-//         for (var i = 1; i < numStep; i++) {
-//             arr[i] = arr[i-1] + spacing
-//         }
-//         return arr
-//     }
-
-//     else {
-//         return null
-//     }
-// }
-
-export function arange(startValue: number, stopValue: number, spacing: number = 1) {
-    if (startValue < stopValue) {
-        var arr = [startValue];
-        let i = 1;
-        do {
-            arr[i] = arr[i-1] + spacing
-            i +=1
-        } while (arr[i-1] < stopValue)
-        arr.pop()
-        return arr
-    }
-    else {
-        return null
-    }
-}
-
-export function min2Darray(arr: number[][]) {
-    var newArray: number[] = []; 
-    for (var i = 0; i < arr.length; i++){
-        newArray.push(Math.min.apply(null,arr[i]))
-    }
-    var result = Math.min.apply(null, newArray)
-    return result
-}
-
-export function max2Darray(arr: number[][]) {
-    var newArray: number[] = []; 
-    for (var i = 0; i < arr.length; i++){
-        newArray.push(Math.max.apply(null,arr[i]))
-    }
-    var result = Math.max.apply(null, newArray)
-    return result
-}
-
-export function sum(arr: number[][]) {
-    var sum = 0;
-    for (var i = 0; i < arr.length; i++){
-        for (var j = 0; j < arr[i].length; j++) {
-            sum += arr[i][j]
-        }
-    }
-    return sum
-}
+export default Show2DSnrResolutionPlot;
