@@ -203,7 +203,7 @@ const ShowSlitPlot: React.FC<ShowSlitPlotProps> = ({
                     color: "black"
                 },
                 bgcolor: 'rgba(0,0,0,0)',
-                x: 0,
+                x: 0.1,
                 xanchor: "left",
                 y: 0.95,
                 bordercolor: "Black",
