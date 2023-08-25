@@ -317,7 +317,7 @@ const UVMOSForm: React.FC<UVMOSFormProps> = ({
         >
           <code>GitHub</code>
         </Link>{" "}
-        repository are all welcome.
+        repository are all welcome. <b>Currently, for the UVMOS-ETC, only point sources are supported.</b>
       </Typography>
       <Formik
         initialValues={myInitialValues}
