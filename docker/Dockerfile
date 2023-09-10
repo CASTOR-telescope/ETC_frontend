@@ -29,7 +29,7 @@ ARG CACHEBUST_CASTOR=1
 # RUN pip3 install .
 
 # Make sure the spectrum.py file in the github repository points towards the correct stellar_models directory path.
-RUN pip3 install git+https://github.com/CASTOR-telescope/ETC.git@summer2023
+RUN pip3 install git+https://github.com/CASTOR-telescope/ETC.git
 
 ARG CACHEBUST_BACKEND=1
 # REVIEW: cachebust not working?
