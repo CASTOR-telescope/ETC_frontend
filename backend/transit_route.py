@@ -163,8 +163,8 @@ def put_transit_json():
         # _size = base64.b64encode(zlib.compress(bytes(_f, "utf-8"))).decode("ascii")
         # print('Compressed size=',len(_size.encode("utf-8"))/(10**6),'Mb') #10.36 Mb in size!
 
-        xlim = int(DataHolder.TelescopeObj.ccd_dim[0]/2) + TransitObj.xout * 0.7 * np.array([-1.0,1.0])
-        # ylim = int(DataHolder.TelescopeObj.ccd_dim[1]/2) + TransitObj.yout * 0.7 * np.array([-1.0,1.0])
+        xlim = int(DataHolder.TelescopeObj.transit_ccd_dim[0]/2) + TransitObj.xout * 0.7 * np.array([-1.0,1.0])
+        # ylim = int(DataHolder.TelescopeObj.transit_ccd_dim[1]/2) + TransitObj.yout * 0.7 * np.array([-1.0,1.0])
 
         #
         # 3. Stimulate light curve & inject a transit model
