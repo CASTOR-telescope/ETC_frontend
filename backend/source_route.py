@@ -247,6 +247,7 @@ def put_source_json():
             SourceObj.use_custom_spectrum(secure_filepath, wavelength_unit=u.AA)
         elif predefined_spectrum == "gaia":
             SourceObj.use_gaia_spectrum(
+                stellar_model_dir = "/arc/projects/CASTOR/stellar_models",
                 ra = float(predefined_spectrum_parameters[predefined_spectrum]["ra"]) * u.deg,
                 dec = float(predefined_spectrum_parameters[predefined_spectrum]["dec"]) * u.deg,
                 srch_Gmax = float(predefined_spectrum_parameters[predefined_spectrum]["srchGmax"]),
