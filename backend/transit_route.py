@@ -117,7 +117,7 @@ def put_transit_json():
         
         try:
             TransitObj = Observation(
-                DataHolder.TelescopeObj, DataHolder.SourceObj, DataHolder.BackgroundObj
+                DataHolder.TelescopeObj, DataHolder.SourceObj, DataHolder.BackgroundObj, stellar_model_dir = "/arc/projects/CASTOR/stellar_models"
             )
         except Exception as e:
             log_traceback(e)
