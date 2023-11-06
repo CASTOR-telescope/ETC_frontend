@@ -17,7 +17,7 @@ RUN mkdir /opt/image-build && chmod 777 /opt/image-build
 ADD docker/nsswitch.conf /etc/
 COPY docker/apt-install.sh /opt/image-build
 WORKDIR /opt/image-build
-RUN ./apt-install.sh sssd acl gunicorn gcc libcurl4-openssl-dev libssl-dev git
+RUN ./apt-install.sh sssd acl gunicorn gcc g++ libcurl4-openssl-dev libssl-dev git
 
 RUN pip3 install flask flask-cors wheel gunicorn
 
