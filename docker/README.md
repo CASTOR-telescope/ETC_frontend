@@ -22,7 +22,7 @@ following:
 4. Modify the variable `stellar_model_dir` in the `use_gaia_spectrum()` in [source_route.py](../backend/source_route.py): 
 
    ```bash
-      SourceObj.use_gaia_spectrum(
+      SourceObj.use_gaia_spectrum(..,
       stellar_model_dir = "/usr/local/lib/python3.9/site-packages/castor_etc/data/transit_data/stellar_models"
       )
 
@@ -31,7 +31,7 @@ following:
 5. Similarly, modify the variable `stellar_model_dir` in the `Observation` class in [transit_route.py](../backend/transit_route.py):
 
       ```bash
-      TransitObj = Observation(
+      TransitObj = Observation(..,
                                stellar_model_dir = "/usr/local/lib/python3.9/site-packages/castor_etc/data/transit_data/stellar_models"
       )
 
