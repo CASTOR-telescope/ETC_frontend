@@ -19,7 +19,7 @@ following:
 
 3. After cloning the ETC_frontend repository, you will need to download these [stellar models](https://kona.ubishops.ca/jsikora/poet_stellar_models.tar.gz) into a directory. 
 
-4. Modify the variable `stellar_model_dir` in the `use_gaia_spectrum()` in [source_route.py](../backend/source_route.py) value: 
+4. Modify the variable `stellar_model_dir` in the `use_gaia_spectrum()` in [source_route.py](../backend/source_route.py): 
 
    ```bash
       SourceObj.use_gaia_spectrum(
