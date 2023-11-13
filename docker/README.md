@@ -37,7 +37,7 @@ following:
 
    ```
 
-6. Finally, modify the variable `STELLAR_MODEL_DIR` in the [build.sh](./build.sh) script and set it to the directory containing the        stellar models on your local machine. Build the image by setting the `RUN` variable to true and then pass `run ./build.sh` command from     the repository-level directory.
+6. Finally, modify the variable `STELLAR_MODEL_DIR` in the [build.sh](./build.sh) script and set it to the directory containing the        stellar models on your local machine. Build the image by setting the `RUN` variable to true and then pass `./build.sh` command from the repository-level directory.
 
 7. Access the CASTOR ETC GUI instance via localhost port 5000.
 
