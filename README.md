@@ -16,7 +16,7 @@ backend](https://github.com/CASTOR-telescope/ETC).
   - [Deployment on CANFAR](#deployment-on-canfar)
     - [Dependencies](#dependencies)
     - [CANFAR Build Instructions](#canfar-build-instructions)
-  - [Building the Docker image for local machine](#docker/README.md)
+  - [Building the Docker image for local machine](docker/README.md)
   - [Roadmap](#roadmap)
   - [Known Issues](#known-issues)
   - [Questions, Issues, Suggestions, and Other Feedback](#questions-issues-suggestions-and-other-feedback)
