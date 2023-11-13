@@ -245,6 +245,14 @@ def put_source_json():
                 logger.error("Could not save file!")
                 return bad_request("Could not save file!")
             SourceObj.use_custom_spectrum(secure_filepath, wavelength_unit=u.AA)
+        elif predefined_spectrum == "gaia":
+            SourceObj.use_gaia_spectrum(
+                stellar_model_dir = "/arc/projects/CASTOR/stellar_models",
+                ra = float(predefined_spectrum_parameters[predefined_spectrum]["ra"]) * u.deg,
+                dec = float(predefined_spectrum_parameters[predefined_spectrum]["dec"]) * u.deg,
+                srch_Gmax = float(predefined_spectrum_parameters[predefined_spectrum]["srchGmax"]),
+                TelescopeObj = DataHolder.TelescopeObj
+            )
         elif predefined_spectrum == "blackbody":
             SourceObj.generate_bb(
                 T=float(predefined_spectrum_parameters[predefined_spectrum]["temp"])
@@ -412,10 +420,11 @@ def put_source_json():
         DataHolder.SourceObj = SourceObj
         #
         #
+
         # Only return the attributes that we want to show on the frontend
         return jsonify(
             wavelengths=SourceObj.wavelengths.to(u.AA).value.tolist(),  # x-values
-            spectrum=list(SourceObj.spectrum),  # y-values
+            spectrum=list((np.float64(SourceObj.spectrum))),  # y-values, spectrum has to have dtype=float64 to be serializable, float32 is not json serianizable.
             sourceMags=source_mags,  # dict of floats
             totalMag=total_mag,  # float
         )

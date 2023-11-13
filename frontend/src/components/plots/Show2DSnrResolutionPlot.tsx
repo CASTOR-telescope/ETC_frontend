@@ -1,9 +1,4 @@
 /**
- * Basically taken from <https://stackoverflow.com/a/66083366> but optimized performance
- * based on <https://github.com/maslianok/react-resize-detector#performance-optimization>
- *
- * ---
- *
  *         GNU General Public License v3 (GNU GPLv3)
  *
  * (c) 2022.                            (c) 2022.
@@ -65,60 +60,122 @@
  * <http://www.gnu.org/licenses/>.      <http://www.gnu.org/licenses/>.
  */
 
-import { useCallback } from "react";
-import Plot from "react-plotly.js";
-import { useResizeDetector } from "react-resize-detector";
+import { themeBackgroundColor } from "../DarkModeTheme";
+import ResponsivePlot from "../ResponsivePlot";
 
-// /**
-//  * TODO: finish docstring
-//  */
-// export default function ResponsivePlot(props) {
-//   const { width, height, ref } = useResizeDetector({
-//     refreshMode: "debounce",
-//     refreshRate: 10,
-//   });
-//   const { layout, data, ...otherProps } = props;
-//   return (
-//     <div ref={ref} style={{ display: "flex", height: "100%" }}>
-//       <Plot
-//         data={data}
-//         layout={{
-//           ...layout,
-//           ...{
-//             width: width,
-//             height: height,
-//           },
-//         }}
-//         {...otherProps}
-//       />
-//     </div>
-//   );
-// }
-
-/**
- * TODO: finish docstring
- */
-export default function ResponsivePlot(props) {
-  const { layout, data, ...otherProps } = props;
-  const onResize = useCallback(() => {}, []);
-  const { ref, width, height } = useResizeDetector({
-    onResize,
-    refreshMode: "debounce",
-    refreshRate: 10,
-  });
-  return (
-    <div ref={ref} style={{ display: "flex", height: "100%", overflow: "auto" }}>
-      <Plot
-        data={data}
-        layout={{
-          ...layout,
-          ...{
-            width: width,
-            height: height,
-          },
-        }}
-        {...otherProps}
-      />
-    </div>
-  );
+type Show2DSnrResolutionPlotProps = {
+    numGrismSubmit: number;
 }
+
+const Show2DSnrResolutionPlot: React.FC<Show2DSnrResolutionPlotProps> = ({numGrismSubmit}) => {
+    if (sessionStorage.getItem("grismParams") !== null) {
+        let grismParams = JSON.parse(`${sessionStorage.getItem("grismParams")}`);
+
+        let grism2d = JSON.parse(grismParams["grism2d"])
+
+        return (
+            <ResponsivePlot
+            // React re-renders the plot when any state, prop, or parent component changes
+            divId = {`source-2D-SNR-resolution-plot-${numGrismSubmit}`}
+            data={[
+              {
+                z: grism2d,
+                type: "heatmap",
+                colorscale: "Viridis",
+                colorbar: {
+                  title:{
+                    text: "SNR",
+                    side: "right",
+                    font: {size: 14}
+                  }
+              }
+            },
+            ]}
+            layout={{
+                title: "(2D SNR per resolution)",
+                font: {color: "white", size: 14},
+                autosize: true,
+                paper_bgcolor: themeBackgroundColor,
+                plot_bgcolor: themeBackgroundColor,
+                xaxis: {
+                    showgrid: true,
+                    gridcolor: "grey",
+                    title: "Pixels (Dispersion direction)",
+                },
+                yaxis: {
+                    showgrid: true,
+                    gridcolor: "grey",
+                    title: "Pixels (Spatial direction)",
+                    rangemode: "tozero",
+                },
+                margin: {t: 60},
+                showlegend: true,
+            }}
+            useResizeHandler={true}
+            config={{
+                displaylogo: false,
+                toImageButtonOptions: {filename:
+                "grism_2d_SNR_per_resolution"
+                },
+                // Allow users to edit chart
+                showEditInChartStudio: true,
+                plotlyServerURL: "https://chart-studio.plotly.com",
+            }}
+            />
+        )
+    } else {
+        return (
+        // Initial startup plot
+      <ResponsivePlot
+      // React re-renders the plot when any state, prop, or parent component changes
+      divId={`source-2D-SNR-resolution-plot-${numGrismSubmit}`}
+      data={[]}
+      layout={{
+        title: "(Source 2 Dimension Signal-Noise-Ratio on the detector)",
+        font: { color: "white", size: 11 },
+        autosize: true,
+        paper_bgcolor: themeBackgroundColor,
+        plot_bgcolor: themeBackgroundColor,
+        xaxis: {
+          showgrid: false,
+          title: "Pixel",
+          type: "linear",
+          autorange: true,
+          range: [0, 2],
+        },
+        yaxis: {
+          showgrid: false,
+          title: "Pixel",
+          type: "linear",
+          autorange: true,
+          range: [0, 5],
+        },
+        margin: { r: 26 },
+        annotations: [
+          {
+            text: "Please submit a Grism Spectroscopy<br />calculation first",
+            xref: "paper",
+            yref: "paper",
+            showarrow: false,
+            font: {
+              size: 12,
+            },
+          },
+        ],
+      }}
+      useResizeHandler={true}
+      config={{
+        displaylogo: false,
+        toImageButtonOptions: { filename: "source_pix_weights" },
+        // Allow users to edit chart
+        showEditInChartStudio: true,
+        plotlyServerURL: "https://chart-studio.plotly.com",
+      }}
+    />
+        )
+    }
+
+}
+
+
+export default Show2DSnrResolutionPlot;

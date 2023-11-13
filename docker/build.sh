@@ -9,6 +9,8 @@ VERSION=$(date +%y.%m.%d.%H%M)
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # (following line from <https://stackoverflow.com/a/8426110>)
 REPO_DIR="$(dirname "$SCRIPT_DIR")"
+DOCKER_STELLAR_MODEL_DIR="/usr/local/lib/python3.9/site-packages/castor_etc/data/transit_data/stellar_models"
+STELLAR_MODEL_DIR="<path to local stellar_models directory>"
 #
 # Load custom parameters
 #
@@ -37,6 +39,7 @@ if [[ ${RUN} = true ]]; then
     docker run --interactive \
             --tty \
             --publish 5000:5000 \
+            -v ${STELLAR_MODEL_DIR}:${DOCKER_STELLAR_MODEL_DIR} \
             --name castor_etc_gui_v${VERSION} \
             -d castor_etc_gui:${VERSION}
     #

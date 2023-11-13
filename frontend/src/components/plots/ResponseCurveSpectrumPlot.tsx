@@ -120,7 +120,7 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
         divId={`passband-source-spectrum-plot-${numTelescopeOrSourceSaved}`}
         data={data}
         layout={{
-          // title: "Passband Response Curves & Source Spectrum",
+          title: "Passband Response Curves & Source Spectrum",
           font: { color: "white", size: 14 },
           autosize: true,
           paper_bgcolor: themeBackgroundColor,
@@ -148,7 +148,7 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
             automargin: true,
             rangemode: "tozero",
           },
-          margin: { t: 12 },
+          margin: { t: 60 },
           showlegend: true,
           // Put legend on top left
           legend: {
@@ -189,7 +189,7 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
           },
         ]}
         layout={{
-          // title: "Passband Response Curves & Source Spectrum",
+          title: "(Passband Response Curves & Source Spectrum)",
           font: { color: "white", size: 14 },
           autosize: true,
           paper_bgcolor: themeBackgroundColor,
@@ -220,7 +220,7 @@ const ResponseCurveSpectrumPlot: React.FC<ResponseCurveSpectrumPlotProps> = ({
             automargin: true,
             rangemode: "tozero",
           },
-          margin: { t: 26 },
+          margin: { r: 26 },
           showlegend: false,
           annotations: [
             {

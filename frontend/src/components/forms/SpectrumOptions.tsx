@@ -74,6 +74,9 @@ export const SpectrumOptions = [
   { spectralValue: "uniform", spectralName: "Uniform", sourceType: "general" },
   { spectralValue: "emissionLine", spectralName: "Emission Line", sourceType: "general" },
 
+  // Gaia PointSource
+  { spectralValue: "gaia", spectralName: "Gaia", sourceType: "point" },
+
   // Galaxy spectra
   {
     spectralValue: "elliptical",

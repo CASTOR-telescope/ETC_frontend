@@ -67,13 +67,13 @@ import { isEqual } from "lodash";
 import React, { useEffect } from "react";
 
 export type CommonFormProps = {
-  // isSavedAndUnsubmitted?: boolean;
-  setIsSavedAndUnsubmitted: (value: boolean) => void;
   setIsChanged: (value: boolean) => void;
   prevFormValues: Object;
   setPrevFormValues: (value: Object) => void;
   isError: boolean;
   setIsError: (value: boolean) => void;
+  isSent: boolean;
+  setIsSent: (value: boolean) => void;
   errorMessage: string;
   setErrorMessage: (value: string) => void;
 };
@@ -114,11 +114,59 @@ export const AlertError: React.FC<{
   );
 };
 
-export const AlertIfFormSavedButPhotometryNotSubmitted: React.FC<{
-  isFormSyncPhotometry: boolean;
-  numPhotometrySubmit: number;
-}> = ({ isFormSyncPhotometry, numPhotometrySubmit }) => {
-  if (!isFormSyncPhotometry && numPhotometrySubmit > 0) {
+/**
+ * Show a toast message when the form is successfully saved/submitted. This should be wrapped in a `<Form>` component from formik.
+ */
+export const AlertSuccessfulRequest: React.FC<{
+  type: string;
+  isSent: boolean;
+  setIsSent: (value: boolean) => void;
+}> = ({ type, isSent, setIsSent }) => {
+  return (
+    <Snackbar
+      open={isSent}
+      autoHideDuration={1000}
+      onClose={() => {
+        // Clear any previous errors
+        setIsSent(false);
+      }}
+    >
+      <Alert
+        severity="success"
+        onClose={() => {
+          // Clear any previous errors
+          setIsSent(false);
+        }}
+      >
+        <AlertTitle>{type} successfully!</AlertTitle>
+      </Alert>
+    </Snackbar>
+  );
+};
+
+type AlertIfSavedButNotSubmittedProps = {
+  name: string;
+  isSavedAndUnsubmitted: boolean;
+  numSubmit: number;
+};
+
+/**
+ * Generate an info alert when the user has saved, but unsubmitted, parameters.
+ * 
+ * @param name - Name of the form not submitted
+ *
+ * @param isSavedAndUnsubmitted - true if the user has saved, but unsubmitted, parameters
+ *
+ * @returns `<Alert />` if any of the tabs have been saved, but not submitted
+ *
+ */
+export const AlertIfSavedButNotSubmitted: React.FC<AlertIfSavedButNotSubmittedProps> = ({
+  name,
+  isSavedAndUnsubmitted,
+  numSubmit,
+}) => {
+  // Alert user if any of the tabs have been saved, but not submitted
+  if (isSavedAndUnsubmitted && numSubmit > 0) {
     return (
       <Box
         sx={{
@@ -132,12 +180,9 @@ export const AlertIfFormSavedButPhotometryNotSubmitted: React.FC<{
         <Alert severity="info" style={{ width: "75%" }}>
           <AlertTitle>Info</AlertTitle>
           <Typography>
-            Parameters have been updated but a new Photometry request has not been
-            submitted. The photometry calculations and the simulated images may not
-            correspond to the parameters shown.
-          </Typography>
-          <Typography>
-            Submit a new Photometry request to update the images and results.
+            Some parameters are saved but not submitted. The {name} calculations and
+            the simulated images may not correspond to the parameters below. Please submit
+            this form to update the results.
           </Typography>
         </Alert>
       </Box>
@@ -146,6 +191,93 @@ export const AlertIfFormSavedButPhotometryNotSubmitted: React.FC<{
     return <div />;
   }
 };
+
+
+/* Define a common AlertIfFormSavedBut{}NotSubmitted */
+
+interface AlertIfFormSavedButNotSubmittedProps {
+  parameters : {
+    name: string;
+    isFormSync: boolean;
+    numSubmit: number;
+  }[]
+}
+
+/* Handles if telescope, background and source parameters have been updated but Photometry/UVMOS/Transit has not been updated yet, Version 2. */
+export const AlertIfFormSavedButNotSubmitted: React.FC<AlertIfFormSavedButNotSubmittedProps> = ({parameters}) => {
+  return (
+    <>
+      {parameters.map((item,index)=>{
+      if (!item.isFormSync && item.numSubmit > 0) {
+    return (
+      <Box
+        sx={{
+          backgroundColor: "transparent",
+          display: "flex",
+          justifyContent: "center",
+          width: "100%",
+          marginBottom: 2,
+        }}
+
+        key={index}
+        >
+        <Alert severity="info" style={{ width: "75%" }}>
+          <AlertTitle>Info</AlertTitle>
+          <Typography>
+            Parameters have been updated but a new {item.name} request has not been
+            submitted. The {item.name} calculations and the simulated images may not
+            correspond to the parameters shown.
+          </Typography>
+          <Typography>
+            Submit a new {item.name} request to update the images and results.
+          </Typography>
+        </Alert>
+      </Box>
+    );
+  } else {
+    return <div key={index}/>;
+  }
+    }
+    
+    )}
+    </>
+  )
+};
+
+/* Version 1 */
+// export const AlertIfFormSavedButNotSubmitted: React.FC<{
+//   name: string;
+//   isFormSync: boolean;
+//   numSubmit: number;
+// }> = ({ name,isFormSync, numSubmit }) => {
+//   if (!isFormSync && numSubmit > 0) {
+//     return (
+//       <Box
+//         sx={{
+//           backgroundColor: "transparent",
+//           display: "flex",
+//           justifyContent: "center",
+//           width: "100%",
+//           marginBottom: 2,
+//         }}
+//       >
+//         <Alert severity="info" style={{ width: "75%" }}>
+//           <AlertTitle>Info</AlertTitle>
+//           <Typography>
+//             Parameters have been updated but a new {name} request has not been
+//             submitted. The {name} calculations and the simulated images may not
+//             correspond to the parameters shown.
+//           </Typography>
+//           <Typography>
+//             Submit a new {name} request to update the images and results.
+//           </Typography>
+//         </Alert>
+//       </Box>
+//     );
+//   } else {
+//     return <div />;
+//   }
+// };
 
 export const useGetIfFormChanged = (
   setIsChanged: (value: boolean) => void,
@@ -166,6 +298,7 @@ export type CommonTextFieldProps = {
   placeholder: string;
   label: string;
   fullWidth?: boolean;
+  disabled?: boolean;
   required?: boolean;
 } & FieldAttributes<{}>;
 
@@ -180,6 +313,7 @@ export type CommonTextFieldProps = {
 export const CommonTextField: React.FC<CommonTextFieldProps> = ({
   placeholder,
   label,
+  disabled= false,
   required = true,
   fullWidth = true,
   ...props
@@ -196,6 +330,7 @@ export const CommonTextField: React.FC<CommonTextFieldProps> = ({
       as={TextField}
       type="input"
       fullWidth={fullWidth}
+      disabled={disabled}
       required={required}
       sx={{ marginTop: "auto", marginBottom: 2 }}
       helperText={errorText}
