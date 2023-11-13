@@ -41,14 +41,13 @@ following:
 
 7. Access the CASTOR ETC GUI instance via localhost port 5000.
 
-8. Once you done using the GUI, close the window and run the following command (TIP: use bash
-   autocompletion to fill in the version number):
+8. Once you're done using the GUI, close the window and run the following commands:
 
    ```bash
    docker ps # This will help you find the CONTAINER ID corresponding to the running instance of castor_etc_gui_v<VERSION> Docker image
    docker stop <CONTAINER ID> # Stops the container
    docker rm <CONTAINER ID> # Removes the container
-   docker images # Once you have stopped and removed the container, find the IMAGE ID of the castor_etc_gui Docker image
+   docker images # Once you have stopped and removed the container, find the IMAGE ID of the castor_etc_gui_v<VERSION> Docker image
    docker image rm <IMAGE ID> # Removes the Docker image
    ```
 
