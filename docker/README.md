@@ -19,25 +19,19 @@ following:
 
 3. After cloning the ETC_frontend repository, you will need to download these [stellar models](https://kona.ubishops.ca/jsikora/poet_stellar_models.tar.gz) into a directory. 
 
-4. Modify the variable `stellar_model_dir` in the `use_gaia_spectrum()` in [source_route.py](backend/source_route.py) to the following value: 
+4. Modify the variable `stellar_model_dir` in the `use_gaia_spectrum()` in [source_route.py](../backend/source_route.py) value: 
 
    ```bash
       SourceObj.use_gaia_spectrum(
-      stellar_model_dir = "/usr/local/lib/python3.9/site-packages/castor_etc/data/transit_data/stellar_models",
-      ra = float(predefined_spectrum_parameters[predefined_spectrum]["ra"]) * u.deg,
-      dec = float(predefined_spectrum_parameters[predefined_spectrum]["dec"]) * u.deg,
-      srch_Gmax = float(predefined_spectrum_parameters[predefined_spectrum]["srchGmax"]),
-      TelescopeObj = DataHolder.TelescopeObj
+      stellar_model_dir = "/usr/local/lib/python3.9/site-packages/castor_etc/data/transit_data/stellar_models"
       )
 
    ```
 
-5. Similarly, modify the variable `stellar_model_dir` in the `Observation` class in [transit_route.py](backend/transit_route.py):
+5. Similarly, modify the variable `stellar_model_dir` in the `Observation` class in [transit_route.py](../backend/transit_route.py):
 
       ```bash
-      TransitObj = Observation(DataHolder.TelescopeObj,
-                               DataHolder.SourceObj,
-                               DataHolder.BackgroundObj,
+      TransitObj = Observation(
                                stellar_model_dir = "/usr/local/lib/python3.9/site-packages/castor_etc/data/transit_data/stellar_models"
       )
 
