@@ -11,6 +11,19 @@ storage limit. See the comments beginning
 [here](https://github.com/CASTOR-telescope/ETC_frontend/issues/2#issuecomment-1125563805)
 for more context/details. -->
 
+## [1.1.0](https://github.com/CASTOR-telescope/ETC_frontend/tree/v1.1.0) (2023-11-13)
+- Added UVMOS spectroscopy tab capable of simulating:
+  - Source viewed on the detector
+  - Source viewed through the slit
+  - Flux (counts/second) spectra
+- Added GRISM spectroscopy tab capable of simulating:
+  - 2D Signal-Noise ratio (SNR) per resolution
+  - 1D SNR per resolution
+- Added Transit simulation tab capable of simulating:
+  - Scene
+  - Lightcurve
+
+
 ## [1.0.1](https://github.com/CASTOR-telescope/ETC_frontend/tree/v1.0.1) (2022-05-13)
 
 - Added `git` to Dockerfile
