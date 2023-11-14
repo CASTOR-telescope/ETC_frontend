@@ -22,6 +22,11 @@ for more context/details. -->
 - Added Transit simulation tab capable of simulating:
   - Scene
   - Lightcurve
+- NOTE: the photometry tab is out-of-date and non-functional (see
+  [this comment on #10](https://github.com/CASTOR-telescope/ETC_frontend/pull/10#discussion_r1392001823)).
+  This will be fixed in the next update
+  - For now, users should use the [Python ETC](https://github.com/CASTOR-telescope/ETC)
+    for synthetic photometry
 
 
 ## [1.0.1](https://github.com/CASTOR-telescope/ETC_frontend/tree/v1.0.1) (2022-05-13)
