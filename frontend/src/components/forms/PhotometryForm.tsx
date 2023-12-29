@@ -888,6 +888,7 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
   return (
     <div>
       <Typography variant="h5">Make a photometry calculation below.</Typography>
+      <Typography variant="h6" color="#ff0000">This tab is currently out-of-date and non-functional. For now, please  use the Python ETC for synthetic photometry.</Typography>
       <Typography variant="body1" style={{ marginBottom: 16 }}>
         <b>
           Form validation is still in development for this tab. Please ensure all inputs
