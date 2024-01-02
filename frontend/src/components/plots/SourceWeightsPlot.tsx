@@ -172,7 +172,7 @@ const SourceWeightsPlot: React.FC<SourceWeightsPlotProps> = ({ numPhotometrySubm
             range: [extent[2], extent[3]],
             scaleanchor: "x",
           },
-          margin: { t: 40 }, // if no title
+          margin: { t: 50 }, // if no title
         }}
         useResizeHandler={true}
         config={{

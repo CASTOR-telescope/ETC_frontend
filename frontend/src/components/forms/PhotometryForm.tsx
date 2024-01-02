@@ -97,10 +97,12 @@ import {
 import { SourceType } from "./SpectrumOptions";
 
 import {
+  AlertIfSavedButNotSubmitted,
   AlertError,
   CommonFormProps,
   CommonTextField,
   useGetIfFormChanged,
+  AlertSuccessfulRequest,
 } from "../CommonFormElements";
 import React from "react";
 
@@ -127,53 +129,6 @@ const SubmitButton: React.FC<{ isSubmitting: boolean; isValid: boolean }> = ({
       Submit
     </LoadingButton>
   );
-};
-
-type AlertIfSavedButNotSubmittedProps = {
-  isSavedAndUnsubmitted: boolean;
-  numPhotometrySubmit: number;
-};
-
-/**
- * Generate an info alert when the user has saved, but unsubmitted, parameters. Note that
- * if you need to do this for a spectroscopy tab, you may need to declare new states
- * (e.g., one for isTelescopeParamsSavedPhotometry, and one for
- * isTelescopeParamsSavedSpectroscopy).
- *
- * @param isSavedAndUnsubmitted - true if the user has saved, but unsubmitted, parameters
- *
- * @returns `<Alert />` if any of the tabs have been saved, but not submitted
- *
- */
-const AlertIfSavedButNotSubmitted: React.FC<AlertIfSavedButNotSubmittedProps> = ({
-  isSavedAndUnsubmitted,
-  numPhotometrySubmit,
-}) => {
-  // Alert user if any of the tabs have been saved, but not submitted
-  if (isSavedAndUnsubmitted && numPhotometrySubmit > 0) {
-    return (
-      <Box
-        sx={{
-          backgroundColor: "transparent",
-          display: "flex",
-          justifyContent: "center",
-          width: "100%",
-          marginBottom: 2,
-        }}
-      >
-        <Alert severity="info" style={{ width: "75%" }}>
-          <AlertTitle>Info</AlertTitle>
-          <Typography>
-            Some parameters are saved but not submitted. The photometry calculations and
-            the simulated images may not correspond to the parameters below. Please submit
-            this form to update the results.
-          </Typography>
-        </Alert>
-      </Box>
-    );
-  } else {
-    return <div />;
-  }
 };
 
 enum Apertures {
@@ -895,8 +850,8 @@ const photometryValidationSchema = Yup.object({
 });
 
 type PhotometryFormProps = {
-  isSavedAndUnsubmitted: boolean;
-  setIsSavedAndUnsubmitted: (value: boolean) => void;
+  isPhotometrySavedAndUnsubmitted: boolean;
+  setIsPhotometrySavedAndUnsubmitted: (value: boolean) => void;
   incrNumPhotometrySubmit: () => void;
   numPhotometrySubmit: number;
   setIsTelescopeSyncPhotometry: (value: boolean) => void;
@@ -905,14 +860,16 @@ type PhotometryFormProps = {
 } & CommonFormProps;
 
 const PhotometryForm: React.FC<PhotometryFormProps> = ({
-  isSavedAndUnsubmitted,
-  setIsSavedAndUnsubmitted,
+  isPhotometrySavedAndUnsubmitted,
+  setIsPhotometrySavedAndUnsubmitted,
   incrNumPhotometrySubmit,
   setIsChanged,
   prevFormValues,
   setPrevFormValues,
   isError,
   setIsError,
+  isSent,
+  setIsSent,
   errorMessage,
   setErrorMessage,
   numPhotometrySubmit,
@@ -980,6 +937,7 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
   return (
     <div>
       <Typography variant="h5">Make a photometry calculation below.</Typography>
+      <Typography variant="h6" color="#ff0000">This tab is currently out-of-date and non-functional. For now, please  use the Python ETC for synthetic photometry.</Typography>
       <Typography variant="body1" style={{ marginBottom: 16 }}>
         <b>
           Form validation is still in development for this tab. Please ensure all inputs
@@ -1026,12 +984,13 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
               sessionStorage.setItem(FORM_SESSION, JSON.stringify(data));
             })
             .then(() => {
+              setIsSent(true)
               // Set state to indicate that the parameters have been submitted
               // MUST have this after BOTH sessionStorage.setItem() calls above
-              setIsSavedAndUnsubmitted(false);
+              setIsPhotometrySavedAndUnsubmitted(false);
               setPrevFormValues(data);
               setIsChanged(false);
-              incrNumPhotometrySubmit();
+              incrNumPhotometrySubmit(); 
               setSubmitting(false);
               setIsTelescopeSyncPhotometry(true);
               setIsBackgroundSyncPhotometry(true);
@@ -1052,6 +1011,11 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
       >
         {({ values, setFieldValue, isSubmitting, isValid }) => (
           <Form>
+            <AlertIfSavedButNotSubmitted
+              name = {'Photometry'}
+              isSavedAndUnsubmitted={isPhotometrySavedAndUnsubmitted}
+              numSubmit={numPhotometrySubmit}
+            />
             <ApertureGroup
               name="apertureGroupThisNameIsNotUsed"
               values={values}
@@ -1135,10 +1099,7 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
                 </Grid>
               </FormGroup>
             </FormControl>
-            <AlertIfSavedButNotSubmitted
-              isSavedAndUnsubmitted={isSavedAndUnsubmitted}
-              numPhotometrySubmit={numPhotometrySubmit}
-            />
+
             <SubmitButton isSubmitting={isSubmitting} isValid={isValid} />
             {/* <pre>{JSON.stringify(values, null, 2)}</pre> */}
             <AlertError
@@ -1146,6 +1107,11 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
               setIsError={setIsError}
               errorMessage={errorMessage}
               setErrorMessage={setErrorMessage}
+            />
+            <AlertSuccessfulRequest
+            type={"Submitted"}
+            isSent={isSent}
+            setIsSent={setIsSent}
             />
           </Form>
         )}

@@ -91,10 +91,11 @@ import * as Yup from "yup";
 import axios from "axios";
 
 import {
-  AlertIfFormSavedButPhotometryNotSubmitted,
+  AlertIfFormSavedButNotSubmitted,
   useGetIfFormChanged,
   CommonFormProps,
   AlertError,
+  AlertSuccessfulRequest,
   CommonTextField,
   SaveButton,
 } from "../CommonFormElements";
@@ -415,6 +416,8 @@ type AlertIfTelescopeParamsChangedProps = {
   isBackgroundSyncTelescope: boolean;
 };
 
+
+/* If telescopes parameters have been changed, then raise alert on the frontend */
 const AlertIfTelescopeParamsChanged: React.FC<AlertIfTelescopeParamsChangedProps> = ({
   isBackgroundSyncTelescope,
 }) => {
@@ -503,27 +506,54 @@ const backgroundValidationSchema = Yup.object({
 });
 
 type BackgroundFormProps = {
+  setIsPhotometrySavedAndUnsubmitted: (value: boolean) => void;
+  setIsUVMOSSavedAndUnsubmitted: (value: boolean) => void;
+  setIsTransitSavedAndUnsubmitted: (value: boolean) => void;
+  setIsGrismSavedAndUnsubmitted: (value: boolean) => void;
   isBackgroundSyncTelescope: boolean;
   setIsBackgroundSyncTelescope: (value: boolean) => void;
   numPhotometrySubmit: number;
+  numUVMOSSubmit: number;
+  numTransitSubmit: number;
+  numGrismSubmit: number;
   isBackgroundSyncPhotometry: boolean;
+  isBackgroundSyncUVMOS: boolean;
+  isBackgroundSyncTransit: boolean;
+  isBackgroundSyncGrism: boolean;
   setIsBackgroundSyncPhotometry: (value: boolean) => void;
+  setIsBackgroundSyncUVMOS: (value: boolean) => void;
+  setIsBackgroundSyncTransit: (value: boolean) => void;
+  setIsBackgroundSyncGrism: (value: boolean) => void;
 } & CommonFormProps;
 
 const BackgroundForm: React.FC<BackgroundFormProps> = ({
-  setIsSavedAndUnsubmitted,
+  setIsPhotometrySavedAndUnsubmitted,
+  setIsUVMOSSavedAndUnsubmitted,
+  setIsTransitSavedAndUnsubmitted,
+  setIsGrismSavedAndUnsubmitted,
   setIsChanged,
   prevFormValues,
   setPrevFormValues,
   isError,
   setIsError,
+  isSent,
+  setIsSent,
   errorMessage,
   setErrorMessage,
   isBackgroundSyncTelescope,
   setIsBackgroundSyncTelescope,
   numPhotometrySubmit,
+  numUVMOSSubmit,
+  numTransitSubmit,
+  numGrismSubmit,
   isBackgroundSyncPhotometry,
   setIsBackgroundSyncPhotometry,
+  isBackgroundSyncUVMOS,
+  setIsBackgroundSyncUVMOS,
+  isBackgroundSyncTransit,
+  setIsBackgroundSyncTransit,
+  isBackgroundSyncGrism,
+  setIsBackgroundSyncGrism,
 }) => {
   // Save user form inputs between tab switches
   const FORM_SESSION = "backgroundForm"; // key for sessionStorage (user inputs)
@@ -579,9 +609,30 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
         </Link>{" "}
         repository are all welcome.
       </Typography>
-      <AlertIfFormSavedButPhotometryNotSubmitted
-        isFormSyncPhotometry={isBackgroundSyncPhotometry}
-        numPhotometrySubmit={numPhotometrySubmit}
+      <AlertIfFormSavedButNotSubmitted
+      parameters={
+        [
+      {
+        name: 'Photometry',
+        isFormSync:isBackgroundSyncPhotometry,
+        numSubmit:numPhotometrySubmit
+      },
+      {
+        name: 'UVMOS',
+        isFormSync:isBackgroundSyncUVMOS,
+        numSubmit:numUVMOSSubmit
+      },
+      {
+        name: 'Transit',
+        isFormSync:isBackgroundSyncTransit,
+        numSubmit:numTransitSubmit
+      },
+      {
+        name: 'Grism',
+        isFormSync:isBackgroundSyncGrism,
+        numSubmit:numGrismSubmit
+      },
+      ]}
       />
       <Formik
         initialValues={myInitialValues}
@@ -597,14 +648,27 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
                 sessionStorage.setItem(FORM_PARAMS, JSON.stringify(response))
               )
               .then(() => {
+                setIsSent(true)
                 // TODO: remove console.log() when done testing
-                setIsSavedAndUnsubmitted(true);
+                setIsPhotometrySavedAndUnsubmitted(true);
+                setIsUVMOSSavedAndUnsubmitted(true);
+                setIsTransitSavedAndUnsubmitted(true);
+                setIsGrismSavedAndUnsubmitted(true);
                 setPrevFormValues(data);
                 setIsChanged(false);
                 sessionStorage.setItem(FORM_SESSION, JSON.stringify(data));
                 setIsBackgroundSyncTelescope(true);
                 if (sessionStorage.getItem("photometryForm") !== null) {
                   setIsBackgroundSyncPhotometry(false);
+                }
+                if (sessionStorage.getItem("uvmosForm") !== null) {
+                  setIsBackgroundSyncUVMOS(false);
+                }
+                if (sessionStorage.getItem("transitForm") !== null) {
+                  setIsBackgroundSyncTransit(false);
+                }
+                if (sessionStorage.getItem("grismForm") !== null) {
+                  setIsBackgroundSyncGrism(false);
                 }
               })
               .catch((error) => {
@@ -691,6 +755,11 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
               setIsError={setIsError}
               errorMessage={errorMessage}
               setErrorMessage={setErrorMessage}
+            />
+            <AlertSuccessfulRequest
+            type={"Saved"}
+            isSent={isSent}
+            setIsSent={setIsSent}
             />
           </Form>
         )}

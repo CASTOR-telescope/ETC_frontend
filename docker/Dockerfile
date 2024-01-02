@@ -8,7 +8,7 @@
 
 # -------------------------------------------------------------------------------------- #
 
-FROM python:3.9-slim
+FROM --platform=linux/amd64 python:3.9-slim
 
 USER root
 
@@ -17,7 +17,7 @@ RUN mkdir /opt/image-build && chmod 777 /opt/image-build
 ADD docker/nsswitch.conf /etc/
 COPY docker/apt-install.sh /opt/image-build
 WORKDIR /opt/image-build
-RUN ./apt-install.sh sssd acl gunicorn gcc libcurl4-openssl-dev libssl-dev git
+RUN ./apt-install.sh sssd acl gunicorn gcc g++ libcurl4-openssl-dev libssl-dev git
 
 RUN pip3 install flask flask-cors wheel gunicorn
 
@@ -27,6 +27,8 @@ ARG CACHEBUST_CASTOR=1
 # COPY setup.py /opt/mypackage/
 # WORKDIR /opt/mypackage
 # RUN pip3 install .
+
+# Make sure the spectrum.py file in the github repository points towards the correct stellar_models directory path.
 RUN pip3 install git+https://github.com/CASTOR-telescope/ETC.git
 
 ARG CACHEBUST_BACKEND=1

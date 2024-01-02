@@ -1,9 +1,6 @@
+/*Javascript functions corresponding to predefined methods in Numpy python library*/
+
 /**
- * Basically taken from <https://stackoverflow.com/a/66083366> but optimized performance
- * based on <https://github.com/maslianok/react-resize-detector#performance-optimization>
- *
- * ---
- *
  *         GNU General Public License v3 (GNU GPLv3)
  *
  * (c) 2022.                            (c) 2022.
@@ -65,60 +62,111 @@
  * <http://www.gnu.org/licenses/>.      <http://www.gnu.org/licenses/>.
  */
 
-import { useCallback } from "react";
-import Plot from "react-plotly.js";
-import { useResizeDetector } from "react-resize-detector";
+export function linspace(startValue: number, stopValue: number, cardinality: number = 50) {
+    var arr = [];
+    var step = (stopValue - startValue) / (cardinality - 1)
+        for (var i = 0; i < cardinality; i++) {
+            arr.push(startValue + (step * i))
+        }
+    return arr
+}
 
-// /**
-//  * TODO: finish docstring
-//  */
-// export default function ResponsivePlot(props) {
-//   const { width, height, ref } = useResizeDetector({
-//     refreshMode: "debounce",
-//     refreshRate: 10,
-//   });
-//   const { layout, data, ...otherProps } = props;
-//   return (
-//     <div ref={ref} style={{ display: "flex", height: "100%" }}>
-//       <Plot
-//         data={data}
-//         layout={{
-//           ...layout,
-//           ...{
-//             width: width,
-//             height: height,
-//           },
-//         }}
-//         {...otherProps}
-//       />
-//     </div>
-//   );
+export function squareArr(arr: number[]) {
+    var newArray: any = [];
+    for (var i = 0; i < arr.length; i++) {
+        newArray.push(Math.pow(arr[i],2))
+    }
+    return newArray
+}
+
+export function meshgrid(arr1: number[], arr2: number[]) {
+    var output1 = [];
+    var output2 = [];
+    for (var i = 0; i < arr1.length; i++) {
+        output1[i] = arr1
+    }
+    for (var j = 0; j < arr2.length; j++) {
+        output2[j] = Array(arr2.length).fill(arr2[j])
+    }
+    return [output1,output2]
+}
+
+
+export function gaussian2D(x: number[][], y: number[][], sigma: number) {
+    var term1 = [];
+    var term2:any = [];
+    var finalSum:any = [];
+    var output:any = [];
+    var a = 1;
+    for (var i = 0; i < x.length; i++){
+       term1.push(squareArr(x[i]).map((item: number)=> item/(2*Math.pow(sigma,2))))
+       term2.push(squareArr(y[i]).map((item: number)=> item/(2*Math.pow(sigma,2))))
+    }
+    for (var i = 0; i < x.length; i++){
+        finalSum.push(term1[i].map((num: number,idx: number) => 
+            num + term2[i][idx] )); 
+    }
+    for (var i = 0; i < x.length; i++){
+        output.push(finalSum[i].map((item: number)=> a*Math.exp(-item)))
+     }
+    return output
+}
+
+// export function arange(startValue: number, stopValue: number, spacing: number = 1) {
+//     if (startValue < stopValue) {
+//         var numStep = Math.ceil((stopValue-startValue)/spacing);
+//         var arr = [startValue];
+//         for (var i = 1; i < numStep; i++) {
+//             arr[i] = arr[i-1] + spacing
+//         }
+//         return arr
+//     }
+
+//     else {
+//         return null
+//     }
 // }
 
-/**
- * TODO: finish docstring
- */
-export default function ResponsivePlot(props) {
-  const { layout, data, ...otherProps } = props;
-  const onResize = useCallback(() => {}, []);
-  const { ref, width, height } = useResizeDetector({
-    onResize,
-    refreshMode: "debounce",
-    refreshRate: 10,
-  });
-  return (
-    <div ref={ref} style={{ display: "flex", height: "100%", overflow: "auto" }}>
-      <Plot
-        data={data}
-        layout={{
-          ...layout,
-          ...{
-            width: width,
-            height: height,
-          },
-        }}
-        {...otherProps}
-      />
-    </div>
-  );
+export function arange(startValue: number, stopValue: number, spacing: number = 1) {
+    if (startValue < stopValue) {
+        var arr = [startValue];
+        let i = 1;
+        do {
+            arr[i] = arr[i-1] + spacing
+            i +=1
+        } while (arr[i-1] < stopValue)
+        arr.pop()
+        return arr
+    }
+    else {
+        return null
+    }
+}
+
+export function min2Darray(arr: number[][]) {
+    var newArray: number[] = []; 
+    for (var i = 0; i < arr.length; i++){
+        newArray.push(Math.min.apply(null,arr[i]))
+    }
+    var result = Math.min.apply(null, newArray)
+    return result
+}
+
+export function max2Darray(arr: number[][]) {
+    var newArray: number[] = []; 
+    for (var i = 0; i < arr.length; i++){
+        newArray.push(Math.max.apply(null,arr[i]))
+    }
+    var result = Math.max.apply(null, newArray)
+    return result
+}
+
+export function sum(arr: number[][]) {
+    var sum = 0;
+    for (var i = 0; i < arr.length; i++){
+        for (var j = 0; j < arr[i].length; j++) {
+            sum += arr[i][j]
+        }
+    }
+    return sum
 }

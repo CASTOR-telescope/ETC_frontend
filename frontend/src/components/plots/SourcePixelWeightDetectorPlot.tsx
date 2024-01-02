@@ -62,74 +62,88 @@
 
 import { themeBackgroundColor } from "../DarkModeTheme";
 import ResponsivePlot from "../ResponsivePlot";
+import { arange } from "./Math";
 
-type AperMaskPlotProps = {
-  numPhotometrySubmit: number;
+type SourcePixelWeightDetectorPlotProps = {
+  numUVMOSSubmit: number;
 };
 
-const AperMaskPlot: React.FC<AperMaskPlotProps> = ({ numPhotometrySubmit }) => {
-  // Re-render plot (more robust this way because it persists across refreshes, unlike
-  // numPhotometrySubmit > 0)
-  if (sessionStorage.getItem("photometryParams") !== null) {
+const SourcePixelWeightDetectorPlot: React.FC<SourcePixelWeightDetectorPlotProps> = ({ numUVMOSSubmit }) => {
+  if (sessionStorage.getItem("uvmosParams") !== null) {
     // Update to proper sessionStorage key after
-    let photometryParams = JSON.parse(`${sessionStorage.getItem("photometryParams")}`);
-    let aperMask = JSON.parse(photometryParams["aperMask"]); // need to parse twice...
-    let extent = photometryParams["aperExtent"]; // [xmin, xmax, ymin, ymax]
-    // let effNpix = photometryParams["effNpix"];
-    let plotLengths = [aperMask.length, aperMask[0].length];
-    let px_scale_x = (extent[1] - extent[0]) / plotLengths[1];
-    let px_scale_y = (extent[3] - extent[2]) / plotLengths[0];
+    let uvmosParams = JSON.parse(`${sessionStorage.getItem("uvmosParams")}`);
+    let sourceDetector = JSON.parse(uvmosParams["sourcePixelWeight"]["source_detector"]); // need to parse twice...
+    let center_pix = JSON.parse(uvmosParams["sourcePixelWeight"]["centerPix"])
+
+
+    let slitHeightPix = uvmosParams["slitHeightPixel"]; // pixels
+
+    let plotLengths = [sourceDetector.length, sourceDetector[0].length];
+    let tot_xpixels = plotLengths[1]
+
+
+    // Number of pixels on the side of the central pixel corresponding to the input wavelength.
+    let num_side_pix = 3
+
+
+      // ticks and their corresponding labels
+
+    let xTicks = arange(-0.5,tot_xpixels,1)
+    let yTicks = arange(-0.5,slitHeightPix,1)
+    let xTicksLabels = arange(0,tot_xpixels + 1)
+    let yTicksLabels = arange(0,slitHeightPix+1)
+
+
     return (
       <ResponsivePlot
         // React re-renders the plot when any state, prop, or parent component changes
-        divId={`aper-mask-plot-${numPhotometrySubmit}`}
+        divId={`source-weights-plot-${numUVMOSSubmit}`}
         data={[
           {
-            z: aperMask,
+            z: sourceDetector,
             type: "heatmap",
-            colorscale: "YlOrRd",
+            colorscale: "Electric",
             colorbar: {
               title: {
-                text: "Fraction of Pixel in Aperture",
+                text: "Normalized Intensity",
                 side: "right",
                 font: { size: 14 },
-              },
+              }
             },
-            x0: extent[0] + 0.5 * px_scale_x,
-            dx: px_scale_x,
-            y0: extent[2] + 0.5 * px_scale_y,
-            dy: px_scale_y,
-            transpose: false,
+            xgap: 1,
+            ygap: 1,
           },
         ]}
         layout={{
-          title: "(Aperture Mask)",
+          title: "(Source Viewed on the detector)",
           font: { color: "white", size: 10 },
           autosize: true,
           paper_bgcolor: themeBackgroundColor,
           plot_bgcolor: themeBackgroundColor,
           xaxis: {
-            showgrid: true,
-            title: "<i>x</i> (arcsec)",
+            tickvals: xTicks,
+            ticktext: xTicksLabels,
+            showgrid: false,
+            title: "Pixel",
             type: "linear",
-            autorange: true,
-            range: [extent[0], extent[1]],
+            autorange: false,
+            range: [center_pix - 0.5 - num_side_pix, center_pix - 0.5 + num_side_pix],
           },
           yaxis: {
-            showgrid: true,
-            title: "<i>y</i> (arcsec)",
+            tickvals: yTicks,
+            ticktext: yTicksLabels,
+            showgrid: false,
+            title: "Pixel",
             type: "linear",
             autorange: true,
-            range: [extent[2], extent[3]],
-            scaleanchor: "x",
+            range: [0, slitHeightPix],
           },
-          margin: { t: 40 }, // if no title
+          margin: { t: 60 },
         }}
         useResizeHandler={true}
         config={{
           displaylogo: false,
-          // modeBarButtonsToRemove: ["zoomIn2d", "zoomOut2d"],
-          toImageButtonOptions: { filename: "aper_mask" },
+          toImageButtonOptions: { filename: "source_pixel_weights" },
           // Allow users to edit chart
           showEditInChartStudio: true,
           plotlyServerURL: "https://chart-studio.plotly.com",
@@ -141,37 +155,37 @@ const AperMaskPlot: React.FC<AperMaskPlotProps> = ({ numPhotometrySubmit }) => {
       // Initial startup plot
       <ResponsivePlot
         // React re-renders the plot when any state, prop, or parent component changes
-        divId={`aper-mask-plot-${numPhotometrySubmit}`}
+        divId={`source-pixel-weights-plot-${numUVMOSSubmit}`}
         data={[]}
         layout={{
-          title: "(Aperture Mask)",
-          font: { color: "white", size: 14 },
+          title: "(Source Viewed on the detector)",
+          font: { color: "white", size: 11 },
           autosize: true,
           paper_bgcolor: themeBackgroundColor,
           plot_bgcolor: themeBackgroundColor,
           xaxis: {
-            showgrid: true,
-            title: "<i>x</i> (arcsec)",
+            showgrid: false,
+            title: "Pixel",
             type: "linear",
             autorange: true,
-            range: [-1, 1],
+            range: [0, 2],
           },
           yaxis: {
-            showgrid: true,
-            title: "<i>y</i> (arcsec)",
+            showgrid: false,
+            title: "Pixel",
             type: "linear",
             autorange: true,
-            range: [-1, 1],
+            range: [0, 5],
           },
-          margin: { r: 30 },
+          margin: { r: 26 },
           annotations: [
             {
-              text: "Please submit a Photometry<br />calculation first",
+              text: "Please submit a UVMOS Spectroscopy<br />calculation first",
               xref: "paper",
               yref: "paper",
               showarrow: false,
               font: {
-                size: 20,
+                size: 12,
               },
             },
           ],
@@ -179,8 +193,7 @@ const AperMaskPlot: React.FC<AperMaskPlotProps> = ({ numPhotometrySubmit }) => {
         useResizeHandler={true}
         config={{
           displaylogo: false,
-          // modeBarButtonsToRemove: ["zoomIn2d", "zoomOut2d"],
-          toImageButtonOptions: { filename: "aper_mask" },
+          toImageButtonOptions: { filename: "source_pix_weights" },
           // Allow users to edit chart
           showEditInChartStudio: true,
           plotlyServerURL: "https://chart-studio.plotly.com",
@@ -190,4 +203,4 @@ const AperMaskPlot: React.FC<AperMaskPlotProps> = ({ numPhotometrySubmit }) => {
   }
 };
 
-export default AperMaskPlot;
+export default SourcePixelWeightDetectorPlot;
