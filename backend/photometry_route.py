@@ -69,14 +69,12 @@ ETC GUI. If not, see                 ce n'est pas le cas, consultez :
 import re
 
 import astropy.units as u
+import numpy as np
+import pandas as pd
 from castor_etc.photometry import Photometry
 from castor_etc.sources import PointSource
 from flask import jsonify, request
-
-from utils import DataHolder, app, bad_request, server_error, logger, log_traceback
-
-import pandas as pd
-import numpy as np
+from utils import DataHolder, app, bad_request, log_traceback, logger, server_error
 
 
 @app.route("/photometry", methods=["PUT"])
@@ -118,6 +116,8 @@ def put_photometry_json():
             # Convert all inputs to floats
             request_data = request.get_json()
             logger.info("Photometry request_data: " + str(request_data))
+            source_weights_passband = request_data["sourceWeightsPassband"].lower()
+            logger.debug("source_weights_passband: " + str(source_weights_passband))
             reddening = float(request_data["reddening"])
             logger.debug("reddening: " + str(reddening))
             aper_shape = request_data["aperShape"].lower()
@@ -236,22 +236,22 @@ def put_photometry_json():
         #
         DataHolder.PhotometryObj = PhotometryObj
         #
-        # Get encircled energy.
+        # Get aperture's encircled energy in each passband
         # Note that `None` will be set to `null` in the JSON response.
         #
-        encircled_energy = PhotometryObj._encircled_energy  # `None` if not PointSource
+        encircled_energies = PhotometryObj._encircled_energies
         #
         # Convert 2D arrays to JSON, replace NaN with null, and only want the data array
         #
         aper_mask = pd.DataFrame(PhotometryObj._aper_mask).to_json(orient="values")
-        source_weights = pd.DataFrame(PhotometryObj.source_weights).to_json(
-            orient="values"
-        )
+        source_weights = pd.DataFrame(
+            PhotometryObj.source_weights[source_weights_passband]
+        ).to_json(orient="values")
         # Only return the attributes that we want to show on the frontend
         return jsonify(
             photResults=phot_results,
             effNpix=PhotometryObj._eff_npix,
-            encircledEnergy=encircled_energy,
+            encircledEnergies=encircled_energies,
             redleakFracs=redleak_fracs,
             aperMask=aper_mask,
             sourceWeights=source_weights,
