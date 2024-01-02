@@ -13,9 +13,11 @@ for more context/details. -->
 
 ## [1.1.1](https://github.com/CASTOR-telescope/ETC_frontend/tree/v1.1.1) (2024-01-02)
 
-- Fixed the photometry tab. Previous errors caused by the backend being out-of-date with
-  respect to the [Python ETC](https://github.com/CASTOR-telescope/ETC). This is fixed as
-  of [`castor_etc` v1.3.1](https://github.com/CASTOR-telescope/ETC/tree/v1.3.1).
+- Fixed the photometry tab (PR
+  [#24](https://github.com/CASTOR-telescope/ETC_frontend/pull/24)). Previous errors caused
+  by the backend being out-of-date with respect to the
+  [Python ETC](https://github.com/CASTOR-telescope/ETC). This is fixed as of
+  [`castor_etc` v1.3.1](https://github.com/CASTOR-telescope/ETC/tree/v1.3.1).
   - Added radio buttons to select which passband to render the source through, and updated
     the plot labels accordingly
   - Moved encircled energy into results table. The table now reports the encircled energy
