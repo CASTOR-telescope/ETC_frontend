@@ -81,7 +81,17 @@ const SourceWeightsPlot: React.FC<SourceWeightsPlotProps> = ({ numPhotometrySubm
   if (sessionStorage.getItem("photometryParams") !== null) {
     // Update to proper sessionStorage key after
     let photometryParams = JSON.parse(`${sessionStorage.getItem("photometryParams")}`);
-    let sourceWeights = JSON.parse(photometryParams["sourceWeights"]); // need to parse twice...
+    let sourceWeights = JSON.parse(photometryParams["sourceWeights"]); // need to JSON parse twice...
+    let photometryForm = JSON.parse(`${sessionStorage.getItem("photometryForm")}`);
+    let sourceWeightsPassband = photometryForm["sourceWeightsPassband"];
+    let sourceWeightsPassbandText = "";
+    if (sourceWeightsPassband === "noiseless") {
+      sourceWeightsPassbandText = "Source Without PSF Convolution";
+    } else if (sourceWeightsPassband === "uv") {
+      sourceWeightsPassbandText = `Source In UV-Band`;
+    } else {
+      sourceWeightsPassbandText = `Source In ${sourceWeightsPassband}-Band`;
+    }
     // let zauto = true;
     // let zmax = 0; // only relevant if zauto is false (i.e., for log color scale)
     // let zmin = 0; // only relevant if zauto is false (i.e., for log color scale)
@@ -123,7 +133,7 @@ const SourceWeightsPlot: React.FC<SourceWeightsPlotProps> = ({ numPhotometrySubm
             colorscale: "Electric",
             colorbar: {
               title: {
-                text: "Flux Relative to Source Center (incl. fractional pixels)",
+                text: "Percent of Source Flux Contained in Pixel",
                 side: "right",
                 font: { size: 14 },
               },
@@ -139,8 +149,11 @@ const SourceWeightsPlot: React.FC<SourceWeightsPlotProps> = ({ numPhotometrySubm
           },
         ]}
         layout={{
-          title: "(Relative Source Flux in Aperture)",
-          font: { color: "white", size: 10 },
+          title: {
+            text: sourceWeightsPassbandText,
+            font: { color: "white", size: 17.5 },
+          },
+          font: { color: "white", size: 14 },
           autosize: true,
           paper_bgcolor: themeBackgroundColor,
           plot_bgcolor: themeBackgroundColor,
@@ -180,7 +193,7 @@ const SourceWeightsPlot: React.FC<SourceWeightsPlotProps> = ({ numPhotometrySubm
         divId={`source-weights-plot-${numPhotometrySubmit}`}
         data={[]}
         layout={{
-          title: "(Relative Source Flux in Aperture)",
+          title: "(Percent of Source Flux Contained in Pixel)",
           font: { color: "white", size: 14 },
           autosize: true,
           paper_bgcolor: themeBackgroundColor,

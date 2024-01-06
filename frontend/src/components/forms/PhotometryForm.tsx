@@ -285,22 +285,6 @@ const ApertureGroup: React.FC<ApertureGroupProps> = ({
           }
         })() // calling anonymous arrow function to render it
       }
-      {isPointSource &&
-        (values.aperShape === Apertures.Elliptical ||
-          values.aperShape === Apertures.Rectangular) && (
-          <FormHelperText
-            sx={{
-              fontSize: "medium",
-              fontWeight: "normal",
-              marginBottom: 2,
-              textAlign: "center",
-            }}
-          >
-            Note that the point source's encircled energy within an elliptical or
-            rectangular aperture is calculated using a Monte Carlo integration and is not
-            an exact value.
-          </FormHelperText>
-        )}
     </FormControl>
   );
 };
@@ -351,6 +335,77 @@ const ReddeningGroup: React.FC<ReddeningGroupProps> = ({ values }) => {
         label="E(B-V)"
         required={true}
       />
+    </FormControl>
+  );
+};
+
+enum SourceWeightsPassbands {
+  Noiseless = "noiseless",
+  Uv = "uv",
+  U = "u",
+  G = "g",
+}
+
+type SourceWeightsPassbandGroupProps = {
+  values: { [value: string]: any }; // any object props
+} & FieldAttributes<{}>;
+
+const SourceWeightsPassbandGroup: React.FC<SourceWeightsPassbandGroupProps> = ({
+  values,
+}) => {
+  const { setFieldValue } = useFormikContext();
+
+  return (
+    <FormControl component="fieldset" variant="standard" fullWidth={true}>
+      <FormLabel component="legend" required={true} sx={{ fontSize: 17.5 }} filled={true}>
+        Passband for Source Visualization
+      </FormLabel>
+      <FormHelperText
+        sx={{
+          fontSize: "medium",
+          fontWeight: "normal",
+          marginTop: 0,
+          marginBottom: 2,
+          textAlign: "center",
+        }}
+      >
+        Select the passband through which the source will be rendered. The rendered image
+        will be the raw surface brightness profile of the source convolved with the
+        selected passband's PSF. Selecting "Noiseless" will render the source without PSF
+        convolution.
+      </FormHelperText>
+      <RadioGroup
+        name={"sourceWeightsPassband"}
+        value={values.sourceWeightsPassband}
+        // Need to set onChange manually in this case
+        // See <https://levelup.gitconnected.com/create-a-controlled-radio-group-in-react-formik-material-ui-and-typescript-7ed314081a0e>
+        onChange={(event) => {
+          setFieldValue("sourceWeightsPassband", event.currentTarget.value);
+        }}
+        sx={{ marginBottom: 2, justifyContent: "center" }}
+        row
+      >
+        <FormControlLabel
+          value={SourceWeightsPassbands.Noiseless}
+          control={<Radio />}
+          label="Noiseless"
+        />
+        <FormControlLabel
+          value={SourceWeightsPassbands.Uv}
+          control={<Radio />}
+          label="UV-Band"
+        />
+        <FormControlLabel
+          value={SourceWeightsPassbands.U}
+          control={<Radio />}
+          label="u-Band"
+        />
+        <FormControlLabel
+          value={SourceWeightsPassbands.G}
+          control={<Radio />}
+          label="g-Band"
+        />
+      </RadioGroup>
     </FormControl>
   );
 };
@@ -523,23 +578,6 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
         of that passband's red leak to the total passband response (in electrons per
         second) induced by the entire spectrum.
       </Typography>
-      {photParams["encircledEnergy"] !== null && (
-        <div style={divStyle}>
-          <Typography
-            component={Paper}
-            sx={{
-              fontSize: tableHeadFontSize,
-              marginBottom: 1,
-              padding: 1,
-              ...paperSx,
-            }}
-          >
-            <b>Point source encircled energy fraction:</b>{" "}
-            {(100 * photParams["encircledEnergy"]).toFixed(2)}%
-          </Typography>
-          <br />
-        </div>
-      )}
       <div style={divStyle}>
         <Typography
           component={Paper}
@@ -567,6 +605,9 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
                   Passband
                 </TableCell>
                 <TableCell sx={{ fontSize: tableHeadFontSize }} align="right">
+                  Encircled&nbsp;Energy&nbsp;%
+                </TableCell>
+                <TableCell sx={{ fontSize: tableHeadFontSize }} align="right">
                   Red&nbsp;Leak&nbsp;Fraction
                 </TableCell>
                 <TableCell sx={{ fontSize: tableHeadFontSize }} align="right">
@@ -592,6 +633,7 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
                     >
                       UV
                     </TableCell>
+                    {resultCell(100 * photParams["encircledEnergies"]["uv"])}
                     {resultCell(redleakFracUv)}
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
                       {photForm["photInput"].val}
@@ -609,6 +651,7 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
                     >
                       u
                     </TableCell>
+                    {resultCell(100 * photParams["encircledEnergies"]["u"])}
                     {resultCell(redleakFracU)}
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
                       {photForm["photInput"].val}
@@ -626,6 +669,7 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
                     >
                       g
                     </TableCell>
+                    {resultCell(100 * photParams["encircledEnergies"]["g"])}
                     {resultCell(redleakFracG)}
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
                       {photForm["photInput"].val}
@@ -647,6 +691,7 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
                     >
                       UV
                     </TableCell>
+                    {resultCell(100 * photParams["encircledEnergies"]["uv"])}
                     {resultCell(redleakFracUv)}
                     {resultCell(photResultsUv)}
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
@@ -664,6 +709,7 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
                     >
                       u
                     </TableCell>
+                    {resultCell(100 * photParams["encircledEnergies"]["u"])}
                     {resultCell(redleakFracU)}
                     {resultCell(photResultsU)}
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
@@ -681,6 +727,7 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
                     >
                       g
                     </TableCell>
+                    {resultCell(100 * photParams["encircledEnergies"]["g"])}
                     {resultCell(redleakFracG)}
                     {resultCell(photResultsG)}
                     <TableCell sx={{ fontSize: tableCellFontSize }} align="right">
@@ -698,6 +745,7 @@ const DisplayResults: React.FC<{ numPhotometrySubmit: number }> = ({
 
 const photometryValidationSchema = Yup.object({
   aperShape: Yup.string().oneOf(Object.values(Apertures)),
+  sourceWeightsPassband: Yup.string().oneOf(Object.values(SourceWeightsPassbands)),
   reddening: Yup.number()
     .required("Reddening is a required field")
     .typeError("Reddening must be a non-negative number")
@@ -851,6 +899,7 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
     }
 
     myInitialValues = {
+      sourceWeightsPassband: SourceWeightsPassbands.Noiseless,
       reddening: "0", // E(B-V)
       aperShape: initialAperShape,
       aperParams: {
@@ -888,7 +937,6 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
   return (
     <div>
       <Typography variant="h5">Make a photometry calculation below.</Typography>
-      <Typography variant="h6" color="#ff0000">This tab is currently out-of-date and non-functional. For now, please  use the Python ETC for synthetic photometry.</Typography>
       <Typography variant="body1" style={{ marginBottom: 16 }}>
         <b>
           Form validation is still in development for this tab. Please ensure all inputs
@@ -976,6 +1024,10 @@ const PhotometryForm: React.FC<PhotometryFormProps> = ({
             />
             <br />
             <ReddeningGroup name="ReddeningGroupThisNameIsNotUsed" values={values} />
+            <SourceWeightsPassbandGroup
+              name="SourceWeightsPassbandGroupThisNameIsNotUsed"
+              values={values}
+            />
             <FormControl
               component="fieldset"
               variant="standard"
